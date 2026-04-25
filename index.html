@@ -113,6 +113,7 @@
 
    .search-box {
   position: relative;
+  z-index: 1;
   margin-bottom: 20px; /* kasih jarak ke bawah */
 }
 
@@ -184,6 +185,47 @@
     .search-suggestions.show {
       display: grid;
       gap: 7px;
+      animation: suggestionCurtainDown 0.34s cubic-bezier(.2,.8,.2,1) both;
+      transform-origin: top center;
+    }
+
+    .search-suggestions.curtain-up {
+      display: grid;
+      gap: 7px;
+      animation: suggestionCurtainUp 0.28s cubic-bezier(.4,0,.2,1) both;
+      transform-origin: top center;
+      pointer-events: none;
+    }
+
+    .search-suggestions.curtain-down {
+      animation: suggestionCurtainDown 0.34s cubic-bezier(.2,.8,.2,1) both;
+      transform-origin: top center;
+    }
+
+    @keyframes suggestionCurtainUp {
+      0% {
+        opacity: 1;
+        transform: scaleY(1) translateY(0);
+        clip-path: inset(0 0 0 0 round 16px);
+      }
+      100% {
+        opacity: 0;
+        transform: scaleY(0.06) translateY(-8px);
+        clip-path: inset(0 0 92% 0 round 16px);
+      }
+    }
+
+    @keyframes suggestionCurtainDown {
+      0% {
+        opacity: 0;
+        transform: scaleY(0.06) translateY(-8px);
+        clip-path: inset(0 0 92% 0 round 16px);
+      }
+      100% {
+        opacity: 1;
+        transform: scaleY(1) translateY(0);
+        clip-path: inset(0 0 0 0 round 16px);
+      }
     }
 
     .suggestion-btn {
@@ -283,7 +325,18 @@
     .loading-dots span:nth-child(3) {
       animation-delay: 0.3s;
     }
+.search-suggestions {
+  background: white;
+  padding-bottom: 500px; /* ini yang bikin putih memanjang ke bawah */
+}
+.search-suggestions {
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE & Edge lama */
+}
 
+.search-suggestions::-webkit-scrollbar {
+  display: none;               /* Chrome, Safari */
+}
     @keyframes dotPulse {
       0%, 100% { transform: translateY(0); opacity: 0.35; }
       50% { transform: translateY(-3px); opacity: 1; }
@@ -950,6 +1003,43 @@
       box-shadow: 0 0 0 4px var(--primary-soft);
     }
 
+
+
+    .search-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.58);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      z-index: 35;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.42s ease;
+    }
+
+    .search-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .search-overlay.fade-out {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s ease;
+    }
+
+    .header.search-active {
+      z-index: 70;
+    }
+
+    .header.search-active .search-box {
+      z-index: 80;
+    }
+
+    .header.search-active .search-suggestions {
+      z-index: 90;
+    }
+
     @media (min-width: 700px) {
       body {
         padding: 24px 0;
@@ -970,8 +1060,10 @@
   </style>
 </head>
 <body>
+  <div id="searchOverlay" class="search-overlay"></div>
+
   <div class="app">
-    <header class="header">
+    <header id="appHeader" class="header">
       <div class="header-top">
         <div class="title">
           <h1 id="pageTitle">Data barang habis</h1>
@@ -1146,6 +1238,8 @@
     const $ = id => document.getElementById(id);
 
     const el = {
+      appHeader: $("appHeader"),
+      searchOverlay: $("searchOverlay"),
       homePage: $("homePage"),
       addedPage: $("addedPage"),
       pageTitle: $("pageTitle"),
@@ -1198,13 +1292,14 @@
     let suggestionLoadingTimer = null;
     let lastSuggestionSignature = "";
     let currentSuggestionItems = [];
+    let suggestionCurtainTimer = null;
   let selectedSupplier = "";
     let editingSupplierName = "";
     let isSupplierMenuOpen = false;
     let supplierContextFilter = "";
 
     const SEARCH_DELAY = 2000;
-    const SUGGESTION_DELAY = 1200; // 1.5 detik
+    const SUGGESTION_DELAY = 790;
     const LOADING_DELAY_BEFORE_SHOW = 400;
 
     function safeString(value) {
@@ -1278,6 +1373,75 @@
       setTimeout(() => el.toast.classList.remove("show"), 1800);
     }
 
+
+    function showSearchOverlay() {
+      el.searchOverlay.classList.remove("fade-out");
+      el.searchOverlay.classList.add("show");
+      el.appHeader.classList.add("search-active");
+    }
+
+    function hideSearchOverlaySmooth() {
+      if (!el.searchOverlay.classList.contains("show")) {
+        el.appHeader.classList.remove("search-active");
+        return;
+      }
+
+      el.searchOverlay.classList.add("fade-out");
+      setTimeout(() => {
+        el.searchOverlay.classList.remove("show", "fade-out");
+        el.appHeader.classList.remove("search-active");
+      }, 460);
+    }
+
+    function showSuggestionsCurtainDown() {
+      clearTimeout(suggestionCurtainTimer);
+      el.searchSuggestions.classList.remove("curtain-up");
+      el.searchSuggestions.classList.add("show", "curtain-down");
+      suggestionCurtainTimer = setTimeout(() => {
+        el.searchSuggestions.classList.remove("curtain-down");
+      }, 380);
+      updateSearchOverlay();
+    }
+
+    function closeSuggestionsCurtainUp(callback) {
+      clearTimeout(suggestionCurtainTimer);
+
+      if (!el.searchSuggestions.classList.contains("show")) {
+        updateSearchOverlay();
+        if (typeof callback === "function") callback();
+        return;
+      }
+
+      el.searchSuggestions.classList.remove("curtain-down");
+      el.searchSuggestions.classList.add("curtain-up");
+      hideSearchOverlaySmooth();
+
+      suggestionCurtainTimer = setTimeout(() => {
+        el.searchSuggestions.classList.remove("show", "curtain-up");
+        updateSearchOverlay();
+        if (typeof callback === "function") callback();
+      }, 300);
+    }
+
+    function updateSearchOverlay() {
+      const shouldShowOverlay =
+        el.searchSuggestions.classList.contains("show") &&
+        !el.searchSuggestions.classList.contains("curtain-up") &&
+        currentPage === "home" &&
+        cleanText(el.searchInput.value) &&
+        !isSupplierMenuOpen;
+
+      if (shouldShowOverlay) {
+        showSearchOverlay();
+      } else {
+        hideSearchOverlaySmooth();
+      }
+    }
+
+    function closeSearchSuggestionLayer() {
+      closeSuggestionsCurtainUp();
+    }
+
 function getCurrentSupplier() {
   return cleanText(selectedSupplier);
 }
@@ -1338,7 +1502,7 @@ function getCurrentSupplier() {
       isSuggestionLoading = false;
 
       el.searchInput.value = "";
-      el.searchSuggestions.classList.remove("show");
+      closeSuggestionsCurtainUp();
       el.searchWarmup.classList.remove("show");
       el.searchStatus.classList.remove("show");
 
@@ -1377,7 +1541,7 @@ function getCurrentSupplier() {
       el.addedPage.style.display = "block";
       el.supplierDropdown.classList.remove("show");
       el.catalogResults.classList.remove("hide");
-      el.searchSuggestions.classList.remove("show");
+      closeSuggestionsCurtainUp();
 
       el.headerActions.classList.add("list-mode");
       el.topResetBtn.classList.add("show");
@@ -1871,7 +2035,7 @@ function renderSelectedSupplier() {
           <div class="suggestion-skeleton-row short skeleton"></div>
         </div>
       `).join("");
-      el.searchSuggestions.classList.add("show");
+      showSuggestionsCurtainDown();
     }
 
     function renderSuggestions() {
@@ -1887,7 +2051,7 @@ function renderSelectedSupplier() {
       ) {
         lastSuggestionSignature = "";
         currentSuggestionItems = [];
-        el.searchSuggestions.classList.remove("show");
+        closeSuggestionsCurtainUp();
         return;
       }
 
@@ -1907,7 +2071,7 @@ function renderSelectedSupplier() {
             <span>Barang tidak ditemukan di katalog.</span>
           </div>
         `;
-        el.searchSuggestions.classList.add("show");
+        showSuggestionsCurtainDown();
         return;
       }
 
@@ -1935,8 +2099,18 @@ function renderSelectedSupplier() {
           isSuggestionLoading = false;
           el.searchWarmup.classList.remove("show");
 
-          // Tambahkan barang yang diklik, tapi keyword pencarian jangan diganti
-          // supaya semua list suggestion yang sedang tampil tetap muncul.
+          // Kalau supplier belum dipilih, suggestion ditutup dulu seperti tirai ke atas.
+          // Setelah itu menu supplier dibuka agar user pilih supplier dulu.
+          if (!getCurrentSupplier()) {
+            closeSuggestionsCurtainUp(() => {
+              addItem(selectedItemName);
+              renderSummary();
+            });
+            return;
+          }
+
+          // Kalau supplier sudah dipilih, barang ditambahkan dan suggestion muncul lagi
+          // seperti tirai ditarik ke bawah tanpa menghilangkan posisi halaman.
           addItem(selectedItemName);
 
           currentPage = "home";
@@ -1955,7 +2129,7 @@ function renderSelectedSupplier() {
           renderSummary();
           renderCatalog();
           renderSuggestions();
-          el.searchSuggestions.classList.add("show");
+          showSuggestionsCurtainDown();
 
           requestAnimationFrame(() => {
             window.scrollTo({ top: lastScroll, behavior: "instant" });
@@ -1965,7 +2139,7 @@ function renderSelectedSupplier() {
         el.searchSuggestions.appendChild(button);
       });
 
-      el.searchSuggestions.classList.add("show");
+      showSuggestionsCurtainDown();
     }
 
     function render() {
@@ -1992,7 +2166,7 @@ function renderSelectedSupplier() {
         isSuggestionLoading = false;
         lastSuggestionSignature = "";
         currentSuggestionItems = [];
-        el.searchSuggestions.classList.remove("show");
+        closeSuggestionsCurtainUp();
         el.searchWarmup.classList.remove("show");
         render();
         return;
@@ -2070,7 +2244,7 @@ function renderSelectedSupplier() {
       clearTimeout(suggestionLoadingTimer);
 
       isSupplierMenuOpen = false;
-      el.searchSuggestions.classList.remove("show");
+      closeSuggestionsCurtainUp();
       currentSuggestionItems = [];
       el.supplierDropdown.classList.remove("show");
       el.catalogResults.classList.remove("hide");
@@ -2184,7 +2358,7 @@ function renderSelectedSupplier() {
       renderSupplierDropdown();
       el.supplierDropdown.classList.toggle("show", isSupplierMenuOpen);
       el.catalogResults.classList.toggle("hide", isSupplierMenuOpen);
-      el.searchSuggestions.classList.remove("show");
+      closeSuggestionsCurtainUp();
     });
 
 el.selectedSupplierChip.addEventListener("click", () => {
@@ -2229,6 +2403,20 @@ el.selectedSupplierChip.addEventListener("click", () => {
 
     el.editSupplierModal.addEventListener("click", event => {
       if (event.target === el.editSupplierModal) closeEditSupplierModal();
+    });
+
+    const searchSuggestionObserver = new MutationObserver(updateSearchOverlay);
+    searchSuggestionObserver.observe(el.searchSuggestions, {
+      attributes: true,
+      attributeFilter: ["class"]
+    });
+
+    el.searchOverlay.addEventListener("click", () => {
+      closeSearchSuggestionLayer();
+      isSuggestionLoading = false;
+      clearTimeout(suggestionTimer);
+      clearTimeout(suggestionLoadingTimer);
+      renderSummary();
     });
 
     renderSupplierDropdown();
