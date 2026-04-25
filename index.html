@@ -111,6 +111,60 @@
       opacity: 0.9;
     }
 
+
+    .header-right-tools {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .suggestion-top-actions {
+      display: none;
+      align-items: center;
+      gap: 7px;
+      animation: suggestionToolsIn 0.22s ease both;
+    }
+
+    .header.suggestion-tools-active .suggestion-top-actions {
+      display: flex;
+    }
+
+    .suggestion-mini-btn {
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      background: rgba(255, 255, 255, 0.18);
+      color: white;
+      border-radius: 999px;
+      padding: 8px 9px;
+      font-size: 10px;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+    }
+
+    .suggestion-mini-btn:active {
+      transform: scale(0.98);
+    }
+
+    @keyframes suggestionToolsIn {
+      from { opacity: 0; transform: translateY(-4px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @media (max-width: 380px) {
+      .suggestion-mini-btn {
+        padding: 7px 8px;
+        font-size: 9px;
+      }
+    }
+
    .search-box {
   position: relative;
   z-index: 1;
@@ -185,20 +239,20 @@
     .search-suggestions.show {
       display: grid;
       gap: 7px;
-      animation: suggestionCurtainDown 0.34s cubic-bezier(.2,.8,.2,1) both;
+      animation: suggestionCurtainDown 0.58s cubic-bezier(.16,.84,.24,1) both;
       transform-origin: top center;
     }
 
     .search-suggestions.curtain-up {
       display: grid;
       gap: 7px;
-      animation: suggestionCurtainUp 0.28s cubic-bezier(.4,0,.2,1) both;
+      animation: suggestionCurtainUp 0.50s cubic-bezier(.4,0,.2,1) both;
       transform-origin: top center;
       pointer-events: none;
     }
 
     .search-suggestions.curtain-down {
-      animation: suggestionCurtainDown 0.34s cubic-bezier(.2,.8,.2,1) both;
+      animation: suggestionCurtainDown 0.58s cubic-bezier(.16,.84,.24,1) both;
       transform-origin: top center;
     }
 
@@ -1074,10 +1128,17 @@
           <h1 id="pageTitle">Data barang habis</h1>
           <p id="pageSubtitle">Pilih supplier lalu tambahkan barang ke list.</p>
         </div>
-        <div class="badge">
-          <div>
-            <strong id="totalItems">0</strong>
-            <span>ITEM</span>
+        <div class="header-right-tools">
+          <div id="suggestionTopActions" class="suggestion-top-actions">
+            <button id="suggestionViewListBtn" class="suggestion-mini-btn" type="button">📦 Liat List</button>
+            <button id="suggestionChangeSupplierBtn" class="suggestion-mini-btn" type="button">🔁 Ganti Supplier</button>
+          </div>
+
+          <div id="totalBadge" class="badge">
+            <div>
+              <strong id="totalItems">0</strong>
+              <span>ITEM</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1267,6 +1328,10 @@
       catalogResults: $("catalogResults"),
       itemList: $("itemList"),
       totalItems: $("totalItems"),
+      totalBadge: $("totalBadge"),
+      suggestionTopActions: $("suggestionTopActions"),
+      suggestionViewListBtn: $("suggestionViewListBtn"),
+      suggestionChangeSupplierBtn: $("suggestionChangeSupplierBtn"),
       totalQty: $("totalQty"),
       copyBtn: $("copyBtn"),
       waBtn: $("waBtn"),
@@ -1302,6 +1367,7 @@
     let editingSupplierName = "";
     let isSupplierMenuOpen = false;
     let supplierContextFilter = "";
+    let savedHomeSuggestionState = null;
 
     const SEARCH_DELAY = 2000;
     const SUGGESTION_DELAY = 990;
@@ -1388,6 +1454,7 @@
     function hideSearchOverlaySmooth() {
       if (!el.searchOverlay.classList.contains("show")) {
         el.appHeader.classList.remove("search-active");
+        updateSuggestionTopActions();
         return;
       }
 
@@ -1395,6 +1462,7 @@
       setTimeout(() => {
         el.searchOverlay.classList.remove("show", "fade-out");
         el.appHeader.classList.remove("search-active");
+        updateSuggestionTopActions();
       }, 460);
     }
 
@@ -1404,7 +1472,7 @@
       el.searchSuggestions.classList.add("show", "curtain-down");
       suggestionCurtainTimer = setTimeout(() => {
         el.searchSuggestions.classList.remove("curtain-down");
-      }, 380);
+      }, 620);
       updateSearchOverlay();
     }
 
@@ -1425,7 +1493,18 @@
         el.searchSuggestions.classList.remove("show", "curtain-up");
         updateSearchOverlay();
         if (typeof callback === "function") callback();
-      }, 300);
+      }, 540);
+     }
+
+    function updateSuggestionTopActions() {
+      const shouldShowTools =
+        el.searchSuggestions.classList.contains("show") &&
+        !el.searchSuggestions.classList.contains("curtain-up") &&
+        currentPage === "home" &&
+        cleanText(el.searchInput.value) &&
+        !isSupplierMenuOpen;
+
+      el.appHeader.classList.toggle("suggestion-tools-active", Boolean(shouldShowTools));
     }
 
     function updateSearchOverlay() {
@@ -1435,6 +1514,8 @@
         currentPage === "home" &&
         cleanText(el.searchInput.value) &&
         !isSupplierMenuOpen;
+
+      updateSuggestionTopActions();
 
       if (shouldShowOverlay) {
         showSearchOverlay();
@@ -1495,6 +1576,71 @@ function getCurrentSupplier() {
       );
     }
 
+    function captureHomeSuggestionState() {
+      savedHomeSuggestionState = {
+        searchValue: cleanText(el.searchInput.value),
+        searchQueryValue: cleanText(searchQuery || el.searchInput.value),
+        selectedSupplierValue: getCurrentSupplier(),
+        scrollY: window.scrollY || 0,
+        suggestionItems: currentSuggestionItems.slice(),
+        suggestionSignature: lastSuggestionSignature,
+        shouldRestoreSuggestion:
+          el.searchSuggestions.classList.contains("show") &&
+          !el.searchSuggestions.classList.contains("curtain-up") &&
+          cleanText(el.searchInput.value) &&
+          currentPage === "home"
+      };
+    }
+
+    function restoreHomeSuggestionState() {
+      const state = savedHomeSuggestionState;
+      savedHomeSuggestionState = null;
+
+      currentPage = "home";
+      supplierContextFilter = "";
+      isSupplierMenuOpen = false;
+      isSearching = false;
+      isSuggestionLoading = false;
+      selectedSupplier = cleanText(state && state.selectedSupplierValue);
+      searchQuery = cleanText((state && state.searchQueryValue) || (state && state.searchValue));
+      lastSuggestionSignature = cleanText(state && state.suggestionSignature);
+      currentSuggestionItems = Array.isArray(state && state.suggestionItems) ? state.suggestionItems.slice() : [];
+
+      clearTimeout(searchTimer);
+      clearTimeout(suggestionTimer);
+      clearTimeout(suggestionLoadingTimer);
+
+      el.homePage.style.display = "block";
+      el.addedPage.style.display = "none";
+      el.supplierDropdown.classList.remove("show");
+      el.catalogResults.classList.remove("hide");
+      el.searchBox.classList.remove("hidden");
+      el.headerActions.classList.remove("list-mode");
+      el.topResetBtn.classList.remove("show");
+
+      el.pageTitle.textContent = "Elektra bali";
+      el.searchInput.placeholder = "Cari barang di katalog...";
+      el.viewAddedLabel.textContent = "📦 Lihat semua List";
+      el.searchInput.value = cleanText(state && state.searchValue);
+
+      renderSummary();
+      renderSelectedSupplier();
+      renderCatalog();
+      renderList();
+
+      if (state && state.shouldRestoreSuggestion && cleanText(state.searchValue)) {
+        renderSuggestions();
+        showSuggestionsCurtainDown();
+      } else {
+        closeSuggestionsCurtainUp();
+      }
+
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: Number(state && state.scrollY) || 0, behavior: "instant" });
+        setTimeout(() => el.searchInput.focus(), 60);
+      });
+    }
+
     function resetSearchState(shouldRender = true) {
       clearTimeout(searchTimer);
       clearTimeout(suggestionTimer);
@@ -1514,7 +1660,13 @@ function getCurrentSupplier() {
       if (shouldRender) render();
     }
 
-    function openHomePage() {
+    function openHomePage(restoreLastHome = false) {
+      if (restoreLastHome && savedHomeSuggestionState) {
+        restoreHomeSuggestionState();
+        return;
+      }
+
+      savedHomeSuggestionState = null;
       currentPage = "home";
       supplierContextFilter = "";
       isSupplierMenuOpen = false;
@@ -2375,11 +2527,45 @@ el.selectedSupplierChip.addEventListener("click", () => {
   openSupplierList(supplier);
 });
 
+    el.suggestionViewListBtn.addEventListener("click", event => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      // Simpan riwayat halaman awal sebelum masuk ke list.
+      // Jadi saat klik kembali, search + suggestion terakhir tidak mulai ulang dari nol.
+      captureHomeSuggestionState();
+
+      closeSuggestionsCurtainUp(() => {
+        openAddedPage();
+      });
+    });
+
+    el.suggestionChangeSupplierBtn.addEventListener("click", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      savedHomeSuggestionState = null;
+      closeSuggestionsCurtainUp(() => {
+        currentPage = "home";
+        supplierContextFilter = "";
+        isSupplierMenuOpen = true;
+        el.homePage.style.display = "block";
+        el.addedPage.style.display = "none";
+        el.searchBox.classList.remove("hidden");
+        renderSupplierDropdown();
+        el.supplierDropdown.classList.add("show");
+        el.catalogResults.classList.add("hide");
+        renderSummary();
+        renderSelectedSupplier();
+        showToast("Silakan ganti supplier");
+      });
+    });
+
     el.viewAddedBtn.addEventListener("click", () => {
       if (currentPage === "home") {
+        savedHomeSuggestionState = null;
         openAddedPage();
       } else {
-        openHomePage();
+        openHomePage(Boolean(savedHomeSuggestionState));
       }
     });
 
