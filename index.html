@@ -177,7 +177,7 @@
       padding: 8px;
       display: none;
       z-index: 40;
-      max-height: 530px;
+      max-height: 580px;
       overflow-y: auto;
     }
 
@@ -1864,7 +1864,7 @@ function renderSelectedSupplier() {
           item.name.toLowerCase().includes(rawKeyword) ||
           item.category.toLowerCase().includes(rawKeyword)
         )
-        .slice(0, 5);
+        .slice(0, 20);
 
       if (suggestions.length === 0) {
         el.searchSuggestions.classList.remove("show");
