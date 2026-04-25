@@ -112,18 +112,31 @@
     }
 
 
+    /* Badge jumlah item pojok kanan disembunyikan saat suggestion aktif */
+    #totalBadge {
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .header.hide-badge #totalBadge {
+      display: none; /* supaya tombol suggestion bisa benar-benar geser ke sisi kanan */
+    }
+
+
     .header-right-tools {
       flex: 0 0 auto;
       display: flex;
       align-items: center;
       justify-content: flex-end;
       gap: 8px;
+      margin-left: auto;
     }
 
     .suggestion-top-actions {
       display: none;
       align-items: center;
+      justify-content: flex-end;
       gap: 7px;
+      margin-left: auto;
       animation: suggestionToolsIn 0.22s ease both;
     }
 
@@ -239,20 +252,20 @@
     .search-suggestions.show {
       display: grid;
       gap: 7px;
-      animation: suggestionCurtainDown 0.58s cubic-bezier(.16,.84,.24,1) both;
+      animation: suggestionCurtainDown 0.32s cubic-bezier(.2,.8,.2,1) both;
       transform-origin: top center;
     }
 
     .search-suggestions.curtain-up {
       display: grid;
       gap: 7px;
-      animation: suggestionCurtainUp 0.50s cubic-bezier(.4,0,.2,1) both;
+      animation: suggestionCurtainUp 0.28s cubic-bezier(.4,0,.2,1) both;
       transform-origin: top center;
       pointer-events: none;
     }
 
     .search-suggestions.curtain-down {
-      animation: suggestionCurtainDown 0.58s cubic-bezier(.16,.84,.24,1) both;
+      animation: suggestionCurtainDown 0.32s cubic-bezier(.2,.8,.2,1) both;
       transform-origin: top center;
     }
 
@@ -264,16 +277,16 @@
       }
       100% {
         opacity: 0;
-        transform: scaleY(0.06) translateY(-8px);
-        clip-path: inset(0 0 92% 0 round 16px);
+        transform: scaleY(0.05) translateY(-6px);
+        clip-path: inset(0 0 95% 0 round 16px);
       }
     }
 
     @keyframes suggestionCurtainDown {
       0% {
         opacity: 0;
-        transform: scaleY(0.06) translateY(-8px);
-        clip-path: inset(0 0 92% 0 round 16px);
+        transform: scaleY(0.05) translateY(-6px);
+        clip-path: inset(0 0 95% 0 round 16px);
       }
       100% {
         opacity: 1;
@@ -1472,7 +1485,7 @@
       el.searchSuggestions.classList.add("show", "curtain-down");
       suggestionCurtainTimer = setTimeout(() => {
         el.searchSuggestions.classList.remove("curtain-down");
-      }, 620);
+      }, 340);
       updateSearchOverlay();
     }
 
@@ -1493,7 +1506,7 @@
         el.searchSuggestions.classList.remove("show", "curtain-up");
         updateSearchOverlay();
         if (typeof callback === "function") callback();
-      }, 540);
+      }, 300);
      }
 
     function updateSuggestionTopActions() {
@@ -1505,6 +1518,10 @@
         !isSupplierMenuOpen;
 
       el.appHeader.classList.toggle("suggestion-tools-active", Boolean(shouldShowTools));
+
+      // Hilangkan badge jumlah item pojok kanan saat suggestion aktif,
+      // lalu tampilkan kembali saat suggestion tidak aktif.
+      el.appHeader.classList.toggle("hide-badge", Boolean(shouldShowTools));
     }
 
     function updateSearchOverlay() {
