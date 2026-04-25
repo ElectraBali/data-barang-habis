@@ -1195,13 +1195,17 @@
     let isSuggestionLoading = false;
     let searchTimer = null;
     let suggestionTimer = null;
+    let suggestionLoadingTimer = null;
+    let lastSuggestionSignature = "";
+    let currentSuggestionItems = [];
   let selectedSupplier = "";
     let editingSupplierName = "";
     let isSupplierMenuOpen = false;
     let supplierContextFilter = "";
 
     const SEARCH_DELAY = 2000;
-    const SUGGESTION_DELAY = 650;
+    const SUGGESTION_DELAY = 1200; // 1.5 detik
+    const LOADING_DELAY_BEFORE_SHOW = 400;
 
     function safeString(value) {
       if (typeof value === "string") return value;
@@ -1325,6 +1329,7 @@ function getCurrentSupplier() {
     function resetSearchState(shouldRender = true) {
       clearTimeout(searchTimer);
       clearTimeout(suggestionTimer);
+      clearTimeout(suggestionLoadingTimer);
 
       searchTimer = null;
       suggestionTimer = null;
@@ -1829,6 +1834,36 @@ function renderSelectedSupplier() {
       el.searchWarmup.classList.toggle("show", isSearching || isSuggestionLoading);
     }
 
+    function getSuggestionItems(keyword) {
+      const rawKeyword = cleanText(keyword).toLowerCase();
+      if (!rawKeyword) return [];
+
+      return MASTER_ITEMS
+        .filter(item =>
+          item.name.toLowerCase().includes(rawKeyword) ||
+          item.category.toLowerCase().includes(rawKeyword)
+        )
+        .slice(0, 20);
+    }
+
+    function getSuggestionSignature(suggestions) {
+      if (!suggestions.length) return "__EMPTY__";
+
+      return suggestions
+        .map(item => `${item.name.toLowerCase()}|${item.category.toLowerCase()}`)
+        .join("@@");
+    }
+
+    function isSearchCoveredByCurrentSuggestions(keyword) {
+      const cleanKeyword = cleanText(keyword).toLowerCase();
+      if (!cleanKeyword || currentSuggestionItems.length === 0) return false;
+
+      return currentSuggestionItems.some(item =>
+        item.name.toLowerCase().includes(cleanKeyword) ||
+        item.category.toLowerCase().includes(cleanKeyword)
+      );
+    }
+
     function renderSuggestionSkeleton() {
       el.searchSuggestions.innerHTML = Array.from({ length: 3 }).map(() => `
         <div class="suggestion-loading">
@@ -1850,6 +1885,8 @@ function renderSelectedSupplier() {
         currentPage === "added" ||
         supplierContextFilter
       ) {
+        lastSuggestionSignature = "";
+        currentSuggestionItems = [];
         el.searchSuggestions.classList.remove("show");
         return;
       }
@@ -1859,15 +1896,18 @@ function renderSelectedSupplier() {
         return;
       }
 
-      const suggestions = MASTER_ITEMS
-        .filter(item =>
-          item.name.toLowerCase().includes(rawKeyword) ||
-          item.category.toLowerCase().includes(rawKeyword)
-        )
-        .slice(0, 20);
+      const suggestions = getSuggestionItems(rawKeyword);
+      lastSuggestionSignature = getSuggestionSignature(suggestions);
+      currentSuggestionItems = suggestions.slice();
 
       if (suggestions.length === 0) {
-        el.searchSuggestions.classList.remove("show");
+        el.searchSuggestions.innerHTML = `
+          <div class="empty" style="padding:18px; border-radius:14px;">
+            <strong>Produk kosong</strong>
+            <span>Barang tidak ditemukan di katalog.</span>
+          </div>
+        `;
+        el.searchSuggestions.classList.add("show");
         return;
       }
 
@@ -1939,6 +1979,7 @@ function renderSelectedSupplier() {
     function handleSearchInput() {
       const value = cleanText(el.searchInput.value);
       clearTimeout(suggestionTimer);
+      clearTimeout(suggestionLoadingTimer);
 
       isSupplierMenuOpen = false;
       el.supplierDropdown.classList.remove("show");
@@ -1949,17 +1990,73 @@ function renderSelectedSupplier() {
         searchQuery = "";
         isSearching = false;
         isSuggestionLoading = false;
+        lastSuggestionSignature = "";
+        currentSuggestionItems = [];
         el.searchSuggestions.classList.remove("show");
         el.searchWarmup.classList.remove("show");
         render();
         return;
       }
 
-      isSuggestionLoading = true;
-      renderSuggestionSkeleton();
+      const nextSuggestions = getSuggestionItems(value);
+      const nextSignature = getSuggestionSignature(nextSuggestions);
+      const suggestionIsAlreadyVisible =
+        el.searchSuggestions.classList.contains("show") &&
+        nextSuggestions.length > 0 &&
+        isSearchCoveredByCurrentSuggestions(value);
+
+      // Kalau produk yang dicari masih sudah ada di suggestion yang tampil,
+      // jangan animasikan lagi. Cukup update suggestion langsung supaya terasa responsif.
+      if (suggestionIsAlreadyVisible) {
+        isSuggestionLoading = false;
+        el.searchWarmup.classList.remove("show");
+        renderSuggestions();
+        renderSummary();
+        return;
+      }
+
+      // Kalau hasilnya sama persis seperti suggestion terakhir, skip animasi juga.
+      if (nextSignature === lastSuggestionSignature && el.searchSuggestions.classList.contains("show")) {
+        isSuggestionLoading = false;
+        el.searchWarmup.classList.remove("show");
+        renderSuggestions();
+        renderSummary();
+        return;
+      }
+
+      // Kalau produk yang dicari belum ada di suggestion yang tampil,
+      // biarkan suggestion lama tetap terlihat dulu, lalu munculkan animasi setelah user berhenti mengetik.
+      isSuggestionLoading = false;
+      el.searchWarmup.classList.remove("show");
       renderSummary();
 
+      suggestionLoadingTimer = setTimeout(() => {
+        const latestValue = cleanText(el.searchInput.value);
+        if (!latestValue) return;
+
+        const latestSuggestions = getSuggestionItems(latestValue);
+        const latestSignature = getSuggestionSignature(latestSuggestions);
+        const latestAlreadyVisible =
+          latestSuggestions.length > 0 &&
+          isSearchCoveredByCurrentSuggestions(latestValue) &&
+          el.searchSuggestions.classList.contains("show");
+
+        // Cek ulang sebelum loading muncul. Kalau ternyata produk sudah ada di suggestion,
+        // loading dibatalkan agar tidak kedip-kedip.
+        if (latestAlreadyVisible || latestSignature === lastSuggestionSignature) {
+          isSuggestionLoading = false;
+          renderSuggestions();
+          renderSummary();
+          return;
+        }
+
+        isSuggestionLoading = true;
+        renderSuggestionSkeleton();
+        renderSummary();
+      }, LOADING_DELAY_BEFORE_SHOW);
+
       suggestionTimer = setTimeout(() => {
+        clearTimeout(suggestionLoadingTimer);
         isSuggestionLoading = false;
         renderSuggestions();
         renderSummary();
@@ -1970,9 +2067,11 @@ function renderSelectedSupplier() {
       const value = cleanText(el.searchInput.value);
       clearTimeout(searchTimer);
       clearTimeout(suggestionTimer);
+      clearTimeout(suggestionLoadingTimer);
 
       isSupplierMenuOpen = false;
       el.searchSuggestions.classList.remove("show");
+      currentSuggestionItems = [];
       el.supplierDropdown.classList.remove("show");
       el.catalogResults.classList.remove("hide");
 
