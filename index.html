@@ -741,7 +741,10 @@
       gap: 8px;
       flex: 0 0 auto;
     }
-
+.toast {
+  position: fixed;
+  z-index: 99999;
+}
     .supplier-title span {
       font-size: 12px;
       color: #0f766e;
@@ -1016,7 +1019,9 @@
       pointer-events: none;
       transition: opacity 0.42s ease;
     }
-
+.toast {
+  z-index: 999999 !important;
+}
     .search-overlay.show {
       opacity: 1;
       pointer-events: auto;
@@ -1299,7 +1304,7 @@
     let supplierContextFilter = "";
 
     const SEARCH_DELAY = 2000;
-    const SUGGESTION_DELAY = 790;
+    const SUGGESTION_DELAY = 990;
     const LOADING_DELAY_BEFORE_SHOW = 400;
 
     function safeString(value) {
