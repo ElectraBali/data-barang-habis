@@ -1185,7 +1185,7 @@
       <section id="homePage">
         <section class="card">
           <div class="form-title">
-            <h2>Pilih Barang Habis</h2>
+            <h2 id="formMainTitle">Pilih Barang Habis</h2>
             <span class="small-info">Supplier aktif</span>
           </div>
 
@@ -1339,6 +1339,7 @@
       quickSupplierBtn: $("quickSupplierBtn"),
       supplierDropdown: $("supplierDropdown"),
       selectedSupplierChip: $("selectedSupplierChip"),
+      formMainTitle: $("formMainTitle"),
       catalogResults: $("catalogResults"),
       itemList: $("itemList"),
       totalItems: $("totalItems"),
@@ -1757,6 +1758,7 @@ function getCurrentSupplier() {
   renderSupplierDropdown();
   el.supplierDropdown.classList.add("show");
   el.catalogResults.classList.add("hide");
+  renderSelectedSupplier();
   return;
 }
       if (!requestedName) {
@@ -1945,42 +1947,27 @@ function getCurrentSupplier() {
 
 function renderSelectedSupplier() {
   const supplier = getCurrentSupplier();
+  const supplierMenuOpen = Boolean(isSupplierMenuOpen);
 
   if (supplier) {
     el.selectedSupplierChip.style.display = "block";
     el.selectedSupplierChip.textContent = supplier;
-  } else {
-    el.selectedSupplierChip.style.display = "none";
-    el.selectedSupplierChip.textContent = "";
-  }
-
-  el.quickSupplierBtn.classList.toggle("active", Boolean(supplier));
-
-  if (currentPage === "home") {
-    el.pageSubtitle.textContent = supplier
-      ? `Supplier aktif: ${supplier}`
-      : "Pilih supplier dulu sebelum tambah barang.";
-  }
-}
-
-function renderSelectedSupplier() {
-  const supplier = getCurrentSupplier();
-
-  if (supplier) {
-    el.selectedSupplierChip.style.display = "block";
-    el.selectedSupplierChip.textContent = supplier;
-
-    // 🔥 INI YANG BARU
     el.quickSupplierBtn.textContent = "🔁 ganti suppliyer";
   } else {
     el.selectedSupplierChip.style.display = "none";
     el.selectedSupplierChip.textContent = "";
-
-    // 🔥 balik ke default
     el.quickSupplierBtn.textContent = "🏷️ Pilih Supplier";
   }
 
+  // Saat menu pilihan supplier terbuka, tombol "Pilih Supplier / Ganti Supplier" disembunyikan.
+  // Nanti muncul lagi otomatis setelah supplier dipilih atau menu ditutup.
+  el.quickSupplierBtn.style.display = supplierMenuOpen ? "none" : "inline-flex";
+
   el.quickSupplierBtn.classList.toggle("active", Boolean(supplier));
+
+  if (el.formMainTitle) {
+    el.formMainTitle.textContent = supplierMenuOpen ? "Pilih Supplier" : "Pilih Barang Habis";
+  }
 
   if (currentPage === "home") {
     el.pageSubtitle.textContent = supplier
@@ -1988,6 +1975,7 @@ function renderSelectedSupplier() {
       : "sistem kecil pencatatan barang habis";
   }
 }
+
     function renderCatalogSkeleton() {
       el.catalogResults.innerHTML = Array.from({ length: 4 }).map(() => `
         <div class="catalog-skeleton">
@@ -2534,6 +2522,7 @@ function renderSelectedSupplier() {
       el.supplierDropdown.classList.toggle("show", isSupplierMenuOpen);
       el.catalogResults.classList.toggle("hide", isSupplierMenuOpen);
       closeSuggestionsCurtainUp();
+      renderSelectedSupplier();
     });
 
 el.selectedSupplierChip.addEventListener("click", () => {
