@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Catatan Barang Habis Pakai</title>
-  
+
   <style>
     :root {
       --bg: #f4f7fb;
@@ -20,21 +20,8 @@
       --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
       --radius: 18px;
     }
-.supplier-title-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
 
-.supplier-title-left strong {
-  min-width: 0;
-  word-break: break-word;
-}
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     body {
       margin: 0;
@@ -72,22 +59,9 @@
       margin-bottom: 16px;
     }
 
-    .title {
-      min-width: 0;
-      flex: 1;
-    }
-
-    .title h1 {
-      margin: 0;
-      font-size: 21px;
-      line-height: 1.2;
-    }
-
-    .title p {
-      margin: 5px 0 0;
-      font-size: 13px;
-      opacity: 0.9;
-    }
+    .title { min-width: 0; flex: 1; }
+    .title h1 { margin: 0; font-size: 21px; line-height: 1.2; }
+    .title p { margin: 5px 0 0; font-size: 13px; opacity: 0.9; }
 
     .badge {
       flex: 0 0 auto;
@@ -101,27 +75,11 @@
       text-align: center;
     }
 
-    .badge strong {
-      display: block;
-      font-size: 20px;
-      line-height: 1;
-    }
+    .badge strong { display: block; font-size: 20px; line-height: 1; }
+    .badge span { font-size: 10px; opacity: 0.9; }
 
-    .badge span {
-      font-size: 10px;
-      opacity: 0.9;
-    }
-
-
-    /* Badge jumlah item pojok kanan disembunyikan saat suggestion aktif */
-    #totalBadge {
-      transition: opacity 0.25s ease, transform 0.25s ease;
-    }
-
-    .header.hide-badge #totalBadge {
-      display: none; /* supaya tombol suggestion bisa benar-benar geser ke sisi kanan */
-    }
-
+    #totalBadge { transition: opacity 0.25s ease, transform 0.25s ease; }
+    .header.hide-badge #totalBadge { display: none; }
 
     .header-right-tools {
       flex: 0 0 auto;
@@ -141,9 +99,7 @@
       animation: suggestionToolsIn 0.22s ease both;
     }
 
-    .header.suggestion-tools-active .suggestion-top-actions {
-      display: flex;
-    }
+    .header.suggestion-tools-active .suggestion-top-actions { display: flex; }
 
     .suggestion-mini-btn {
       border: 1px solid rgba(255, 255, 255, 0.32);
@@ -163,31 +119,18 @@
       box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
     }
 
-    .suggestion-mini-btn:active {
-      transform: scale(0.98);
-    }
-
     @keyframes suggestionToolsIn {
       from { opacity: 0; transform: translateY(-4px) scale(0.96); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    @media (max-width: 380px) {
-      .suggestion-mini-btn {
-        padding: 7px 8px;
-        font-size: 9px;
-      }
+    .search-box {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 20px;
     }
 
-   .search-box {
-  position: relative;
-  z-index: 1;
-  margin-bottom: 20px; /* kasih jarak ke bawah */
-}
-
-    .search-box.hidden {
-      display: none;
-    }
+    .search-box.hidden { display: none; }
 
     .search-box input {
       width: 100%;
@@ -243,12 +186,16 @@
       border: 1px solid var(--line);
       border-radius: 16px;
       box-shadow: var(--shadow);
-      padding: 8px;
+      padding: 8px 8px 500px;
       display: none;
       z-index: 40;
       max-height: 580px;
       overflow-y: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
+
+    .search-suggestions::-webkit-scrollbar { display: none; }
 
     .search-suggestions.show {
       display: grid;
@@ -271,29 +218,13 @@
     }
 
     @keyframes suggestionCurtainUp {
-      0% {
-        opacity: 1;
-        transform: scaleY(1) translateY(0);
-        clip-path: inset(0 0 0 0 round 16px);
-      }
-      100% {
-        opacity: 0;
-        transform: scaleY(0.05) translateY(-6px);
-        clip-path: inset(0 0 95% 0 round 16px);
-      }
+      0% { opacity: 1; transform: scaleY(1) translateY(0); clip-path: inset(0 0 0 0 round 16px); }
+      100% { opacity: 0; transform: scaleY(0.05) translateY(-6px); clip-path: inset(0 0 95% 0 round 16px); }
     }
 
     @keyframes suggestionCurtainDown {
-      0% {
-        opacity: 0;
-        transform: scaleY(0.05) translateY(-6px);
-        clip-path: inset(0 0 95% 0 round 16px);
-      }
-      100% {
-        opacity: 1;
-        transform: scaleY(1) translateY(0);
-        clip-path: inset(0 0 0 0 round 16px);
-      }
+      0% { opacity: 0; transform: scaleY(0.05) translateY(-6px); clip-path: inset(0 0 95% 0 round 16px); }
+      100% { opacity: 1; transform: scaleY(1) translateY(0); clip-path: inset(0 0 0 0 round 16px); }
     }
 
     .suggestion-btn {
@@ -312,21 +243,21 @@
       text-align: left;
     }
 
-    .suggestion-btn:hover {
-      background: var(--primary-soft);
-    }
+    .suggestion-btn:hover { background: var(--primary-soft); }
 
-    .suggestion-name {
-      font-size: 14px;
-      font-weight: 900;
-    }
 
-    .suggestion-category {
+    .suggestion-name { font-size: 14px; font-weight: 900; }
+    .suggestion-category { display: block; font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    .suggestion-added-note {
       display: block;
-      font-size: 12px;
-      color: var(--muted);
       margin-top: 4px;
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--primary-dark);
+      opacity: 0.88;
     }
+
 
     .suggestion-action {
       flex: 0 0 auto;
@@ -338,6 +269,7 @@
       padding: 8px 10px;
     }
 
+
     .search-status {
       margin-top: 7px;
       font-size: 11px;
@@ -346,10 +278,7 @@
       text-align: right;
     }
 
-    .search-status.show {
-      display: block;
-    }
-
+    .search-status.show { display: block; }
 
     .search-warmup {
       margin-top: 9px;
@@ -367,16 +296,9 @@
       max-width: 100%;
     }
 
-    .search-warmup.show {
-      display: inline-flex;
-    }
+    .search-warmup.show { display: inline-flex; }
 
-    .loading-dots {
-      display: inline-flex;
-      gap: 4px;
-      align-items: center;
-    }
-
+    .loading-dots { display: inline-flex; gap: 4px; align-items: center; }
     .loading-dots span {
       width: 5px;
       height: 5px;
@@ -385,41 +307,15 @@
       opacity: 0.35;
       animation: dotPulse 0.9s infinite ease-in-out;
     }
+    .loading-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.3s; }
 
-    .loading-dots span:nth-child(2) {
-      animation-delay: 0.15s;
-    }
-
-    .loading-dots span:nth-child(3) {
-      animation-delay: 0.3s;
-    }
-.search-suggestions {
-  background: white;
-  padding-bottom: 500px; /* ini yang bikin putih memanjang ke bawah */
-}
-.search-suggestions {
-  scrollbar-width: none;       /* Firefox */
-  -ms-overflow-style: none;    /* IE & Edge lama */
-}
-
-.search-suggestions::-webkit-scrollbar {
-  display: none;               /* Chrome, Safari */
-}
     @keyframes dotPulse {
       0%, 100% { transform: translateY(0); opacity: 0.35; }
       50% { transform: translateY(-3px); opacity: 1; }
     }
 
-    .suggestion-loading {
-      min-height: 68px;
-      border: 1px solid var(--line);
-      background: #ffffff;
-      border-radius: 15px;
-      padding: 12px;
-      display: grid;
-      gap: 9px;
-    }
-
+    .suggestion-loading,
     .catalog-skeleton {
       border: 1px solid var(--line);
       background: white;
@@ -437,14 +333,10 @@
     }
 
     .catalog-skeleton-row.long,
-    .suggestion-skeleton-row.long {
-      width: 72%;
-    }
+    .suggestion-skeleton-row.long { width: 72%; }
 
     .catalog-skeleton-row.short,
-    .suggestion-skeleton-row.short {
-      width: 42%;
-    }
+    .suggestion-skeleton-row.short { width: 42%; }
 
     .skeleton {
       position: relative;
@@ -461,9 +353,7 @@
       animation: shimmer 1.05s infinite;
     }
 
-    @keyframes shimmer {
-      100% { transform: translateX(100%); }
-    }
+    @keyframes shimmer { 100% { transform: translateX(100%); } }
 
     .header-actions {
       display: flex;
@@ -472,41 +362,28 @@
       gap: 10px;
     }
 
-    .header-actions.list-mode {
-      justify-content: space-between;
-    }
+    .header-actions.list-mode { justify-content: space-between; }
 
- .view-added-btn,
-.top-reset-btn {
-  border: 1px solid rgba(255, 255, 255, 0.32);
-  background: rgba(255, 255, 255, 0.16);
-  color: white;
-  border-radius: 999px;
-
-  padding: 5px 8px;     /* ↓ dari 9px 11px */
-  font-size: 10px;      /* ↓ dari 12px */
-  font-weight: 700;     /* ↓ dari 900 biar gak terlalu tebal */
-
-  cursor: pointer;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  gap: 4px;             /* ↓ dari 7px */
-  white-space: nowrap;
-
-  min-height: 30px;     /* biar tetap enak di klik */
-}
-
+    .view-added-btn,
     .top-reset-btn {
-      display: none;
-      background: rgba(220, 38, 38, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      background: rgba(255, 255, 255, 0.16);
+      color: white;
+      border-radius: 999px;
+      padding: 5px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      white-space: nowrap;
+      min-height: 30px;
     }
 
-    .top-reset-btn.show {
-      display: inline-flex;
-    }
+    .top-reset-btn { display: none; background: rgba(220, 38, 38, 0.25); }
+    .top-reset-btn.show { display: inline-flex; }
 
     .view-added-btn span {
       background: rgba(255, 255, 255, 0.22);
@@ -515,9 +392,7 @@
       font-size: 11px;
     }
 
-    .main {
-      padding: 16px;
-    }
+    .main { padding: 16px; }
 
     .card {
       background: var(--card);
@@ -535,27 +410,11 @@
       margin-bottom: 12px;
     }
 
-    .form-title h2 {
-      margin: 0;
-      font-size: 16px;
-    }
+    .form-title h2 { margin: 0; font-size: 16px; }
+    .small-info { font-size: 12px; color: var(--muted); }
 
-    .small-info {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .input-group {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
-
-    input,
-    textarea,
-    button {
-      font: inherit;
-    }
+    .input-group { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    input, textarea, button { font: inherit; }
 
     .btn {
       border: 0;
@@ -570,21 +429,9 @@
       gap: 8px;
     }
 
-    .btn-primary {
-      background: var(--primary);
-      color: white;
-    }
-
-    .btn-soft {
-      background: #f1f5f9;
-      color: #334155;
-      border: 1px solid var(--line);
-    }
-
-    .btn-danger {
-      background: var(--danger-soft);
-      color: var(--danger);
-    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-soft { background: #f1f5f9; color: #334155; border: 1px solid var(--line); }
+    .btn-danger { background: var(--danger-soft); color: var(--danger); }
 
     .quick-head {
       display: flex;
@@ -651,9 +498,7 @@
       margin-top: 2px;
     }
 
-    .menu-grid.show {
-      display: grid;
-    }
+    .menu-grid.show { display: grid; }
 
     .category-btn {
       border: 1px solid var(--line);
@@ -681,13 +526,8 @@
       padding-right: 2px;
     }
 
-    .catalog-results.hide {
-      display: none;
-    }
-
-    .catalog-results:empty {
-      display: none;
-    }
+    .catalog-results.hide,
+    .catalog-results:empty { display: none; }
 
     .catalog-item {
       width: 100%;
@@ -703,18 +543,8 @@
       text-align: left;
     }
 
-    .catalog-name {
-      font-weight: 800;
-      font-size: 14px;
-      color: var(--text);
-    }
-
-    .catalog-category {
-      display: block;
-      margin-top: 4px;
-      font-size: 12px;
-      color: var(--muted);
-    }
+    .catalog-name { font-weight: 800; font-size: 14px; color: var(--text); }
+    .catalog-category { display: block; margin-top: 4px; font-size: 12px; color: var(--muted); }
 
     .catalog-add {
       flex: 0 0 auto;
@@ -733,20 +563,17 @@
       margin-bottom: 14px;
     }
 
- .tab-btn {
-  border: 1px solid var(--line);
-  background: white;
-  color: var(--muted);
-  border-radius: 999px;
-
-  padding: 8px 10px;   /* ↓ dari 12px */
-  font-size: 12px;     /* tambahan biar ikut kecil */
-  font-weight: 600;    /* ↓ dari 700 biar lebih clean */
-
-  cursor: pointer;
-
-  min-height: 34px;    /* biar tetap enak di klik */
-}
+    .tab-btn {
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      min-height: 34px;
+    }
 
     .tab-btn.active {
       background: var(--primary);
@@ -761,24 +588,12 @@
       margin: 6px 2px 12px;
     }
 
-   .section-head h2 {
-  font-size: 14px;
-}
+    .section-head h2 { font-size: 14px; }
+    .section-head span { color: var(--muted); font-size: 13px; }
 
-    .section-head span {
-      color: var(--muted);
-      font-size: 13px;
-    }
+    .item-list { display: grid; gap: 12px; }
 
-    .item-list {
-      display: grid;
-      gap: 12px;
-    }
-
-    .supplier-group {
-      display: grid;
-      gap: 9px;
-    }
+    .supplier-group { display: grid; gap: 9px; }
 
     .supplier-title {
       background: linear-gradient(135deg, #ecfeff, #f0fdfa);
@@ -794,14 +609,15 @@
       gap: 10px;
     }
 
-    .supplier-title strong {
-      word-break: break-word;
+    .supplier-title-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
     }
 
-    .supplier-title-name {
-      cursor: pointer;
-      text-decoration: none;
-    }
+    .supplier-title strong { word-break: break-word; }
+    .supplier-title-name { cursor: pointer; text-decoration: none; }
 
     .supplier-title-right {
       display: flex;
@@ -809,10 +625,7 @@
       gap: 8px;
       flex: 0 0 auto;
     }
-.toast {
-  position: fixed;
-  z-index: 99999;
-}
+
     .supplier-title span {
       font-size: 12px;
       color: #0f766e;
@@ -820,35 +633,25 @@
       white-space: nowrap;
     }
 
- .supplier-add-btn,
-.supplier-edit-btn {
-  width: 20px;
-  height: 20px;
-  border: 0;
-  border-radius: 999px;
-  color: white;
-
-  font-size: 10px;
-  font-weight: 600;
-
-  cursor: pointer;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  line-height: 1;
-  padding: 0;
-}
-
-    .supplier-add-btn {
-      background: var(--primary);
-      font-size: 21px;
-    }
-
+    .supplier-add-btn,
     .supplier-edit-btn {
-      background: #0f172a;
+      width: 20px;
+      height: 20px;
+      border: 0;
+      border-radius: 999px;
+      color: white;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      padding: 0;
     }
+
+    .supplier-add-btn { background: var(--primary); font-size: 21px; }
+    .supplier-edit-btn { background: #0f172a; }
 
     .item {
       background: white;
@@ -862,27 +665,10 @@
       box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
     }
 
-    .item-left {
-      min-width: 0;
-    }
-
-    .item-name {
-      margin: 0 0 5px;
-      font-size: 15px;
-      font-weight: 800;
-      word-break: break-word;
-    }
-
-    .item-meta {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .item-actions {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
+    .item-left { min-width: 0; }
+    .item-name { margin: 0 0 5px; font-size: 15px; font-weight: 800; word-break: break-word; }
+    .item-meta { color: var(--muted); font-size: 12px; }
+    .item-actions { display: flex; align-items: center; gap: 7px; }
 
     .qty-control {
       display: flex;
@@ -917,10 +703,7 @@
     }
 
     .qty-input::-webkit-outer-spin-button,
-    .qty-input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
+    .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
     .delete-btn {
       width: 38px;
@@ -942,11 +725,7 @@
       border-radius: var(--radius);
     }
 
-    .empty strong {
-      display: block;
-      color: var(--text);
-      margin-bottom: 6px;
-    }
+    .empty strong { display: block; color: var(--text); margin-bottom: 6px; }
 
     .summary-box {
       background: #ecfeff;
@@ -1003,16 +782,13 @@
       opacity: 0;
       pointer-events: none;
       transition: 0.25s ease;
-      z-index: 50;
+      z-index: 999999 !important;
       text-align: center;
       font-size: 14px;
       font-weight: 700;
     }
 
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     .modal-backdrop {
       position: fixed;
@@ -1025,9 +801,7 @@
       padding: 14px;
     }
 
-    .modal-backdrop.show {
-      display: flex;
-    }
+    .modal-backdrop.show { display: flex; }
 
     .modal {
       width: 100%;
@@ -1038,17 +812,8 @@
       box-shadow: var(--shadow);
     }
 
-    .modal h3 {
-      margin: 0 0 8px;
-      font-size: 18px;
-    }
-
-    .modal p {
-      margin: 0 0 14px;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.45;
-    }
+    .modal h3 { margin: 0 0 8px; font-size: 18px; }
+    .modal p { margin: 0 0 14px; color: var(--muted); font-size: 14px; line-height: 1.45; }
 
     .modal-actions {
       display: grid;
@@ -1074,8 +839,6 @@
       box-shadow: 0 0 0 4px var(--primary-soft);
     }
 
-
-
     .search-overlay {
       position: fixed;
       inset: 0;
@@ -1087,51 +850,34 @@
       pointer-events: none;
       transition: opacity 0.42s ease;
     }
-.toast {
-  z-index: 999999 !important;
-}
-    .search-overlay.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
 
-    .search-overlay.fade-out {
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.45s ease;
-    }
+    .search-overlay.show { opacity: 1; pointer-events: auto; }
+    .search-overlay.fade-out { opacity: 0; pointer-events: none; transition: opacity 0.45s ease; }
 
-    .header.search-active {
-      z-index: 70;
-    }
+    .header.search-active { z-index: 70; }
+    .header.search-active .search-box { z-index: 80; }
+    .header.search-active .search-suggestions { z-index: 90; }
 
-    .header.search-active .search-box {
-      z-index: 80;
-    }
-
-    .header.search-active .search-suggestions {
-      z-index: 90;
+    @media (max-width: 420px) {
+      .item { grid-template-columns: 1fr; }
+      .item-actions { justify-content: space-between; }
+      .supplier-title { align-items: flex-start; flex-direction: column; }
+      .supplier-title-right { width: 100%; justify-content: flex-end; }
     }
 
     @media (min-width: 700px) {
-      body {
-        padding: 24px 0;
-      }
-
+      body { padding: 24px 0; }
       .app {
         border-radius: 30px;
         overflow: hidden;
         min-height: calc(100vh - 48px);
         box-shadow: var(--shadow);
       }
-
-      .bottom-bar {
-        bottom: 24px;
-        border-radius: 0 0 30px 30px;
-      }
+      .bottom-bar { bottom: 24px; border-radius: 0 0 30px 30px; }
     }
   </style>
 </head>
+
 <body>
   <div id="searchOverlay" class="search-overlay"></div>
 
@@ -1142,6 +888,7 @@
           <h1 id="pageTitle">Data barang habis</h1>
           <p id="pageSubtitle">Pilih supplier lalu tambahkan barang ke list.</p>
         </div>
+
         <div class="header-right-tools">
           <div id="suggestionTopActions" class="suggestion-top-actions">
             <button id="suggestionViewListBtn" class="suggestion-mini-btn" type="button">📦 Liat List</button>
@@ -1193,8 +940,8 @@
             <div class="quick-head">
               <p class="quick-title">Menu supplier</p>
               <div class="supplier-control">
-               <button id="quickSupplierBtn" class="quick-btn" type="button">🏷️ Pilih Supplier</button>
-<div id="selectedSupplierChip" class="supplier-chip" title="Klik untuk lihat list supplier ini" style="display:none;"></div>
+                <button id="quickSupplierBtn" class="quick-btn" type="button">🏷️ Pilih Supplier</button>
+                <div id="selectedSupplierChip" class="supplier-chip" title="Klik untuk lihat list supplier ini" style="display:none;"></div>
               </div>
             </div>
 
@@ -1212,7 +959,7 @@
 
         <section id="listSection">
           <div class="section-head">
-            <h2>List Barang Habis</h2>
+            <h2>Catatan Barang Habis</h2>
             <span id="totalQty">Total qty: 0</span>
           </div>
           <div id="itemList" class="item-list"></div>
@@ -1257,7 +1004,7 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "barang_habis_pakai_toko_v11_search_loading_keep_home";
+    const STORAGE_KEY = "barang_habis_pakai_toko_v12_search_same_in_list";
     const WA_NUMBER = "628175777488";
 
     const SUPPLIERS = [
@@ -1275,7 +1022,6 @@
       { name: "FAN 8X8 12V", category: "Fan" },
       { name: "FAN 6X6 12V", category: "Fan" },
       { name: "FAN 5X5 12V", category: "Fan" },
-      { name: "FAN 12X12 12V", category: "Fan" },
       { name: "FAN 3X8 12V", category: "Fan" },
       { name: "FAN 2X6 12V", category: "Fan" },
       { name: "FAN 1X5 12V", category: "Fan" },
@@ -1378,7 +1124,7 @@
     let lastSuggestionSignature = "";
     let currentSuggestionItems = [];
     let suggestionCurtainTimer = null;
-  let selectedSupplier = "";
+    let selectedSupplier = "";
     let editingSupplierName = "";
     let isSupplierMenuOpen = false;
     let supplierContextFilter = "";
@@ -1429,6 +1175,7 @@
       try {
         const saved =
           localStorage.getItem(STORAGE_KEY) ||
+          localStorage.getItem("barang_habis_pakai_toko_v11_search_loading_keep_home") ||
           localStorage.getItem("barang_habis_pakai_toko_v9_fix_supplier_context") ||
           localStorage.getItem("barang_habis_pakai_toko_v8_supplier_focus") ||
           localStorage.getItem("barang_habis_pakai_toko_v7_edit_supplier") ||
@@ -1458,7 +1205,6 @@
       el.toast.classList.add("show");
       setTimeout(() => el.toast.classList.remove("show"), 1800);
     }
-
 
     function showSearchOverlay() {
       el.searchOverlay.classList.remove("fade-out");
@@ -1509,47 +1255,39 @@
         updateSearchOverlay();
         if (typeof callback === "function") callback();
       }, 300);
-     }
+    }
 
-    function updateSuggestionTopActions() {
-      const shouldShowTools =
+    function shouldUseSuggestionLayer() {
+      return Boolean(
         el.searchSuggestions.classList.contains("show") &&
         !el.searchSuggestions.classList.contains("curtain-up") &&
-        currentPage === "home" &&
+        !el.searchBox.classList.contains("hidden") &&
         cleanText(el.searchInput.value) &&
-        !isSupplierMenuOpen;
+        !isSupplierMenuOpen
+      );
+    }
 
-      el.appHeader.classList.toggle("suggestion-tools-active", Boolean(shouldShowTools));
-
-      // Hilangkan badge jumlah item pojok kanan saat suggestion aktif,
-      // lalu tampilkan kembali saat suggestion tidak aktif.
-      el.appHeader.classList.toggle("hide-badge", Boolean(shouldShowTools));
+    function updateSuggestionTopActions() {
+      const shouldShowTools = shouldUseSuggestionLayer();
+      el.appHeader.classList.toggle("suggestion-tools-active", shouldShowTools);
+      el.appHeader.classList.toggle("hide-badge", shouldShowTools);
     }
 
     function updateSearchOverlay() {
-      const shouldShowOverlay =
-        el.searchSuggestions.classList.contains("show") &&
-        !el.searchSuggestions.classList.contains("curtain-up") &&
-        currentPage === "home" &&
-        cleanText(el.searchInput.value) &&
-        !isSupplierMenuOpen;
-
+      const shouldShowOverlay = shouldUseSuggestionLayer();
       updateSuggestionTopActions();
 
-      if (shouldShowOverlay) {
-        showSearchOverlay();
-      } else {
-        hideSearchOverlaySmooth();
-      }
+      if (shouldShowOverlay) showSearchOverlay();
+      else hideSearchOverlaySmooth();
     }
 
     function closeSearchSuggestionLayer() {
       closeSuggestionsCurtainUp();
     }
 
-function getCurrentSupplier() {
-  return cleanText(selectedSupplier);
-}
+    function getCurrentSupplier() {
+      return cleanText(selectedSupplier);
+    }
 
     function groupBySupplier(sourceItems) {
       const grouped = {};
@@ -1570,15 +1308,17 @@ function getCurrentSupplier() {
     }
 
     function getFilteredItems() {
+      let source = items;
+
       if (supplierContextFilter) {
         const filter = supplierContextFilter.toLowerCase();
-        return items.filter(item => item.supplier.toLowerCase() === filter);
+        source = source.filter(item => item.supplier.toLowerCase() === filter);
       }
 
       const keyword = searchQuery.toLowerCase();
-      if (!keyword) return items;
+      if (!keyword) return source;
 
-      return items.filter(item =>
+      return source.filter(item =>
         item.name.toLowerCase().includes(keyword) ||
         item.category.toLowerCase().includes(keyword) ||
         item.supplier.toLowerCase().includes(keyword)
@@ -1726,18 +1466,17 @@ function getCurrentSupplier() {
       el.pageSubtitle.textContent = supplierContextFilter
         ? `Menampilkan supplier: ${supplierContextFilter}`
         : "List barang otomatis digrup per supplier.";
+
       el.searchInput.placeholder = supplierContextFilter
-        ? "Mode lihat supplier aktif"
+        ? `Cari barang di ${supplierContextFilter}...`
         : "Cari barang yang sudah ditambahkan...";
+
       el.viewAddedLabel.textContent = "← Kembali";
 
+      // SEARCH DI LIST SEKARANG TIDAK DIHILANGKAN.
+      // Ini yang bikin search di halaman list barang habis aktif seperti menu awal.
+      el.searchBox.classList.remove("hidden");
       resetSearchState(false);
-
-      if (supplierContextFilter) {
-        el.searchBox.classList.add("hidden");
-      } else {
-        el.searchBox.classList.remove("hidden");
-      }
 
       setTab("list", false);
       render();
@@ -1745,6 +1484,7 @@ function getCurrentSupplier() {
 
     function openSupplierList(supplier) {
       const name = cleanText(supplier) || getCurrentSupplier();
+      if (name) selectedSupplier = name;
       openAddedPage(name);
       showToast(`Menampilkan list ${name}`);
     }
@@ -1752,15 +1492,18 @@ function getCurrentSupplier() {
     function addItem(selectedName) {
       const requestedName = cleanText(selectedName || searchQuery);
 
-      if (!getCurrentSupplier()) {
-  showToast("Pilih supplier dulu");
-  isSupplierMenuOpen = true;
-  renderSupplierDropdown();
-  el.supplierDropdown.classList.add("show");
-  el.catalogResults.classList.add("hide");
-  renderSelectedSupplier();
-  return;
-}
+      const activeSupplierForAdd = getCurrentSupplier() || cleanText(supplierContextFilter);
+
+      if (!activeSupplierForAdd) {
+        showToast("Pilih supplier dulu");
+        isSupplierMenuOpen = true;
+        renderSupplierDropdown();
+        el.supplierDropdown.classList.add("show");
+        el.catalogResults.classList.add("hide");
+        renderSelectedSupplier();
+        return;
+      }
+
       if (!requestedName) {
         showToast("Cari atau pilih barang dulu");
         el.searchInput.focus();
@@ -1780,7 +1523,7 @@ function getCurrentSupplier() {
         return;
       }
 
-      const supplier = getCurrentSupplier();
+      const supplier = activeSupplierForAdd;
 
       const existing = items.find(item =>
         item.name.toLowerCase() === masterItem.name.toLowerCase() &&
@@ -1812,7 +1555,6 @@ function getCurrentSupplier() {
     function increaseQty(id) {
       const item = items.find(item => item.id === id);
       if (!item) return;
-
       item.qty += 1;
       item.updatedAt = new Date().toISOString();
       saveItems();
@@ -1822,7 +1564,6 @@ function getCurrentSupplier() {
     function decreaseQty(id) {
       const item = items.find(item => item.id === id);
       if (!item) return;
-
       item.qty = Math.max(0, item.qty - 1);
       item.updatedAt = new Date().toISOString();
       saveItems();
@@ -1834,7 +1575,6 @@ function getCurrentSupplier() {
       if (!item) return;
 
       const qty = parseInt(value, 10);
-
       if (Number.isNaN(qty) || qty < 0) {
         showToast("Qty tidak valid");
         render();
@@ -1899,6 +1639,7 @@ function getCurrentSupplier() {
       if (supplierContextFilter.toLowerCase() === oldName.toLowerCase()) {
         supplierContextFilter = newName;
         el.pageSubtitle.textContent = `Menampilkan supplier: ${newName}`;
+        el.searchInput.placeholder = `Cari barang di ${newName}...`;
       }
 
       saveItems();
@@ -1945,39 +1686,45 @@ function getCurrentSupplier() {
       });
     }
 
-function renderSelectedSupplier() {
-  const supplier = getCurrentSupplier();
-  const supplierMenuOpen = Boolean(isSupplierMenuOpen);
+    function renderSelectedSupplier() {
+      const supplier = getCurrentSupplier();
+      const supplierMenuOpen = Boolean(isSupplierMenuOpen);
 
-  if (supplier) {
-    el.selectedSupplierChip.style.display = "block";
-    el.selectedSupplierChip.textContent = supplier;
-    el.quickSupplierBtn.textContent = "🔁 ganti suppliyer";
-  } else {
-    el.selectedSupplierChip.style.display = "none";
-    el.selectedSupplierChip.textContent = "";
-    el.quickSupplierBtn.textContent = "🏷️ Pilih Supplier";
-  }
+      if (supplier) {
+        el.selectedSupplierChip.style.display = "block";
+        el.selectedSupplierChip.textContent = supplier;
+        el.quickSupplierBtn.textContent = "🔁 ganti suppliyer";
+      } else {
+        el.selectedSupplierChip.style.display = "none";
+        el.selectedSupplierChip.textContent = "";
+        el.quickSupplierBtn.textContent = "🏷️ Pilih Supplier";
+      }
 
-  // Saat menu pilihan supplier terbuka, tombol "Pilih Supplier / Ganti Supplier" disembunyikan.
-  // Nanti muncul lagi otomatis setelah supplier dipilih atau menu ditutup.
-  el.quickSupplierBtn.style.display = supplierMenuOpen ? "none" : "inline-flex";
+      el.quickSupplierBtn.style.display = supplierMenuOpen ? "none" : "inline-flex";
+      el.quickSupplierBtn.classList.toggle("active", Boolean(supplier));
 
-  el.quickSupplierBtn.classList.toggle("active", Boolean(supplier));
+      if (el.formMainTitle) {
+        el.formMainTitle.textContent = supplierMenuOpen ? "Pilih Supplier" : "Pilih Barang Habis";
+      }
 
-  if (el.formMainTitle) {
-    el.formMainTitle.textContent = supplierMenuOpen ? "Pilih Supplier" : "Pilih Barang Habis";
-  }
-
-  if (currentPage === "home") {
-    el.pageSubtitle.textContent = supplier
-      ? `Supplier aktif: ${supplier}`
-      : "sistem kecil pencatatan barang habis";
-  }
-}
+      if (currentPage === "home") {
+        el.pageSubtitle.textContent = supplier
+          ? `Supplier aktif: ${supplier}`
+          : "sistem kecil pencatatan barang habis";
+      }
+    }
 
     function renderCatalogSkeleton() {
       el.catalogResults.innerHTML = Array.from({ length: 4 }).map(() => `
+        <div class="catalog-skeleton">
+          <div class="catalog-skeleton-row long skeleton"></div>
+          <div class="catalog-skeleton-row short skeleton"></div>
+        </div>
+      `).join("");
+    }
+
+    function renderListSkeleton() {
+      el.itemList.innerHTML = Array.from({ length: 4 }).map(() => `
         <div class="catalog-skeleton">
           <div class="catalog-skeleton-row long skeleton"></div>
           <div class="catalog-skeleton-row short skeleton"></div>
@@ -2031,6 +1778,11 @@ function renderSelectedSupplier() {
     }
 
     function renderList() {
+      if (currentPage === "added" && isSearching) {
+        renderListSkeleton();
+        return;
+      }
+
       const filteredItems = getFilteredItems();
       el.itemList.innerHTML = "";
 
@@ -2038,7 +1790,7 @@ function renderSelectedSupplier() {
         el.itemList.innerHTML = `
           <div class="empty">
             <strong>${supplierContextFilter ? "Supplier ini belum ada barang" : searchQuery ? "Barang tidak ditemukan" : "Belum ada barang"}</strong>
-            <span>${supplierContextFilter ? "Klik tombol + di supplier atau kembali ke menu awal untuk tambah barang." : searchQuery ? "Coba kata kunci lain." : "Tambahkan barang dari halaman awal."}</span>
+            <span>${supplierContextFilter ? (searchQuery ? "Coba kata kunci lain di supplier ini." : "Klik tombol + di supplier atau kembali ke menu awal untuk tambah barang.") : searchQuery ? "Coba kata kunci lain." : "Tambahkan barang dari halaman awal."}</span>
           </div>
         `;
         return;
@@ -2055,16 +1807,16 @@ function renderSelectedSupplier() {
 
         const titleElement = document.createElement("div");
         titleElement.className = "supplier-title";
-   titleElement.innerHTML = `
-  <div class="supplier-title-left">
-    <button class="supplier-edit-btn" type="button" aria-label="Edit supplier">✎</button>
-    <button class="supplier-add-btn" type="button" aria-label="Tambah barang">+</button>
-    <strong class="supplier-title-name">Barang ${escapeHTML(supplier)}</strong>
-  </div>
-  <div class="supplier-title-right">
-    <span>${supplierItems.length} item • ${supplierQty} pcs</span>
-  </div>
-`;
+        titleElement.innerHTML = `
+          <div class="supplier-title-left">
+            <button class="supplier-edit-btn" type="button" aria-label="Edit supplier">✎</button>
+            <button class="supplier-add-btn" type="button" aria-label="Tambah barang">+</button>
+            <strong class="supplier-title-name">Barang ${escapeHTML(supplier)}</strong>
+          </div>
+          <div class="supplier-title-right">
+            <span>${supplierItems.length} item • ${supplierQty} pcs</span>
+          </div>
+        `;
 
         titleElement.querySelector(".supplier-title-name").addEventListener("click", () => {
           openSupplierList(supplier);
@@ -2134,10 +1886,7 @@ function renderSelectedSupplier() {
       const grouped = groupBySupplier(items);
 
       const sections = Object.keys(grouped).map(supplier => {
-        const lines = grouped[supplier].map(item => {
-          return `- ${item.name} (${formatQtyText(item.qty)})`;
-        });
-
+        const lines = grouped[supplier].map(item => `- ${item.name} (${formatQtyText(item.qty)})`);
         return `Barang ${supplier}\n\n${lines.join("\n")}`;
       });
 
@@ -2191,6 +1940,22 @@ function renderSelectedSupplier() {
       );
     }
 
+    function getSuggestionSupplierContext() {
+      return cleanText(getCurrentSupplier() || supplierContextFilter);
+    }
+
+    function getAddedItemForSuggestion(itemName) {
+      const supplier = getSuggestionSupplierContext();
+      const cleanName = cleanText(itemName).toLowerCase();
+
+      if (!supplier || !cleanName) return null;
+
+      return items.find(item =>
+        cleanText(item.name).toLowerCase() === cleanName &&
+        cleanText(item.supplier).toLowerCase() === supplier.toLowerCase()
+      ) || null;
+    }
+
     function renderSuggestionSkeleton() {
       el.searchSuggestions.innerHTML = Array.from({ length: 3 }).map(() => `
         <div class="suggestion-loading">
@@ -2208,9 +1973,7 @@ function renderSelectedSupplier() {
       if (
         !rawKeyword ||
         isSearching ||
-        isSupplierMenuOpen ||
-        currentPage === "added" ||
-        supplierContextFilter
+        isSupplierMenuOpen
       ) {
         lastSuggestionSignature = "";
         currentSuggestionItems = [];
@@ -2239,6 +2002,8 @@ function renderSelectedSupplier() {
       }
 
       suggestions.forEach(item => {
+        const alreadyAddedItem = getAddedItemForSuggestion(item.name);
+        const alreadyAdded = Boolean(alreadyAddedItem);
         const button = document.createElement("button");
         button.className = "suggestion-btn";
         button.type = "button";
@@ -2246,6 +2011,7 @@ function renderSelectedSupplier() {
           <span>
             <span class="suggestion-name">${escapeHTML(item.name)}</span>
             <span class="suggestion-category">${escapeHTML(item.category || "Barang")}</span>
+            ${alreadyAdded ? `<span class="suggestion-added-note">✓ Sudah di list (${alreadyAddedItem.qty})</span>` : ""}
           </span>
           <span class="suggestion-action">+ Tambah</span>
         `;
@@ -2262,9 +2028,10 @@ function renderSelectedSupplier() {
           isSuggestionLoading = false;
           el.searchWarmup.classList.remove("show");
 
-          // Kalau supplier belum dipilih, suggestion ditutup dulu seperti tirai ke atas.
-          // Setelah itu menu supplier dibuka agar user pilih supplier dulu.
-          if (!getCurrentSupplier()) {
+          const pageBeforeAdd = currentPage;
+          const supplierBeforeAdd = supplierContextFilter;
+
+          if (!getCurrentSupplier() && !supplierContextFilter) {
             closeSuggestionsCurtainUp(() => {
               addItem(selectedItemName);
               renderSummary();
@@ -2272,17 +2039,16 @@ function renderSelectedSupplier() {
             return;
           }
 
-          // Kalau supplier sudah dipilih, barang ditambahkan dan suggestion muncul lagi
-          // seperti tirai ditarik ke bawah tanpa menghilangkan posisi halaman.
           addItem(selectedItemName);
 
-          currentPage = "home";
-          el.homePage.style.display = "block";
-          el.addedPage.style.display = "none";
+          currentPage = pageBeforeAdd;
+          supplierContextFilter = supplierBeforeAdd;
+          el.homePage.style.display = currentPage === "home" ? "block" : "none";
+          el.addedPage.style.display = currentPage === "added" ? "block" : "none";
           el.searchBox.classList.remove("hidden");
-          el.headerActions.classList.remove("list-mode");
-          el.topResetBtn.classList.remove("show");
-          el.viewAddedLabel.textContent = "📦 Lihat semua List";
+          el.headerActions.classList.toggle("list-mode", currentPage === "added");
+          el.topResetBtn.classList.toggle("show", currentPage === "added");
+          el.viewAddedLabel.textContent = currentPage === "home" ? "📦 Lihat semua List" : "← Kembali";
 
           el.searchInput.value = keepKeyword;
           searchQuery = keepKeyword;
@@ -2291,6 +2057,7 @@ function renderSelectedSupplier() {
 
           renderSummary();
           renderCatalog();
+          renderList();
           renderSuggestions();
           showSuggestionsCurtainDown();
 
@@ -2342,8 +2109,6 @@ function renderSelectedSupplier() {
         nextSuggestions.length > 0 &&
         isSearchCoveredByCurrentSuggestions(value);
 
-      // Kalau produk yang dicari masih sudah ada di suggestion yang tampil,
-      // jangan animasikan lagi. Cukup update suggestion langsung supaya terasa responsif.
       if (suggestionIsAlreadyVisible) {
         isSuggestionLoading = false;
         el.searchWarmup.classList.remove("show");
@@ -2352,7 +2117,6 @@ function renderSelectedSupplier() {
         return;
       }
 
-      // Kalau hasilnya sama persis seperti suggestion terakhir, skip animasi juga.
       if (nextSignature === lastSuggestionSignature && el.searchSuggestions.classList.contains("show")) {
         isSuggestionLoading = false;
         el.searchWarmup.classList.remove("show");
@@ -2361,8 +2125,6 @@ function renderSelectedSupplier() {
         return;
       }
 
-      // Kalau produk yang dicari belum ada di suggestion yang tampil,
-      // biarkan suggestion lama tetap terlihat dulu, lalu munculkan animasi setelah user berhenti mengetik.
       isSuggestionLoading = false;
       el.searchWarmup.classList.remove("show");
       renderSummary();
@@ -2378,8 +2140,6 @@ function renderSelectedSupplier() {
           isSearchCoveredByCurrentSuggestions(latestValue) &&
           el.searchSuggestions.classList.contains("show");
 
-        // Cek ulang sebelum loading muncul. Kalau ternyata produk sudah ada di suggestion,
-        // loading dibatalkan agar tidak kedip-kedip.
         if (latestAlreadyVisible || latestSignature === lastSuggestionSignature) {
           isSuggestionLoading = false;
           renderSuggestions();
@@ -2525,45 +2285,28 @@ function renderSelectedSupplier() {
       renderSelectedSupplier();
     });
 
-el.selectedSupplierChip.addEventListener("click", () => {
-  const supplier = getCurrentSupplier();
-  if (!supplier) {
-    showToast("Pilih supplier dulu");
-    return;
-  }
-  openSupplierList(supplier);
-});
-
-    el.suggestionViewListBtn.addEventListener("click", event => {
-      event.preventDefault();
-      event.stopPropagation();
-
-      // Simpan riwayat halaman awal sebelum masuk ke list.
-      // Jadi saat klik kembali, search + suggestion terakhir tidak mulai ulang dari nol.
-      captureHomeSuggestionState();
-
-      closeSuggestionsCurtainUp(() => {
-        openAddedPage();
-      });
+    el.selectedSupplierChip.addEventListener("click", () => {
+      if (getCurrentSupplier()) openSupplierList(getCurrentSupplier());
     });
 
-    el.suggestionChangeSupplierBtn.addEventListener("click", event => {
-      event.preventDefault();
-      event.stopPropagation();
-      savedHomeSuggestionState = null;
+    el.suggestionViewListBtn.addEventListener("click", () => {
+      if (currentPage === "home") {
+        captureHomeSuggestionState();
+        openAddedPage();
+      } else {
+        closeSuggestionsCurtainUp();
+        setTab("list");
+      }
+    });
+
+    el.suggestionChangeSupplierBtn.addEventListener("click", () => {
       closeSuggestionsCurtainUp(() => {
-        currentPage = "home";
-        supplierContextFilter = "";
+        if (currentPage === "added") openHomePage();
         isSupplierMenuOpen = true;
-        el.homePage.style.display = "block";
-        el.addedPage.style.display = "none";
-        el.searchBox.classList.remove("hidden");
         renderSupplierDropdown();
         el.supplierDropdown.classList.add("show");
         el.catalogResults.classList.add("hide");
-        renderSummary();
         renderSelectedSupplier();
-        showToast("Silakan ganti supplier");
       });
     });
 
