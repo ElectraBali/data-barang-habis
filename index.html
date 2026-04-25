@@ -240,6 +240,110 @@
       display: block;
     }
 
+
+    .search-warmup {
+      margin-top: 9px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 12px;
+      font-weight: 800;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    .search-warmup.show {
+      display: inline-flex;
+    }
+
+    .loading-dots {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .loading-dots span {
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: currentColor;
+      opacity: 0.35;
+      animation: dotPulse 0.9s infinite ease-in-out;
+    }
+
+    .loading-dots span:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    .loading-dots span:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    @keyframes dotPulse {
+      0%, 100% { transform: translateY(0); opacity: 0.35; }
+      50% { transform: translateY(-3px); opacity: 1; }
+    }
+
+    .suggestion-loading {
+      min-height: 68px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      border-radius: 15px;
+      padding: 12px;
+      display: grid;
+      gap: 9px;
+    }
+
+    .catalog-skeleton {
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: 15px;
+      padding: 13px;
+      min-height: 68px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .catalog-skeleton-row,
+    .suggestion-skeleton-row {
+      height: 12px;
+      border-radius: 999px;
+    }
+
+    .catalog-skeleton-row.long,
+    .suggestion-skeleton-row.long {
+      width: 72%;
+    }
+
+    .catalog-skeleton-row.short,
+    .suggestion-skeleton-row.short {
+      width: 42%;
+    }
+
+    .skeleton {
+      position: relative;
+      overflow: hidden;
+      background: #e2e8f0;
+    }
+
+    .skeleton::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.72), transparent);
+      animation: shimmer 1.05s infinite;
+    }
+
+    @keyframes shimmer {
+      100% { transform: translateX(100%); }
+    }
+
     .header-actions {
       display: flex;
       justify-content: flex-end;
@@ -888,6 +992,11 @@
         <div id="searchSuggestions" class="search-suggestions"></div>
       </div>
 
+      <div id="searchWarmup" class="search-warmup">
+        <span>Menyiapkan hasil</span>
+        <span class="loading-dots"><span></span><span></span><span></span></span>
+      </div>
+
       <div id="searchStatus" class="search-status">Mencari...</div>
 
       <div id="headerActions" class="header-actions">
@@ -976,7 +1085,7 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "barang_habis_pakai_toko_v10_top_reset";
+    const STORAGE_KEY = "barang_habis_pakai_toko_v11_search_loading_keep_home";
     const WA_NUMBER = "628175777488";
 
     const SUPPLIERS = [
@@ -1051,6 +1160,7 @@
       searchInput: $("searchInput"),
       clearSearchBtn: $("clearSearchBtn"),
       searchSuggestions: $("searchSuggestions"),
+      searchWarmup: $("searchWarmup"),
       searchStatus: $("searchStatus"),
       quickSupplierBtn: $("quickSupplierBtn"),
       supplierDropdown: $("supplierDropdown"),
@@ -1082,6 +1192,7 @@
     let currentPage = "home";
     let searchQuery = "";
     let isSearching = false;
+    let isSuggestionLoading = false;
     let searchTimer = null;
     let suggestionTimer = null;
   let selectedSupplier = "";
@@ -1090,7 +1201,7 @@
     let supplierContextFilter = "";
 
     const SEARCH_DELAY = 2000;
-    const SUGGESTION_DELAY = 250;
+    const SUGGESTION_DELAY = 650;
 
     function safeString(value) {
       if (typeof value === "string") return value;
@@ -1219,9 +1330,11 @@ function getCurrentSupplier() {
       suggestionTimer = null;
       searchQuery = "";
       isSearching = false;
+      isSuggestionLoading = false;
 
       el.searchInput.value = "";
       el.searchSuggestions.classList.remove("show");
+      el.searchWarmup.classList.remove("show");
       el.searchStatus.classList.remove("show");
 
       if (shouldRender) render();
@@ -1713,6 +1826,17 @@ function renderSelectedSupplier() {
       el.previewText.value = generateMessage();
       el.clearSearchBtn.style.display = cleanText(el.searchInput.value) ? "block" : "none";
       el.searchStatus.classList.toggle("show", isSearching);
+      el.searchWarmup.classList.toggle("show", isSearching || isSuggestionLoading);
+    }
+
+    function renderSuggestionSkeleton() {
+      el.searchSuggestions.innerHTML = Array.from({ length: 3 }).map(() => `
+        <div class="suggestion-loading">
+          <div class="suggestion-skeleton-row long skeleton"></div>
+          <div class="suggestion-skeleton-row short skeleton"></div>
+        </div>
+      `).join("");
+      el.searchSuggestions.classList.add("show");
     }
 
     function renderSuggestions() {
@@ -1727,6 +1851,11 @@ function renderSelectedSupplier() {
         supplierContextFilter
       ) {
         el.searchSuggestions.classList.remove("show");
+        return;
+      }
+
+      if (isSuggestionLoading) {
+        renderSuggestionSkeleton();
         return;
       }
 
@@ -1754,17 +1883,43 @@ function renderSelectedSupplier() {
           <span class="suggestion-action">+ Tambah</span>
         `;
 
-        button.addEventListener("click", () => {
-          el.searchInput.value = item.name;
-          searchQuery = item.name;
-          el.searchSuggestions.classList.remove("show");
+        button.addEventListener("click", event => {
+          event.preventDefault();
+          event.stopPropagation();
 
-          addItem(item.name);
+          const lastScroll = window.scrollY;
+          const keepKeyword = cleanText(el.searchInput.value);
+          const selectedItemName = item.name;
 
-          el.searchInput.value = item.name;
-          searchQuery = item.name;
+          isSearching = false;
+          isSuggestionLoading = false;
+          el.searchWarmup.classList.remove("show");
+
+          // Tambahkan barang yang diklik, tapi keyword pencarian jangan diganti
+          // supaya semua list suggestion yang sedang tampil tetap muncul.
+          addItem(selectedItemName);
+
+          currentPage = "home";
+          el.homePage.style.display = "block";
+          el.addedPage.style.display = "none";
+          el.searchBox.classList.remove("hidden");
+          el.headerActions.classList.remove("list-mode");
+          el.topResetBtn.classList.remove("show");
+          el.viewAddedLabel.textContent = "📦 Lihat semua List";
+
+          el.searchInput.value = keepKeyword;
+          searchQuery = keepKeyword;
+          isSearching = false;
+          isSuggestionLoading = false;
+
           renderSummary();
-          el.searchSuggestions.classList.remove("show");
+          renderCatalog();
+          renderSuggestions();
+          el.searchSuggestions.classList.add("show");
+
+          requestAnimationFrame(() => {
+            window.scrollTo({ top: lastScroll, behavior: "instant" });
+          });
         });
 
         el.searchSuggestions.appendChild(button);
@@ -1793,12 +1948,22 @@ function renderSelectedSupplier() {
       if (!value) {
         searchQuery = "";
         isSearching = false;
+        isSuggestionLoading = false;
         el.searchSuggestions.classList.remove("show");
+        el.searchWarmup.classList.remove("show");
         render();
         return;
       }
 
-      suggestionTimer = setTimeout(renderSuggestions, SUGGESTION_DELAY);
+      isSuggestionLoading = true;
+      renderSuggestionSkeleton();
+      renderSummary();
+
+      suggestionTimer = setTimeout(() => {
+        isSuggestionLoading = false;
+        renderSuggestions();
+        renderSummary();
+      }, SUGGESTION_DELAY);
     }
 
     function runSearch() {
@@ -1814,11 +1979,13 @@ function renderSelectedSupplier() {
       if (!value) {
         searchQuery = "";
         isSearching = false;
+        isSuggestionLoading = false;
         render();
         return;
       }
 
       isSearching = true;
+      isSuggestionLoading = false;
       render();
 
       searchTimer = setTimeout(() => {
