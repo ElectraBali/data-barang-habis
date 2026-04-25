@@ -1,0 +1,1972 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catatan Barang Habis Pakai</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --primary: #0f766e;
+      --primary-dark: #115e59;
+      --primary-soft: #ccfbf1;
+      --danger: #dc2626;
+      --danger-soft: #fee2e2;
+      --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+    }
+.supplier-title-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.supplier-title-left strong {
+  min-width: 0;
+  word-break: break-word;
+}
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .app {
+      width: 100%;
+      max-width: 520px;
+      min-height: 100vh;
+      margin: 0 auto;
+      background: var(--bg);
+      padding-bottom: 92px;
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: linear-gradient(135deg, var(--primary), #0891b2);
+      color: white;
+      padding: 20px 16px 18px;
+      border-bottom-left-radius: 26px;
+      border-bottom-right-radius: 26px;
+      box-shadow: var(--shadow);
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .title {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: 21px;
+      line-height: 1.2;
+    }
+
+    .title p {
+      margin: 5px 0 0;
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .badge {
+      flex: 0 0 auto;
+      min-width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
+
+    .badge strong {
+      display: block;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .badge span {
+      font-size: 10px;
+      opacity: 0.9;
+    }
+
+   .search-box {
+  position: relative;
+  margin-bottom: 20px; /* kasih jarak ke bawah */
+}
+
+    .search-box.hidden {
+      display: none;
+    }
+
+    .search-box input {
+      width: 100%;
+      border: 0;
+      outline: none;
+      border-radius: 16px;
+      padding: 15px 44px;
+      font-size: 15px;
+      background: rgba(255, 255, 255, 0.96);
+      color: var(--text);
+    }
+
+    .search-icon,
+    .clear-search {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .search-icon {
+      left: 12px;
+      border: 0;
+      background: transparent;
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      border-radius: 999px;
+    }
+
+    .clear-search {
+      right: 12px;
+      border: 0;
+      background: #e2e8f0;
+      color: #334155;
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      cursor: pointer;
+      display: none;
+    }
+
+    .search-suggestions {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 8px);
+      background: white;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 8px;
+      display: none;
+      z-index: 40;
+      max-height: 530px;
+      overflow-y: auto;
+    }
+
+    .search-suggestions.show {
+      display: grid;
+      gap: 7px;
+    }
+
+    .suggestion-btn {
+      width: 100%;
+      min-height: 68px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: var(--text);
+      border-radius: 15px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .suggestion-btn:hover {
+      background: var(--primary-soft);
+    }
+
+    .suggestion-name {
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .suggestion-category {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .suggestion-action {
+      flex: 0 0 auto;
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      border-radius: 999px;
+      padding: 8px 10px;
+    }
+
+    .search-status {
+      margin-top: 7px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.88);
+      display: none;
+      text-align: right;
+    }
+
+    .search-status.show {
+      display: block;
+    }
+
+    .header-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+      gap: 10px;
+    }
+
+    .header-actions.list-mode {
+      justify-content: space-between;
+    }
+
+ .view-added-btn,
+.top-reset-btn {
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.16);
+  color: white;
+  border-radius: 999px;
+
+  padding: 5px 8px;     /* ↓ dari 9px 11px */
+  font-size: 10px;      /* ↓ dari 12px */
+  font-weight: 700;     /* ↓ dari 900 biar gak terlalu tebal */
+
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 4px;             /* ↓ dari 7px */
+  white-space: nowrap;
+
+  min-height: 30px;     /* biar tetap enak di klik */
+}
+
+    .top-reset-btn {
+      display: none;
+      background: rgba(220, 38, 38, 0.25);
+    }
+
+    .top-reset-btn.show {
+      display: inline-flex;
+    }
+
+    .view-added-btn span {
+      background: rgba(255, 255, 255, 0.22);
+      border-radius: 999px;
+      padding: 4px 7px;
+      font-size: 11px;
+    }
+
+    .main {
+      padding: 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .form-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .form-title h2 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .small-info {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .input-group {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    input,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-soft {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid var(--line);
+    }
+
+    .btn-danger {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .quick-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .quick-title {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .supplier-control {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .quick-btn {
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      color: #334155;
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .quick-btn.active {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+    }
+
+    .supplier-chip {
+      min-width: 0;
+      max-width: 170px;
+      border: 1px solid #a5f3fc;
+      background: #ecfeff;
+      color: #155e75;
+      border-radius: 999px;
+      padding: 9px 11px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+    }
+
+    .menu-grid {
+      display: none;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .menu-grid.show {
+      display: grid;
+    }
+
+    .category-btn {
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: #334155;
+      border-radius: 14px;
+      padding: 11px 10px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .category-btn.active {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+    }
+
+    .catalog-results {
+      display: grid;
+      gap: 9px;
+      max-height: 390px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .catalog-results.hide {
+      display: none;
+    }
+
+    .catalog-results:empty {
+      display: none;
+    }
+
+    .catalog-item {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      border-radius: 15px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .catalog-name {
+      font-weight: 800;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .catalog-category {
+      display: block;
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .catalog-add {
+      flex: 0 0 auto;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+ .tab-btn {
+  border: 1px solid var(--line);
+  background: white;
+  color: var(--muted);
+  border-radius: 999px;
+
+  padding: 8px 10px;   /* ↓ dari 12px */
+  font-size: 12px;     /* tambahan biar ikut kecil */
+  font-weight: 600;    /* ↓ dari 700 biar lebih clean */
+
+  cursor: pointer;
+
+  min-height: 34px;    /* biar tetap enak di klik */
+}
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 6px 2px 12px;
+    }
+
+   .section-head h2 {
+  font-size: 14px;
+}
+
+    .section-head span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .item-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .supplier-group {
+      display: grid;
+      gap: 9px;
+    }
+
+    .supplier-title {
+      background: linear-gradient(135deg, #ecfeff, #f0fdfa);
+      border: 1px solid #99f6e4;
+      color: #115e59;
+      border-radius: 16px;
+      padding: 11px 13px;
+      font-size: 14px;
+      font-weight: 900;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .supplier-title strong {
+      word-break: break-word;
+    }
+
+    .supplier-title-name {
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .supplier-title-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .supplier-title span {
+      font-size: 12px;
+      color: #0f766e;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+ .supplier-add-btn,
+.supplier-edit-btn {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 999px;
+  color: white;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  line-height: 1;
+  padding: 0;
+}
+
+    .supplier-add-btn {
+      background: var(--primary);
+      font-size: 21px;
+    }
+
+    .supplier-edit-btn {
+      background: #0f172a;
+    }
+
+    .item {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
+    }
+
+    .item-left {
+      min-width: 0;
+    }
+
+    .item-name {
+      margin: 0 0 5px;
+      font-size: 15px;
+      font-weight: 800;
+      word-break: break-word;
+    }
+
+    .item-meta {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .item-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .qty-control {
+      display: flex;
+      align-items: center;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .qty-btn {
+      width: 34px;
+      height: 38px;
+      border: 0;
+      background: transparent;
+      font-size: 20px;
+      font-weight: 800;
+      cursor: pointer;
+      color: var(--primary);
+    }
+
+    .qty-input {
+      width: 48px;
+      height: 38px;
+      border: 0;
+      background: transparent;
+      text-align: center;
+      font-weight: 900;
+      font-size: 14px;
+      outline: none;
+      color: var(--text);
+    }
+
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .delete-btn {
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--danger-soft);
+      color: var(--danger);
+      cursor: pointer;
+      font-weight: 900;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 30px 18px;
+      color: var(--muted);
+      background: white;
+      border: 1px dashed #cbd5e1;
+      border-radius: var(--radius);
+    }
+
+    .empty strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .summary-box {
+      background: #ecfeff;
+      border: 1px solid #a5f3fc;
+      border-radius: 16px;
+      padding: 12px;
+      font-size: 13px;
+      color: #155e75;
+      margin-bottom: 12px;
+    }
+
+    .preview-text {
+      width: 100%;
+      min-height: 450px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      outline: none;
+      background: #f8fafc;
+      color: var(--text);
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    .bottom-bar {
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 520px;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--line);
+      padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      z-index: 30;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 92px;
+      transform: translateX(-50%) translateY(20px);
+      width: calc(100% - 32px);
+      max-width: 488px;
+      background: #0f172a;
+      color: white;
+      padding: 13px 16px;
+      border-radius: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.25s ease;
+      z-index: 50;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.52);
+      z-index: 60;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 14px;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 520px;
+      background: white;
+      border-radius: 24px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .modal h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .modal p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .edit-field {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      color: var(--text);
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 15px;
+      outline: none;
+      margin-bottom: 12px;
+    }
+
+    .edit-field:focus {
+      border-color: var(--primary);
+      background: white;
+      box-shadow: 0 0 0 4px var(--primary-soft);
+    }
+
+    @media (min-width: 700px) {
+      body {
+        padding: 24px 0;
+      }
+
+      .app {
+        border-radius: 30px;
+        overflow: hidden;
+        min-height: calc(100vh - 48px);
+        box-shadow: var(--shadow);
+      }
+
+      .bottom-bar {
+        bottom: 24px;
+        border-radius: 0 0 30px 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="header-top">
+        <div class="title">
+          <h1 id="pageTitle">Data barang habis</h1>
+          <p id="pageSubtitle">Pilih supplier lalu tambahkan barang ke list.</p>
+        </div>
+        <div class="badge">
+          <div>
+            <strong id="totalItems">0</strong>
+            <span>ITEM</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="searchBox" class="search-box">
+        <button id="searchIconBtn" class="search-icon" type="button">🔎</button>
+        <input id="searchInput" type="text" placeholder="Cari barang di katalog..." autocomplete="off" />
+        <button id="clearSearchBtn" class="clear-search" type="button">×</button>
+        <div id="searchSuggestions" class="search-suggestions"></div>
+      </div>
+
+      <div id="searchStatus" class="search-status">Mencari...</div>
+
+      <div id="headerActions" class="header-actions">
+        <button id="viewAddedBtn" class="view-added-btn" type="button">
+          <strong id="viewAddedLabel">📦 Lihat semua List</strong>
+          <span id="viewAddedCount">0 item</span>
+        </button>
+
+        <button id="topResetBtn" class="top-reset-btn" type="button">🗑️ Reset</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <section id="homePage">
+        <section class="card">
+          <div class="form-title">
+            <h2>Pilih Barang Habis</h2>
+            <span class="small-info">Supplier aktif</span>
+          </div>
+
+          <div class="input-group">
+            <div class="quick-head">
+              <p class="quick-title">Menu supplier</p>
+              <div class="supplier-control">
+               <button id="quickSupplierBtn" class="quick-btn" type="button">🏷️ Pilih Supplier</button>
+<div id="selectedSupplierChip" class="supplier-chip" title="Klik untuk lihat list supplier ini" style="display:none;"></div>
+              </div>
+            </div>
+
+            <div id="supplierDropdown" class="menu-grid"></div>
+            <div id="catalogResults" class="catalog-results"></div>
+          </div>
+        </section>
+      </section>
+
+      <section id="addedPage" style="display:none;">
+        <div class="tabs">
+          <button id="tabList" class="tab-btn active" type="button">Daftar Barang</button>
+          <button id="tabPreview" class="tab-btn" type="button">Preview Text</button>
+        </div>
+
+        <section id="listSection">
+          <div class="section-head">
+            <h2>List Barang Habis</h2>
+            <span id="totalQty">Total qty: 0</span>
+          </div>
+          <div id="itemList" class="item-list"></div>
+        </section>
+
+        <section id="previewSection" style="display:none;">
+          <div class="summary-box" id="summaryText">Belum ada barang habis.</div>
+          <textarea id="previewText" class="preview-text" readonly></textarea>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="bottom-bar">
+    <button id="copyBtn" class="btn btn-soft" type="button">📋 Salin List</button>
+    <button id="waBtn" class="btn btn-primary" type="button">💬 Kirim WA</button>
+  </div>
+
+  <div id="toast" class="toast">Berhasil</div>
+
+  <div id="confirmModal" class="modal-backdrop">
+    <div class="modal">
+      <h3>Reset semua list?</h3>
+      <p>Semua daftar barang habis yang sudah kamu isi akan dihapus. Data tidak bisa dikembalikan setelah direset.</p>
+      <div class="modal-actions">
+        <button id="cancelResetBtn" class="btn btn-soft" type="button">Batal</button>
+        <button id="confirmResetBtn" class="btn btn-danger" type="button">Ya, Reset Semua</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="editSupplierModal" class="modal-backdrop">
+    <div class="modal">
+      <h3>Edit nama supplier</h3>
+      <p>Semua barang di supplier lama akan dipindahkan ke nama supplier baru.</p>
+      <input id="editSupplierInput" class="edit-field" type="text" placeholder="Nama supplier baru" />
+      <div class="modal-actions">
+        <button id="cancelEditSupplierBtn" class="btn btn-soft" type="button">Batal</button>
+        <button id="saveEditSupplierBtn" class="btn btn-primary" type="button">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "barang_habis_pakai_toko_v10_top_reset";
+    const WA_NUMBER = "628175777488";
+
+    const SUPPLIERS = [
+      "LJE",
+      "LPA",
+      "Supplier A",
+      "Supplier B",
+      "Supplier C",
+      "Toko Bali CCTV",
+      "Tanpa Supplier"
+    ];
+
+    const MASTER_ITEMS = [
+      { name: "FAN 12X12 12V", category: "Fan" },
+      { name: "FAN 8X8 12V", category: "Fan" },
+      { name: "FAN 6X6 12V", category: "Fan" },
+      { name: "FAN 5X5 12V", category: "Fan" },
+      { name: "FAN 12X12 12V", category: "Fan" },
+      { name: "FAN 3X8 12V", category: "Fan" },
+      { name: "FAN 2X6 12V", category: "Fan" },
+      { name: "FAN 1X5 12V", category: "Fan" },
+      { name: "FAN 2X12 12V", category: "Fan" },
+      { name: "FAN 7X8 12V", category: "Fan" },
+      { name: "FAN 8X6 12V", category: "Fan" },
+      { name: "FAN 9X5 12V", category: "Fan" },
+      { name: "Kabel LAN", category: "Kabel & Jaringan" },
+      { name: "Kabel CCTV", category: "Kabel & Jaringan" },
+      { name: "Kabel HDMI", category: "Kabel & Jaringan" },
+      { name: "Kabel Power CCTV", category: "Kabel & Power" },
+      { name: "Kabel NYM", category: "Kabel & Power" },
+      { name: "Kabel Ties", category: "Aksesoris" },
+      { name: "CCTV Indoor", category: "Kamera" },
+      { name: "CCTV Outdoor", category: "Kamera" },
+      { name: "Kamera WiFi", category: "Kamera" },
+      { name: "DVR", category: "Recorder" },
+      { name: "NVR", category: "Recorder" },
+      { name: "Harddisk CCTV 500GB", category: "Storage" },
+      { name: "Harddisk CCTV 1TB", category: "Storage" },
+      { name: "Harddisk CCTV 2TB", category: "Storage" },
+      { name: "Harddisk CCTV 4TB", category: "Storage" },
+      { name: "Adaptor 12V 2A", category: "Power" },
+      { name: "Power Supply CCTV", category: "Power" },
+      { name: "Konektor BNC", category: "Konektor" },
+      { name: "Jack DC CCTV", category: "Konektor" },
+      { name: "RJ45", category: "Konektor" },
+      { name: "Isolasi Listrik", category: "Aksesoris" },
+      { name: "Pipa Conduit", category: "Instalasi" },
+      { name: "Klem Kabel", category: "Instalasi" },
+      { name: "Stop Kontak", category: "Listrik" },
+      { name: "Terminal Listrik", category: "Listrik" },
+      { name: "Mouse", category: "Aksesoris" },
+      { name: "Monitor", category: "Display" },
+      { name: "Memory Card 32GB", category: "Storage" },
+      { name: "Memory Card 64GB", category: "Storage" },
+      { name: "Memory Card 128GB", category: "Storage" }
+    ];
+
+    const $ = id => document.getElementById(id);
+
+    const el = {
+      homePage: $("homePage"),
+      addedPage: $("addedPage"),
+      pageTitle: $("pageTitle"),
+      pageSubtitle: $("pageSubtitle"),
+      headerActions: $("headerActions"),
+      viewAddedBtn: $("viewAddedBtn"),
+      viewAddedLabel: $("viewAddedLabel"),
+      viewAddedCount: $("viewAddedCount"),
+      topResetBtn: $("topResetBtn"),
+      searchBox: $("searchBox"),
+      searchIconBtn: $("searchIconBtn"),
+      searchInput: $("searchInput"),
+      clearSearchBtn: $("clearSearchBtn"),
+      searchSuggestions: $("searchSuggestions"),
+      searchStatus: $("searchStatus"),
+      quickSupplierBtn: $("quickSupplierBtn"),
+      supplierDropdown: $("supplierDropdown"),
+      selectedSupplierChip: $("selectedSupplierChip"),
+      catalogResults: $("catalogResults"),
+      itemList: $("itemList"),
+      totalItems: $("totalItems"),
+      totalQty: $("totalQty"),
+      copyBtn: $("copyBtn"),
+      waBtn: $("waBtn"),
+      toast: $("toast"),
+      tabList: $("tabList"),
+      tabPreview: $("tabPreview"),
+      listSection: $("listSection"),
+      previewSection: $("previewSection"),
+      previewText: $("previewText"),
+      summaryText: $("summaryText"),
+      confirmModal: $("confirmModal"),
+      cancelResetBtn: $("cancelResetBtn"),
+      confirmResetBtn: $("confirmResetBtn"),
+      editSupplierModal: $("editSupplierModal"),
+      editSupplierInput: $("editSupplierInput"),
+      cancelEditSupplierBtn: $("cancelEditSupplierBtn"),
+      saveEditSupplierBtn: $("saveEditSupplierBtn")
+    };
+
+    let items = loadItems();
+    let activeTab = "list";
+    let currentPage = "home";
+    let searchQuery = "";
+    let isSearching = false;
+    let searchTimer = null;
+    let suggestionTimer = null;
+  let selectedSupplier = "";
+    let editingSupplierName = "";
+    let isSupplierMenuOpen = false;
+    let supplierContextFilter = "";
+
+    const SEARCH_DELAY = 2000;
+    const SUGGESTION_DELAY = 250;
+
+    function safeString(value) {
+      if (typeof value === "string") return value;
+      if (value === null || value === undefined) return "";
+      return String(value);
+    }
+
+    function cleanText(value) {
+      return safeString(value).trim().replace(/\s+/g, " ");
+    }
+
+    function escapeHTML(value) {
+      const div = document.createElement("div");
+      div.textContent = safeString(value);
+      return div.innerHTML;
+    }
+
+    function findMasterItem(name) {
+      const cleanName = cleanText(name).toLowerCase();
+      if (!cleanName) return null;
+      return MASTER_ITEMS.find(item => item.name.toLowerCase() === cleanName) || null;
+    }
+
+    function normalizeStoredItem(item) {
+      const name = cleanText(item && item.name);
+      const masterItem = findMasterItem(name);
+
+      return {
+        id: cleanText(item && item.id) || String(Date.now() + Math.random()),
+        name: masterItem ? masterItem.name : name,
+        category: cleanText((item && item.category) || (masterItem && masterItem.category) || "Lainnya"),
+        supplier: cleanText(item && item.supplier) || "Tanpa Supplier",
+        qty: Math.max(0, parseInt(item && item.qty, 10) || 0),
+        createdAt: cleanText(item && item.createdAt) || new Date().toISOString(),
+        updatedAt: cleanText(item && item.updatedAt) || new Date().toISOString()
+      };
+    }
+
+    function loadItems() {
+      try {
+        const saved =
+          localStorage.getItem(STORAGE_KEY) ||
+          localStorage.getItem("barang_habis_pakai_toko_v9_fix_supplier_context") ||
+          localStorage.getItem("barang_habis_pakai_toko_v8_supplier_focus") ||
+          localStorage.getItem("barang_habis_pakai_toko_v7_edit_supplier") ||
+          localStorage.getItem("barang_habis_pakai_toko_v6_no_category") ||
+          localStorage.getItem("barang_habis_pakai_toko_v5_qty_manual") ||
+          localStorage.getItem("barang_habis_pakai_toko_v4_supplier_menu") ||
+          localStorage.getItem("barang_habis_pakai_toko_v3_supplier") ||
+          localStorage.getItem("barang_habis_pakai_toko_v2") ||
+          localStorage.getItem("barang_habis_pakai_toko_v1");
+
+        const parsed = saved ? JSON.parse(saved) : [];
+        return Array.isArray(parsed)
+          ? parsed.map(normalizeStoredItem).filter(item => item.name)
+          : [];
+      } catch (error) {
+        console.warn("Gagal membaca localStorage:", error);
+        return [];
+      }
+    }
+
+    function saveItems() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }
+
+    function showToast(message) {
+      el.toast.textContent = cleanText(message) || "Berhasil";
+      el.toast.classList.add("show");
+      setTimeout(() => el.toast.classList.remove("show"), 1800);
+    }
+
+function getCurrentSupplier() {
+  return cleanText(selectedSupplier);
+}
+
+    function groupBySupplier(sourceItems) {
+      const grouped = {};
+      sourceItems.forEach(item => {
+        const supplier = cleanText(item.supplier) || "Tanpa Supplier";
+        if (!grouped[supplier]) grouped[supplier] = [];
+        grouped[supplier].push(item);
+      });
+      return grouped;
+    }
+
+    function getAllSupplierNames() {
+      const set = new Set(SUPPLIERS);
+      items.forEach(item => {
+        if (cleanText(item.supplier)) set.add(cleanText(item.supplier));
+      });
+      return Array.from(set);
+    }
+
+    function getFilteredItems() {
+      if (supplierContextFilter) {
+        const filter = supplierContextFilter.toLowerCase();
+        return items.filter(item => item.supplier.toLowerCase() === filter);
+      }
+
+      const keyword = searchQuery.toLowerCase();
+      if (!keyword) return items;
+
+      return items.filter(item =>
+        item.name.toLowerCase().includes(keyword) ||
+        item.category.toLowerCase().includes(keyword) ||
+        item.supplier.toLowerCase().includes(keyword)
+      );
+    }
+
+    function getFilteredCatalog() {
+      const keyword = currentPage === "home" ? cleanText(searchQuery).toLowerCase() : "";
+      if (!keyword) return MASTER_ITEMS.slice(0, 8);
+
+      return MASTER_ITEMS.filter(item =>
+        item.name.toLowerCase().includes(keyword) ||
+        item.category.toLowerCase().includes(keyword)
+      );
+    }
+
+    function resetSearchState(shouldRender = true) {
+      clearTimeout(searchTimer);
+      clearTimeout(suggestionTimer);
+
+      searchTimer = null;
+      suggestionTimer = null;
+      searchQuery = "";
+      isSearching = false;
+
+      el.searchInput.value = "";
+      el.searchSuggestions.classList.remove("show");
+      el.searchStatus.classList.remove("show");
+
+      if (shouldRender) render();
+    }
+
+    function openHomePage() {
+      currentPage = "home";
+      supplierContextFilter = "";
+      isSupplierMenuOpen = false;
+
+      el.homePage.style.display = "block";
+      el.addedPage.style.display = "none";
+      el.supplierDropdown.classList.remove("show");
+      el.catalogResults.classList.remove("hide");
+      el.searchBox.classList.remove("hidden");
+
+      el.headerActions.classList.remove("list-mode");
+      el.topResetBtn.classList.remove("show");
+
+      el.pageTitle.textContent = "Elektra bali";
+      el.pageSubtitle.textContent = `Supplier aktif: ${getCurrentSupplier()}`;
+      el.searchInput.placeholder = "Cari barang di katalog...";
+      el.viewAddedLabel.textContent = "📦 Lihat semua List";
+
+      resetSearchState(false);
+      render();
+    }
+
+    function openAddedPage(filterSupplier = "") {
+      currentPage = "added";
+      isSupplierMenuOpen = false;
+      supplierContextFilter = cleanText(filterSupplier);
+
+      el.homePage.style.display = "none";
+      el.addedPage.style.display = "block";
+      el.supplierDropdown.classList.remove("show");
+      el.catalogResults.classList.remove("hide");
+      el.searchSuggestions.classList.remove("show");
+
+      el.headerActions.classList.add("list-mode");
+      el.topResetBtn.classList.add("show");
+
+      el.pageTitle.textContent = "Daftar List barang habis";
+      el.pageSubtitle.textContent = supplierContextFilter
+        ? `Menampilkan supplier: ${supplierContextFilter}`
+        : "List barang otomatis digrup per supplier.";
+      el.searchInput.placeholder = supplierContextFilter
+        ? "Mode lihat supplier aktif"
+        : "Cari barang yang sudah ditambahkan...";
+      el.viewAddedLabel.textContent = "← Kembali";
+
+      resetSearchState(false);
+
+      if (supplierContextFilter) {
+        el.searchBox.classList.add("hidden");
+      } else {
+        el.searchBox.classList.remove("hidden");
+      }
+
+      setTab("list", false);
+      render();
+    }
+
+    function openSupplierList(supplier) {
+      const name = cleanText(supplier) || getCurrentSupplier();
+      openAddedPage(name);
+      showToast(`Menampilkan list ${name}`);
+    }
+
+    function addItem(selectedName) {
+      const requestedName = cleanText(selectedName || searchQuery);
+
+      if (!getCurrentSupplier()) {
+  showToast("Pilih supplier dulu");
+  isSupplierMenuOpen = true;
+  renderSupplierDropdown();
+  el.supplierDropdown.classList.add("show");
+  el.catalogResults.classList.add("hide");
+  return;
+}
+      if (!requestedName) {
+        showToast("Cari atau pilih barang dulu");
+        el.searchInput.focus();
+        return;
+      }
+
+      let masterItem = findMasterItem(requestedName);
+
+      if (!masterItem) {
+        const firstMatch = getFilteredCatalog()[0];
+        if (firstMatch) masterItem = firstMatch;
+      }
+
+      if (!masterItem) {
+        showToast("Barang tidak ada di katalog");
+        el.searchInput.focus();
+        return;
+      }
+
+      const supplier = getCurrentSupplier();
+
+      const existing = items.find(item =>
+        item.name.toLowerCase() === masterItem.name.toLowerCase() &&
+        item.supplier.toLowerCase() === supplier.toLowerCase()
+      );
+
+      if (existing) {
+        existing.qty += 1;
+        existing.updatedAt = new Date().toISOString();
+        showToast("Qty barang ditambahkan");
+      } else {
+        items.unshift({
+          id: String(Date.now() + Math.random()),
+          name: masterItem.name,
+          category: masterItem.category,
+          supplier,
+          qty: 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+
+        showToast(`Barang tercatat ke ${supplier}`);
+      }
+
+      saveItems();
+      render();
+    }
+
+    function increaseQty(id) {
+      const item = items.find(item => item.id === id);
+      if (!item) return;
+
+      item.qty += 1;
+      item.updatedAt = new Date().toISOString();
+      saveItems();
+      render();
+    }
+
+    function decreaseQty(id) {
+      const item = items.find(item => item.id === id);
+      if (!item) return;
+
+      item.qty = Math.max(0, item.qty - 1);
+      item.updatedAt = new Date().toISOString();
+      saveItems();
+      render();
+    }
+
+    function updateQtyManual(id, value) {
+      const item = items.find(item => item.id === id);
+      if (!item) return;
+
+      const qty = parseInt(value, 10);
+
+      if (Number.isNaN(qty) || qty < 0) {
+        showToast("Qty tidak valid");
+        render();
+        return;
+      }
+
+      item.qty = qty;
+      item.updatedAt = new Date().toISOString();
+      saveItems();
+      render();
+    }
+
+    function removeItem(id) {
+      items = items.filter(item => item.id !== id);
+      saveItems();
+      render();
+      showToast("Barang dihapus");
+    }
+
+    function openEditSupplierModal(supplier) {
+      editingSupplierName = supplier;
+      el.editSupplierInput.value = supplier;
+      el.editSupplierModal.classList.add("show");
+
+      setTimeout(() => {
+        el.editSupplierInput.focus();
+        el.editSupplierInput.select();
+      }, 80);
+    }
+
+    function closeEditSupplierModal() {
+      editingSupplierName = "";
+      el.editSupplierModal.classList.remove("show");
+    }
+
+    function saveEditSupplier() {
+      const oldName = cleanText(editingSupplierName);
+      const newName = cleanText(el.editSupplierInput.value);
+
+      if (!oldName) {
+        closeEditSupplierModal();
+        return;
+      }
+
+      if (!newName) {
+        showToast("Nama supplier tidak boleh kosong");
+        el.editSupplierInput.focus();
+        return;
+      }
+
+      items.forEach(item => {
+        if (item.supplier.toLowerCase() === oldName.toLowerCase()) {
+          item.supplier = newName;
+          item.updatedAt = new Date().toISOString();
+        }
+      });
+
+      if (selectedSupplier.toLowerCase() === oldName.toLowerCase()) {
+        selectedSupplier = newName;
+      }
+
+      if (supplierContextFilter.toLowerCase() === oldName.toLowerCase()) {
+        supplierContextFilter = newName;
+        el.pageSubtitle.textContent = `Menampilkan supplier: ${newName}`;
+      }
+
+      saveItems();
+      closeEditSupplierModal();
+      render();
+      showToast("Nama supplier diperbarui");
+    }
+
+    function formatDate(iso) {
+      const date = new Date(iso);
+      if (Number.isNaN(date.getTime())) return "-";
+
+      return date.toLocaleString("id-ID", {
+        day: "2-digit",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function formatQtyText(qty) {
+      return qty === 1 ? "1" : `${qty}PCS`;
+    }
+
+    function renderSupplierDropdown() {
+      el.supplierDropdown.innerHTML = "";
+
+      getAllSupplierNames().forEach(supplier => {
+        const btn = document.createElement("button");
+        btn.className = `category-btn${selectedSupplier === supplier ? " active" : ""}`;
+        btn.type = "button";
+        btn.textContent = supplier;
+
+        btn.addEventListener("click", () => {
+          selectedSupplier = supplier;
+          isSupplierMenuOpen = false;
+          el.supplierDropdown.classList.remove("show");
+          el.catalogResults.classList.remove("hide");
+          showToast(`Supplier aktif: ${supplier}`);
+          render();
+        });
+
+        el.supplierDropdown.appendChild(btn);
+      });
+    }
+
+function renderSelectedSupplier() {
+  const supplier = getCurrentSupplier();
+
+  if (supplier) {
+    el.selectedSupplierChip.style.display = "block";
+    el.selectedSupplierChip.textContent = supplier;
+  } else {
+    el.selectedSupplierChip.style.display = "none";
+    el.selectedSupplierChip.textContent = "";
+  }
+
+  el.quickSupplierBtn.classList.toggle("active", Boolean(supplier));
+
+  if (currentPage === "home") {
+    el.pageSubtitle.textContent = supplier
+      ? `Supplier aktif: ${supplier}`
+      : "Pilih supplier dulu sebelum tambah barang.";
+  }
+}
+
+function renderSelectedSupplier() {
+  const supplier = getCurrentSupplier();
+
+  if (supplier) {
+    el.selectedSupplierChip.style.display = "block";
+    el.selectedSupplierChip.textContent = supplier;
+
+    // 🔥 INI YANG BARU
+    el.quickSupplierBtn.textContent = "🔁 ganti suppliyer";
+  } else {
+    el.selectedSupplierChip.style.display = "none";
+    el.selectedSupplierChip.textContent = "";
+
+    // 🔥 balik ke default
+    el.quickSupplierBtn.textContent = "🏷️ Pilih Supplier";
+  }
+
+  el.quickSupplierBtn.classList.toggle("active", Boolean(supplier));
+
+  if (currentPage === "home") {
+    el.pageSubtitle.textContent = supplier
+      ? `Supplier aktif: ${supplier}`
+      : "sistem kecil pencatatan barang habis";
+  }
+}
+    function renderCatalogSkeleton() {
+      el.catalogResults.innerHTML = Array.from({ length: 4 }).map(() => `
+        <div class="catalog-skeleton">
+          <div class="catalog-skeleton-row long skeleton"></div>
+          <div class="catalog-skeleton-row short skeleton"></div>
+        </div>
+      `).join("");
+    }
+
+    function renderCatalog() {
+      if (currentPage !== "home") {
+        el.catalogResults.innerHTML = "";
+        return;
+      }
+
+      el.catalogResults.classList.toggle("hide", isSupplierMenuOpen);
+
+      if (isSupplierMenuOpen) return;
+
+      if (isSearching) {
+        renderCatalogSkeleton();
+        return;
+      }
+
+      const filteredCatalog = getFilteredCatalog();
+      el.catalogResults.innerHTML = "";
+
+      if (filteredCatalog.length === 0) {
+        el.catalogResults.innerHTML = `
+          <div class="empty" style="padding:18px;">
+            <strong>Barang tidak ada di katalog</strong>
+            <span>Tambahkan nama barang ke MASTER_ITEMS di kode jika ingin masuk pilihan.</span>
+          </div>
+        `;
+        return;
+      }
+
+      filteredCatalog.forEach(item => {
+        const button = document.createElement("button");
+        button.className = "catalog-item";
+        button.type = "button";
+        button.innerHTML = `
+          <span>
+            <span class="catalog-name">${escapeHTML(item.name)}</span>
+            <span class="catalog-category">${escapeHTML(item.category)}</span>
+          </span>
+          <span class="catalog-add">+ Tambah</span>
+        `;
+
+        button.addEventListener("click", () => addItem(item.name));
+        el.catalogResults.appendChild(button);
+      });
+    }
+
+    function renderList() {
+      const filteredItems = getFilteredItems();
+      el.itemList.innerHTML = "";
+
+      if (filteredItems.length === 0) {
+        el.itemList.innerHTML = `
+          <div class="empty">
+            <strong>${supplierContextFilter ? "Supplier ini belum ada barang" : searchQuery ? "Barang tidak ditemukan" : "Belum ada barang"}</strong>
+            <span>${supplierContextFilter ? "Klik tombol + di supplier atau kembali ke menu awal untuk tambah barang." : searchQuery ? "Coba kata kunci lain." : "Tambahkan barang dari halaman awal."}</span>
+          </div>
+        `;
+        return;
+      }
+
+      const grouped = groupBySupplier(filteredItems);
+
+      Object.keys(grouped).forEach(supplier => {
+        const supplierItems = grouped[supplier];
+        const supplierQty = supplierItems.reduce((total, item) => total + item.qty, 0);
+
+        const groupElement = document.createElement("div");
+        groupElement.className = "supplier-group";
+
+        const titleElement = document.createElement("div");
+        titleElement.className = "supplier-title";
+   titleElement.innerHTML = `
+  <div class="supplier-title-left">
+    <button class="supplier-edit-btn" type="button" aria-label="Edit supplier">✎</button>
+    <button class="supplier-add-btn" type="button" aria-label="Tambah barang">+</button>
+    <strong class="supplier-title-name">Barang ${escapeHTML(supplier)}</strong>
+  </div>
+  <div class="supplier-title-right">
+    <span>${supplierItems.length} item • ${supplierQty} pcs</span>
+  </div>
+`;
+
+        titleElement.querySelector(".supplier-title-name").addEventListener("click", () => {
+          openSupplierList(supplier);
+        });
+
+        titleElement.querySelector(".supplier-edit-btn").addEventListener("click", () => {
+          openEditSupplierModal(supplier);
+        });
+
+        titleElement.querySelector(".supplier-add-btn").addEventListener("click", () => {
+          selectedSupplier = supplier;
+          openHomePage();
+          showToast(`Tambah barang ke ${supplier}`);
+          setTimeout(() => el.searchInput.focus(), 100);
+        });
+
+        groupElement.appendChild(titleElement);
+
+        supplierItems.forEach(item => {
+          const itemElement = document.createElement("div");
+          itemElement.className = "item";
+
+          itemElement.innerHTML = `
+            <div class="item-left">
+              <p class="item-name">${escapeHTML(item.name)}</p>
+              <div class="item-meta">${escapeHTML(item.category)} • Update: ${formatDate(item.updatedAt)}</div>
+            </div>
+            <div class="item-actions">
+              <div class="qty-control">
+                <button class="qty-btn" type="button">−</button>
+                <input class="qty-input" type="number" min="0" inputmode="numeric" value="${item.qty}">
+                <button class="qty-btn" type="button">+</button>
+              </div>
+              <button class="delete-btn" type="button">×</button>
+            </div>
+          `;
+
+          const qtyButtons = itemElement.querySelectorAll(".qty-btn");
+          const qtyInput = itemElement.querySelector(".qty-input");
+          const deleteButton = itemElement.querySelector(".delete-btn");
+
+          qtyButtons[0].addEventListener("click", () => decreaseQty(item.id));
+          qtyButtons[1].addEventListener("click", () => increaseQty(item.id));
+
+          qtyInput.addEventListener("change", () => {
+            updateQtyManual(item.id, qtyInput.value);
+          });
+
+          qtyInput.addEventListener("keydown", event => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              qtyInput.blur();
+            }
+          });
+
+          deleteButton.addEventListener("click", () => removeItem(item.id));
+          groupElement.appendChild(itemElement);
+        });
+
+        el.itemList.appendChild(groupElement);
+      });
+    }
+
+    function generateMessage() {
+      if (items.length === 0) return "Belum ada barang habis.";
+
+      const grouped = groupBySupplier(items);
+
+      const sections = Object.keys(grouped).map(supplier => {
+        const lines = grouped[supplier].map(item => {
+          return `- ${item.name} (${formatQtyText(item.qty)})`;
+        });
+
+        return `Barang ${supplier}\n\n${lines.join("\n")}`;
+      });
+
+      return sections.join("\n\n");
+    }
+
+    function renderSummary() {
+      const qtyTotal = items.reduce((total, item) => total + item.qty, 0);
+      const supplierTotal = Object.keys(groupBySupplier(items)).length;
+
+      el.totalItems.textContent = items.length;
+      el.viewAddedCount.textContent = `${items.length} item`;
+      el.totalQty.textContent = `Total qty: ${qtyTotal}`;
+      el.summaryText.textContent = items.length === 0
+        ? "Belum ada barang habis."
+        : `${items.length} jenis barang habis dari ${supplierTotal} supplier dengan total quantity ${qtyTotal}.`;
+
+      el.previewText.value = generateMessage();
+      el.clearSearchBtn.style.display = cleanText(el.searchInput.value) ? "block" : "none";
+      el.searchStatus.classList.toggle("show", isSearching);
+    }
+
+    function renderSuggestions() {
+      const rawKeyword = cleanText(el.searchInput.value).toLowerCase();
+      el.searchSuggestions.innerHTML = "";
+
+      if (
+        !rawKeyword ||
+        isSearching ||
+        isSupplierMenuOpen ||
+        currentPage === "added" ||
+        supplierContextFilter
+      ) {
+        el.searchSuggestions.classList.remove("show");
+        return;
+      }
+
+      const suggestions = MASTER_ITEMS
+        .filter(item =>
+          item.name.toLowerCase().includes(rawKeyword) ||
+          item.category.toLowerCase().includes(rawKeyword)
+        )
+        .slice(0, 5);
+
+      if (suggestions.length === 0) {
+        el.searchSuggestions.classList.remove("show");
+        return;
+      }
+
+      suggestions.forEach(item => {
+        const button = document.createElement("button");
+        button.className = "suggestion-btn";
+        button.type = "button";
+        button.innerHTML = `
+          <span>
+            <span class="suggestion-name">${escapeHTML(item.name)}</span>
+            <span class="suggestion-category">${escapeHTML(item.category || "Barang")}</span>
+          </span>
+          <span class="suggestion-action">+ Tambah</span>
+        `;
+
+        button.addEventListener("click", () => {
+          el.searchInput.value = item.name;
+          searchQuery = item.name;
+          el.searchSuggestions.classList.remove("show");
+
+          addItem(item.name);
+
+          el.searchInput.value = item.name;
+          searchQuery = item.name;
+          renderSummary();
+          el.searchSuggestions.classList.remove("show");
+        });
+
+        el.searchSuggestions.appendChild(button);
+      });
+
+      el.searchSuggestions.classList.add("show");
+    }
+
+    function render() {
+      renderSummary();
+      renderSelectedSupplier();
+      renderCatalog();
+      renderList();
+      renderSuggestions();
+    }
+
+    function handleSearchInput() {
+      const value = cleanText(el.searchInput.value);
+      clearTimeout(suggestionTimer);
+
+      isSupplierMenuOpen = false;
+      el.supplierDropdown.classList.remove("show");
+      el.catalogResults.classList.remove("hide");
+      el.clearSearchBtn.style.display = value ? "block" : "none";
+
+      if (!value) {
+        searchQuery = "";
+        isSearching = false;
+        el.searchSuggestions.classList.remove("show");
+        render();
+        return;
+      }
+
+      suggestionTimer = setTimeout(renderSuggestions, SUGGESTION_DELAY);
+    }
+
+    function runSearch() {
+      const value = cleanText(el.searchInput.value);
+      clearTimeout(searchTimer);
+      clearTimeout(suggestionTimer);
+
+      isSupplierMenuOpen = false;
+      el.searchSuggestions.classList.remove("show");
+      el.supplierDropdown.classList.remove("show");
+      el.catalogResults.classList.remove("hide");
+
+      if (!value) {
+        searchQuery = "";
+        isSearching = false;
+        render();
+        return;
+      }
+
+      isSearching = true;
+      render();
+
+      searchTimer = setTimeout(() => {
+        searchQuery = value;
+        isSearching = false;
+        render();
+      }, SEARCH_DELAY);
+    }
+
+    async function copyList() {
+      if (items.length === 0) {
+        showToast("Belum ada list untuk disalin");
+        return;
+      }
+
+      const text = generateMessage();
+
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("List berhasil disalin");
+      } catch (error) {
+        el.previewText.value = text;
+        el.previewText.select();
+        document.execCommand("copy");
+        showToast("List berhasil disalin");
+      }
+    }
+
+    function sendToWhatsApp() {
+      if (items.length === 0) {
+        showToast("Belum ada list untuk dikirim");
+        return;
+      }
+
+      const text = encodeURIComponent(generateMessage());
+      window.open(`https://wa.me/${WA_NUMBER}?text=${text}`, "_blank");
+    }
+
+    function setTab(tab, shouldRender = true) {
+      activeTab = tab === "preview" ? "preview" : "list";
+
+      if (activeTab === "list") {
+        el.tabList.classList.add("active");
+        el.tabPreview.classList.remove("active");
+        el.listSection.style.display = "block";
+        el.previewSection.style.display = "none";
+      } else {
+        el.tabPreview.classList.add("active");
+        el.tabList.classList.remove("active");
+        el.listSection.style.display = "none";
+        el.previewSection.style.display = "block";
+      }
+
+      if (shouldRender) render();
+    }
+
+    function openResetModal() {
+      if (items.length === 0) {
+        showToast("Data masih kosong");
+        return;
+      }
+
+      el.confirmModal.classList.add("show");
+    }
+
+    function closeResetModal() {
+      el.confirmModal.classList.remove("show");
+    }
+
+    function resetAll() {
+      items = [];
+      saveItems();
+      supplierContextFilter = "";
+      closeResetModal();
+      render();
+      showToast("Semua list berhasil direset");
+    }
+
+    el.searchInput.addEventListener("input", handleSearchInput);
+
+    el.searchInput.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        runSearch();
+      }
+    });
+
+    el.searchIconBtn.addEventListener("click", runSearch);
+
+    el.clearSearchBtn.addEventListener("click", () => {
+      resetSearchState();
+      el.searchInput.focus();
+    });
+
+    el.quickSupplierBtn.addEventListener("click", () => {
+      isSupplierMenuOpen = !isSupplierMenuOpen;
+      renderSupplierDropdown();
+      el.supplierDropdown.classList.toggle("show", isSupplierMenuOpen);
+      el.catalogResults.classList.toggle("hide", isSupplierMenuOpen);
+      el.searchSuggestions.classList.remove("show");
+    });
+
+el.selectedSupplierChip.addEventListener("click", () => {
+  const supplier = getCurrentSupplier();
+  if (!supplier) {
+    showToast("Pilih supplier dulu");
+    return;
+  }
+  openSupplierList(supplier);
+});
+
+    el.viewAddedBtn.addEventListener("click", () => {
+      if (currentPage === "home") {
+        openAddedPage();
+      } else {
+        openHomePage();
+      }
+    });
+
+    el.topResetBtn.addEventListener("click", openResetModal);
+
+    el.copyBtn.addEventListener("click", copyList);
+    el.waBtn.addEventListener("click", sendToWhatsApp);
+    el.tabList.addEventListener("click", () => setTab("list"));
+    el.tabPreview.addEventListener("click", () => setTab("preview"));
+    el.cancelResetBtn.addEventListener("click", closeResetModal);
+    el.confirmResetBtn.addEventListener("click", resetAll);
+
+    el.cancelEditSupplierBtn.addEventListener("click", closeEditSupplierModal);
+    el.saveEditSupplierBtn.addEventListener("click", saveEditSupplier);
+
+    el.editSupplierInput.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        saveEditSupplier();
+      }
+    });
+
+    el.confirmModal.addEventListener("click", event => {
+      if (event.target === el.confirmModal) closeResetModal();
+    });
+
+    el.editSupplierModal.addEventListener("click", event => {
+      if (event.target === el.editSupplierModal) closeEditSupplierModal();
+    });
+
+    renderSupplierDropdown();
+    openHomePage();
+  </script>
+</body>
+</html>
