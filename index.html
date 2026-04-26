@@ -696,6 +696,7 @@
 
     .menu-search-clear {
       position: absolute;
+      z-index: 2;
       right: 10px;
       top: 50%;
       transform: translateY(-50%);
@@ -1373,6 +1374,7 @@
     let selectedProductMenu = "";
     let isMenuSearchFocused = false;
     let menuSearchDraft = "";
+    let menuSearchQuery = "";
     let menuSearchTimer = null;
     let menuSearchLoadingTimer = null;
     let isMenuCatalogLoading = false;
@@ -1661,6 +1663,7 @@
           clearTimeout(menuSearchLoadingTimer);
           searchQuery = "";
           menuSearchDraft = "";
+          menuSearchQuery = "";
           isMenuCatalogLoading = false;
           el.searchInput.value = "";
           el.clearSearchBtn.style.display = "none";
@@ -1672,8 +1675,10 @@
     }
 
     function getFilteredCatalog() {
-      const keyword = currentPage === "home" ? cleanText(searchQuery).toLowerCase() : "";
       const source = selectedProductMenu ? getProductMenuItems(selectedProductMenu) : MASTER_ITEMS;
+      const keyword = currentPage === "home"
+        ? cleanText(selectedProductMenu ? menuSearchQuery : searchQuery).toLowerCase()
+        : "";
 
       if (keyword) {
         return source.filter(item =>
@@ -1712,6 +1717,8 @@
       currentPage = "home";
       supplierContextFilter = "";
       selectedProductMenu = "";
+      menuSearchDraft = "";
+      menuSearchQuery = "";
       isSupplierMenuOpen = false;
       isSearching = false;
       isSuggestionLoading = false;
@@ -1766,6 +1773,7 @@
       suggestionTimer = null;
       searchQuery = "";
       menuSearchDraft = "";
+      menuSearchQuery = "";
       selectedProductMenu = "";
       isMenuCatalogLoading = false;
       isSearching = false;
@@ -2164,6 +2172,35 @@
       `).join("");
     }
 
+
+    function clearMenuSearchOnly(shouldFocus = true) {
+      clearTimeout(menuSearchTimer);
+      clearTimeout(menuSearchLoadingTimer);
+      menuSearchTimer = null;
+      menuSearchLoadingTimer = null;
+      menuSearchDraft = "";
+      menuSearchQuery = "";
+      searchQuery = "";
+      isMenuCatalogLoading = false;
+      isMenuSearchFocused = Boolean(shouldFocus);
+      el.searchInput.value = "";
+      el.clearSearchBtn.style.display = "none";
+      closeSuggestionsCurtainUp();
+      renderCatalog();
+
+      if (shouldFocus) {
+        setTimeout(() => {
+          const nextInput = el.catalogResults.querySelector(".menu-search-input");
+          if (nextInput) nextInput.focus();
+        }, 0);
+      }
+    }
+
+    function forceRestoreMenuItemsAfterEmptySearch() {
+      if (currentPage !== "home" || !selectedProductMenu) return;
+      clearMenuSearchOnly(true);
+    }
+
     function renderCatalog() {
       if (currentPage !== "home") {
         el.catalogResults.innerHTML = "";
@@ -2189,7 +2226,7 @@
       el.catalogResults.innerHTML = "";
 
       if (selectedProductMenu) {
-        const displaySearchValue = menuSearchDraft || searchQuery;
+        const displaySearchValue = menuSearchDraft;
         const menuSearch = document.createElement("div");
         menuSearch.className = "menu-search-wrap";
         menuSearch.innerHTML = `
@@ -2227,6 +2264,7 @@
           isMenuCatalogLoading = false;
 
           if (!menuSearchDraft) {
+            menuSearchQuery = "";
             searchQuery = "";
             renderCatalog();
             return;
@@ -2239,7 +2277,8 @@
 
           menuSearchTimer = setTimeout(() => {
             clearTimeout(menuSearchLoadingTimer);
-            searchQuery = cleanText(menuSearchDraft);
+            menuSearchQuery = cleanText(menuSearchDraft);
+            searchQuery = menuSearchQuery;
             isMenuCatalogLoading = false;
             renderCatalog();
           }, SEARCH_DELAY);
@@ -2252,30 +2291,24 @@
             clearTimeout(menuSearchLoadingTimer);
             isMenuSearchFocused = true;
             menuSearchDraft = cleanText(menuInput.value);
-            searchQuery = menuSearchDraft;
-            el.searchInput.value = searchQuery;
+            menuSearchQuery = menuSearchDraft;
+            searchQuery = menuSearchQuery;
+            el.searchInput.value = menuSearchQuery;
             isMenuCatalogLoading = false;
             closeSuggestionsCurtainUp();
             renderCatalog();
           }
         });
 
-        menuClear.addEventListener("click", () => {
-          clearTimeout(menuSearchTimer);
-          clearTimeout(menuSearchLoadingTimer);
-          isMenuSearchFocused = true;
-          searchQuery = "";
-          menuSearchDraft = "";
-          isMenuCatalogLoading = false;
-          el.searchInput.value = "";
-          el.clearSearchBtn.style.display = "none";
-          closeSuggestionsCurtainUp();
-          renderCatalog();
-          setTimeout(() => {
-            const nextInput = el.catalogResults.querySelector(".menu-search-input");
-            if (nextInput) nextInput.focus();
-          }, 0);
-        });
+        const handleMenuClear = event => {
+          event.preventDefault();
+          event.stopPropagation();
+          clearMenuSearchOnly(true);
+        };
+
+        menuClear.addEventListener("mousedown", handleMenuClear);
+        menuClear.addEventListener("touchstart", handleMenuClear, { passive: false });
+        menuClear.addEventListener("click", handleMenuClear);
 
         el.catalogResults.appendChild(menuSearch);
 
@@ -2315,7 +2348,7 @@
         el.catalogResults.innerHTML += `
           <div class="empty" style="padding:18px;">
             <strong>Barang tidak ada di menu ini</strong>
-            <span>Coba pilih menu barang lain atau gunakan pencarian.</span>
+            <span>Hapus pencarian atau coba kata lain.</span>
           </div>
         `;
         return;
@@ -2476,7 +2509,7 @@
         : `${items.length} jenis barang habis dari ${supplierTotal} supplier dengan total quantity ${qtyTotal}.`;
 
       el.previewText.value = generateMessage();
-      el.clearSearchBtn.style.display = cleanText(el.searchInput.value) ? "block" : "none";
+      el.clearSearchBtn.style.display = selectedProductMenu ? (cleanText(menuSearchDraft) ? "block" : "none") : (cleanText(el.searchInput.value) ? "block" : "none");
       el.searchStatus.classList.toggle("show", isSearching);
       el.searchWarmup.classList.toggle("show", isSearching || isSuggestionLoading);
     }
@@ -2777,6 +2810,18 @@
     function runSearch() {
       const value = cleanText(el.searchInput.value);
 
+      if (selectedProductMenu && currentPage === "home") {
+        clearTimeout(menuSearchTimer);
+        clearTimeout(menuSearchLoadingTimer);
+        menuSearchDraft = value;
+        menuSearchQuery = value;
+        searchQuery = value;
+        isMenuCatalogLoading = false;
+        closeSuggestionsCurtainUp();
+        renderCatalog();
+        return;
+      }
+
       if (openSupplierPickerFromListSearch()) return;
 
       clearTimeout(searchTimer);
@@ -2885,6 +2930,7 @@
       clearTimeout(menuSearchLoadingTimer);
       isMenuSearchFocused = false;
       menuSearchDraft = "";
+      menuSearchQuery = "";
       isMenuCatalogLoading = false;
       searchQuery = "";
       el.searchInput.value = "";
@@ -2892,6 +2938,30 @@
       closeSuggestionsCurtainUp();
       renderSelectedSupplier();
       renderCatalog();
+    });
+
+    el.catalogResults.addEventListener("mousedown", event => {
+      const clearButton = event.target.closest && event.target.closest(".menu-search-clear");
+      if (!clearButton) return;
+      event.preventDefault();
+      event.stopPropagation();
+      forceRestoreMenuItemsAfterEmptySearch();
+    });
+
+    el.catalogResults.addEventListener("touchstart", event => {
+      const clearButton = event.target.closest && event.target.closest(".menu-search-clear");
+      if (!clearButton) return;
+      event.preventDefault();
+      event.stopPropagation();
+      forceRestoreMenuItemsAfterEmptySearch();
+    }, { passive: false });
+
+    el.catalogResults.addEventListener("click", event => {
+      const clearButton = event.target.closest && event.target.closest(".menu-search-clear");
+      if (!clearButton) return;
+      event.preventDefault();
+      event.stopPropagation();
+      forceRestoreMenuItemsAfterEmptySearch();
     });
 
     el.searchInput.addEventListener("input", handleSearchInput);
@@ -2913,7 +2983,14 @@
 
     el.searchIconBtn.addEventListener("click", runSearch);
 
-    el.clearSearchBtn.addEventListener("click", () => {
+    el.clearSearchBtn.addEventListener("click", event => {
+      event.preventDefault();
+
+      if (selectedProductMenu && currentPage === "home") {
+        clearMenuSearchOnly(true);
+        return;
+      }
+
       resetSearchState();
       el.searchInput.focus();
     });
