@@ -640,18 +640,78 @@
       font-weight: 700;
     }
 
-    .catalog-back-btn {
-      border: 1px solid #99f6e4;
-      background: #ecfeff;
+    .quick-title.menu-back-title {
       color: var(--primary-dark);
-      border-radius: 999px;
-      padding: 10px 12px;
-      font-size: 12px;
-      font-weight: 900;
       cursor: pointer;
-      width: fit-content;
+      text-decoration: none !important;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--primary-soft);
+      border: 1px solid #99f6e4;
+      border-radius: 999px;
+      padding: 8px 10px;
+      max-width: 190px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .quick-title.menu-back-title:hover,
+    .quick-title.menu-back-title:focus {
+      text-decoration: none !important;
+    }
+
+    .menu-search-wrap {
+      position: relative;
       margin-bottom: 2px;
     }
+
+    .menu-search-input {
+      width: 100%;
+      border: 1px solid #99f6e4;
+      background: #ecfeff;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 12px 42px 12px 38px;
+      font-size: 13px;
+      font-weight: 800;
+      outline: none;
+    }
+
+    .menu-search-input:focus {
+      border-color: var(--primary);
+      background: #ffffff;
+      box-shadow: 0 0 0 4px var(--primary-soft);
+    }
+
+    .menu-search-icon {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--primary-dark);
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    .menu-search-clear {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 24px;
+      border: 0;
+      border-radius: 999px;
+      background: #d1fae5;
+      color: var(--primary-dark);
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      display: none;
+    }
+
+    .menu-search-clear.show { display: grid; place-items: center; }
 
 
     .tabs {
@@ -1592,6 +1652,10 @@
       el.catalogResults.querySelectorAll(".product-menu-card").forEach(button => {
         button.addEventListener("click", () => {
           selectedProductMenu = button.dataset.menuId || "";
+          searchQuery = "";
+          el.searchInput.value = "";
+          el.clearSearchBtn.style.display = "none";
+          closeSuggestionsCurtainUp();
           renderSelectedSupplier();
           renderCatalog();
         });
@@ -1600,16 +1664,17 @@
 
     function getFilteredCatalog() {
       const keyword = currentPage === "home" ? cleanText(searchQuery).toLowerCase() : "";
+      const source = selectedProductMenu ? getProductMenuItems(selectedProductMenu) : MASTER_ITEMS;
 
       if (keyword) {
-        return MASTER_ITEMS.filter(item =>
+        return source.filter(item =>
           item.name.toLowerCase().includes(keyword) ||
           item.category.toLowerCase().includes(keyword)
-        ).slice(0, 50);
+        ).slice(0, selectedProductMenu ? 100 : 50);
       }
 
       if (selectedProductMenu) {
-        return getProductMenuItems(selectedProductMenu).slice(0, 100);
+        return source.slice(0, 100);
       }
 
       return [];
@@ -2047,7 +2112,12 @@
       }
 
       if (el.quickMenuTitle) {
-        el.quickMenuTitle.textContent = supplierMenuOpen ? "Menu supplier" : (selectedProductMenu ? `List ${getMenuConfig(selectedProductMenu)?.title || "Barang"}` : "Menu barang");
+        const activeMenu = getMenuConfig(selectedProductMenu);
+        el.quickMenuTitle.textContent = supplierMenuOpen
+          ? "Menu supplier"
+          : (selectedProductMenu ? `← ${activeMenu?.title || "Menu barang"}` : "Menu barang");
+        el.quickMenuTitle.classList.toggle("menu-back-title", Boolean(!supplierMenuOpen && selectedProductMenu));
+        el.quickMenuTitle.title = selectedProductMenu ? "Klik untuk kembali ke menu barang" : "";
       }
 
       if (currentPage === "home") {
@@ -2099,17 +2169,58 @@
       const activeMenu = getMenuConfig(selectedProductMenu);
       el.catalogResults.innerHTML = "";
 
-      if (selectedProductMenu && !cleanText(searchQuery)) {
-        const backBtn = document.createElement("button");
-        backBtn.className = "catalog-back-btn";
-        backBtn.type = "button";
-        backBtn.textContent = `← Menu Barang${activeMenu ? " / " + activeMenu.title : ""}`;
-        backBtn.addEventListener("click", () => {
-          selectedProductMenu = "";
-          renderSelectedSupplier();
+      if (selectedProductMenu) {
+        const menuSearch = document.createElement("div");
+        menuSearch.className = "menu-search-wrap";
+        menuSearch.innerHTML = `
+          <span class="menu-search-icon">🔎</span>
+          <input class="menu-search-input" type="text" value="${escapeHTML(searchQuery)}" placeholder="Cari di menu ${escapeHTML(activeMenu ? activeMenu.title : "barang")}..." autocomplete="off" />
+          <button class="menu-search-clear${cleanText(searchQuery) ? " show" : ""}" type="button">×</button>
+        `;
+
+        const menuInput = menuSearch.querySelector(".menu-search-input");
+        const menuClear = menuSearch.querySelector(".menu-search-clear");
+
+        menuInput.addEventListener("input", () => {
+          searchQuery = cleanText(menuInput.value);
+          el.searchInput.value = searchQuery;
+          el.clearSearchBtn.style.display = searchQuery ? "block" : "none";
           renderCatalog();
         });
-        el.catalogResults.appendChild(backBtn);
+
+        menuInput.addEventListener("keydown", event => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            searchQuery = cleanText(menuInput.value);
+            el.searchInput.value = searchQuery;
+            renderCatalog();
+          }
+        });
+
+        menuClear.addEventListener("click", () => {
+          searchQuery = "";
+          el.searchInput.value = "";
+          el.clearSearchBtn.style.display = "none";
+          renderCatalog();
+          setTimeout(() => {
+            const nextInput = el.catalogResults.querySelector(".menu-search-input");
+            if (nextInput) nextInput.focus();
+          }, 0);
+        });
+
+        el.catalogResults.appendChild(menuSearch);
+
+        setTimeout(() => {
+          const activeElement = document.activeElement;
+          const shouldFocusBack = activeElement && activeElement.classList && activeElement.classList.contains("menu-search-input");
+          if (shouldFocusBack) {
+            const nextInput = el.catalogResults.querySelector(".menu-search-input");
+            if (nextInput) {
+              nextInput.focus();
+              nextInput.setSelectionRange(nextInput.value.length, nextInput.value.length);
+            }
+          }
+        }, 0);
       }
 
       if (filteredCatalog.length === 0) {
@@ -2491,7 +2602,6 @@
       isSupplierMenuOpen = false;
       el.supplierDropdown.classList.remove("show");
       el.catalogResults.classList.remove("hide");
-      if (value) selectedProductMenu = "";
       el.clearSearchBtn.style.display = value ? "block" : "none";
 
       if (!value) {
@@ -2666,6 +2776,18 @@
       render();
       showToast("Semua list berhasil direset");
     }
+
+    el.quickMenuTitle.addEventListener("click", () => {
+      if (isSupplierMenuOpen || !selectedProductMenu) return;
+
+      selectedProductMenu = "";
+      searchQuery = "";
+      el.searchInput.value = "";
+      el.clearSearchBtn.style.display = "none";
+      closeSuggestionsCurtainUp();
+      renderSelectedSupplier();
+      renderCatalog();
+    });
 
     el.searchInput.addEventListener("input", handleSearchInput);
 
