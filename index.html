@@ -641,24 +641,27 @@
     }
 
     .quick-title.menu-back-title {
-      color: var(--primary-dark);
+      color: var(--muted);
       cursor: pointer;
       text-decoration: none !important;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: var(--primary-soft);
-      border: 1px solid #99f6e4;
-      border-radius: 999px;
-      padding: 8px 10px;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      padding: 0;
+      display: inline-block;
       max-width: 190px;
       overflow: hidden;
       text-overflow: ellipsis;
+      vertical-align: middle;
     }
 
     .quick-title.menu-back-title:hover,
-    .quick-title.menu-back-title:focus {
+    .quick-title.menu-back-title:focus,
+    .quick-title.menu-back-title:active,
+    .quick-title.menu-back-title:visited {
+      color: var(--muted);
       text-decoration: none !important;
+      outline: none;
     }
 
     .menu-search-wrap {
@@ -1379,6 +1382,7 @@
     let menuSearchLoadingTimer = null;
     let isMenuCatalogLoading = false;
     let savedHomeSuggestionState = null;
+    let savedHomeMenuState = null;
 
     const SEARCH_DELAY = 2000;
     const SUGGESTION_DELAY = 990;
@@ -1694,6 +1698,73 @@
       return [];
     }
 
+    function captureHomeMenuState() {
+      savedHomeMenuState = {
+        selectedProductMenuValue: cleanText(selectedProductMenu),
+        menuSearchDraftValue: cleanText(menuSearchDraft),
+        menuSearchQueryValue: cleanText(menuSearchQuery),
+        searchInputValue: cleanText(el.searchInput.value),
+        selectedSupplierValue: getCurrentSupplier(),
+        scrollY: window.scrollY || 0,
+        shouldRestoreMenu: currentPage === "home" && Boolean(selectedProductMenu)
+      };
+    }
+
+    function restoreHomeMenuState() {
+      const state = savedHomeMenuState;
+      savedHomeMenuState = null;
+
+      if (!state || !state.shouldRestoreMenu || !state.selectedProductMenuValue) {
+        openHomePage(Boolean(savedHomeSuggestionState));
+        return;
+      }
+
+      currentPage = "home";
+      supplierContextFilter = "";
+      selectedProductMenu = cleanText(state.selectedProductMenuValue);
+      selectedSupplier = cleanText(state.selectedSupplierValue);
+      isSupplierMenuOpen = false;
+      isSearching = false;
+      isSuggestionLoading = false;
+      isMenuCatalogLoading = false;
+      isMenuSearchFocused = false;
+      menuSearchDraft = cleanText(state.menuSearchDraftValue || state.searchInputValue);
+      menuSearchQuery = cleanText(state.menuSearchQueryValue || state.searchInputValue);
+      searchQuery = menuSearchQuery;
+
+      clearTimeout(searchTimer);
+      clearTimeout(suggestionTimer);
+      clearTimeout(suggestionLoadingTimer);
+      clearTimeout(menuSearchTimer);
+      clearTimeout(menuSearchLoadingTimer);
+
+      el.homePage.style.display = "block";
+      el.addedPage.style.display = "none";
+      el.supplierDropdown.classList.remove("show");
+      el.catalogResults.classList.remove("hide");
+      el.searchBox.classList.remove("hidden");
+      el.headerActions.classList.remove("list-mode");
+      el.topResetBtn.classList.remove("show");
+      el.searchWarmup.classList.remove("show");
+      el.searchStatus.classList.remove("show");
+
+      el.pageTitle.textContent = "Elektra bali";
+      el.viewAddedLabel.textContent = "📦 Lihat semua List";
+      el.searchInput.placeholder = "Cari barang di katalog...";
+      el.searchInput.value = "";
+      el.clearSearchBtn.style.display = "none";
+      closeSuggestionsCurtainUp();
+
+      renderSummary();
+      renderSelectedSupplier();
+      renderCatalog();
+      renderList();
+
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: Number(state.scrollY) || 0, behavior: "instant" });
+      });
+    }
+
     function captureHomeSuggestionState() {
       savedHomeSuggestionState = {
         searchValue: cleanText(el.searchInput.value),
@@ -1794,6 +1865,7 @@
       }
 
       savedHomeSuggestionState = null;
+      savedHomeMenuState = null;
       currentPage = "home";
       supplierContextFilter = "";
       selectedProductMenu = "";
@@ -2142,9 +2214,9 @@
         const activeMenu = getMenuConfig(selectedProductMenu);
         el.quickMenuTitle.textContent = supplierMenuOpen
           ? "Menu supplier"
-          : (selectedProductMenu ? `← ${activeMenu?.title || "Menu barang"}` : "Menu barang");
+          : (selectedProductMenu ? `Menu ${activeMenu?.title || "Barang"}` : "Menu barang");
         el.quickMenuTitle.classList.toggle("menu-back-title", Boolean(!supplierMenuOpen && selectedProductMenu));
-        el.quickMenuTitle.title = selectedProductMenu ? "Klik untuk kembali ke menu barang" : "";
+        el.quickMenuTitle.title = selectedProductMenu ? "Klik untuk kembali ke menu awal" : "";
       }
 
       if (currentPage === "home") {
@@ -3097,7 +3169,8 @@
 
     el.suggestionViewListBtn.addEventListener("click", () => {
       if (currentPage === "home") {
-        captureHomeSuggestionState();
+        if (selectedProductMenu) captureHomeMenuState();
+        else captureHomeSuggestionState();
         openAddedPage();
       } else {
         closeSuggestionsCurtainUp();
@@ -3119,9 +3192,14 @@
     el.viewAddedBtn.addEventListener("click", () => {
       if (currentPage === "home") {
         savedHomeSuggestionState = null;
+        captureHomeMenuState();
         openAddedPage();
       } else {
-        openHomePage(Boolean(savedHomeSuggestionState));
+        if (savedHomeMenuState && savedHomeMenuState.shouldRestoreMenu) {
+          restoreHomeMenuState();
+        } else {
+          openHomePage(Boolean(savedHomeSuggestionState));
+        }
       }
     });
 
