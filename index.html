@@ -1732,27 +1732,10 @@
     function getFilteredCatalog() {
       if (currentPage !== "home") return [];
 
-      const topSearchKeyword = cleanText(searchQuery || el.searchInput.value).toLowerCase();
-      const menuSearchKeyword = cleanText(menuSearchQuery).toLowerCase();
-
-      let source = MASTER_ITEMS;
-      let keyword = topSearchKeyword;
-      let limit = 50;
-
-      if (selectedProductMenu) {
-        if (topSearchKeyword) {
-          // Search paling atas tetap cari SEMUA barang seperti halaman awal,
-          // walaupun user sedang berada di menu DVR / NVR / HTB / menu lainnya.
-          source = MASTER_ITEMS;
-          keyword = topSearchKeyword;
-          limit = 100;
-        } else {
-          // Search kecil di dalam menu tetap khusus untuk menu yang sedang dibuka.
-          source = getProductMenuItems(selectedProductMenu);
-          keyword = menuSearchKeyword;
-          limit = 100;
-        }
-      }
+      const isInsideProductMenu = Boolean(selectedProductMenu);
+      const source = isInsideProductMenu ? getProductMenuItems(selectedProductMenu) : MASTER_ITEMS;
+      const keyword = cleanText(isInsideProductMenu ? menuSearchQuery : searchQuery).toLowerCase();
+      const limit = isInsideProductMenu ? 100 : 50;
 
       if (keyword) {
         return source.filter(item =>
@@ -1761,7 +1744,7 @@
         ).slice(0, limit);
       }
 
-      if (selectedProductMenu) {
+      if (isInsideProductMenu) {
         return source.slice(0, limit);
       }
 
@@ -1800,7 +1783,7 @@
       isMenuSearchFocused = false;
       menuSearchDraft = cleanText(state.menuSearchDraftValue || state.searchInputValue);
       menuSearchQuery = cleanText(state.menuSearchQueryValue || state.searchInputValue);
-      searchQuery = menuSearchQuery;
+      searchQuery = "";
 
       clearTimeout(searchTimer);
       clearTimeout(suggestionTimer);
@@ -2251,7 +2234,7 @@
 
       if (currentPage === "home" && selectedProductMenu) {
         const activeMenu = getMenuConfig(selectedProductMenu);
-        el.searchInput.placeholder = "Cari semua barang...";
+        el.searchInput.placeholder = `Cari barang ${activeMenu?.title || "menu ini"}...`;
       } else if (currentPage === "home") {
         el.searchInput.placeholder = "Cari semua barang...";
       }
@@ -2289,11 +2272,8 @@
       menuSearchLoadingTimer = null;
       menuSearchDraft = "";
       menuSearchQuery = "";
-      searchQuery = "";
       isMenuCatalogLoading = false;
       isMenuSearchFocused = Boolean(shouldFocus);
-      el.searchInput.value = "";
-      el.clearSearchBtn.style.display = "none";
       closeSuggestionsCurtainUp();
       renderCatalog();
 
@@ -2445,7 +2425,7 @@
         menuSearch.className = "menu-search-wrap";
         menuSearch.innerHTML = `
           <span class="menu-search-icon">🔎</span>
-          <input class="menu-search-input" type="text" value="${escapeHTML(displaySearchValue)}" placeholder="Cari semua barang..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" inputmode="search" />
+          <input class="menu-search-input" type="text" value="${escapeHTML(displaySearchValue)}" placeholder="Cari barang ${escapeHTML(activeMenu?.title || "menu ini")}..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" inputmode="search" />
           <button class="menu-search-clear${cleanText(displaySearchValue) ? " show" : ""}" type="button">×</button>
         `;
 
@@ -2468,8 +2448,6 @@
         menuInput.addEventListener("input", () => {
           isMenuSearchFocused = true;
           menuSearchDraft = menuInput.value.trimStart().replace(/\s+/g, " ");
-          el.searchInput.value = menuSearchDraft;
-          el.clearSearchBtn.style.display = menuSearchDraft ? "block" : "none";
           menuClear.classList.toggle("show", Boolean(menuSearchDraft));
           closeSuggestionsCurtainUp();
 
@@ -2498,7 +2476,6 @@
               return;
             }
             menuSearchQuery = cleanText(menuSearchDraft);
-            searchQuery = menuSearchQuery;
             isMenuCatalogLoading = false;
             if (!renderMenuCatalogBodyOnly()) renderCatalog();
           }, SEARCH_DELAY);
@@ -2518,8 +2495,6 @@
             isMenuSearchFocused = true;
             menuSearchDraft = cleanText(menuInput.value);
             menuSearchQuery = menuSearchDraft;
-            searchQuery = menuSearchQuery;
-            el.searchInput.value = menuSearchQuery;
             isMenuCatalogLoading = false;
             closeSuggestionsCurtainUp();
             if (!renderMenuCatalogBodyOnly()) renderCatalog();
@@ -2773,6 +2748,8 @@
       const rawKeyword = cleanText(keyword).toLowerCase();
       if (!rawKeyword) return [];
 
+      // Field search paling atas selalu GLOBAL: cari semua produk,
+      // walaupun sedang berada di menu DVR / HTB / KABEL / menu lainnya.
       return MASTER_ITEMS
         .filter(item =>
           item.name.toLowerCase().includes(rawKeyword) ||
@@ -3012,8 +2989,8 @@
         return;
       }
 
-      // Search paling atas selalu dianggap pencarian global katalog,
-      // termasuk saat sedang berada di dalam menu seperti DVR / HTB / KABEL.
+      // Field search paling atas selalu global semua produk.
+      // Search khusus menu pakai field bawah (.menu-search-input).
       searchQuery = value;
 
       const nextSuggestions = getSuggestionItems(value);
