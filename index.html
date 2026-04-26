@@ -21,6 +21,154 @@
       --radius: 18px;
     }
 
+
+
+    body.dark-mode {
+      --bg: #070314;
+      --card: #110827;
+      --text: #f8f7ff;
+      --muted: #b7a7d9;
+      --line: rgba(196, 164, 255, 0.18);
+      --primary: #7c3aed;
+      --primary-dark: #c4b5fd;
+      --primary-soft: rgba(124, 58, 237, 0.22);
+      --danger: #fb7185;
+      --danger-soft: rgba(244, 63, 94, 0.16);
+      --shadow: 0 18px 45px rgba(0, 0, 0, 0.38);
+    }
+
+    body.dark-mode {
+      background:
+        radial-gradient(circle at 70% 0%, rgba(124, 58, 237, 0.32), transparent 34%),
+        radial-gradient(circle at 10% 25%, rgba(88, 28, 135, 0.30), transparent 30%),
+        #070314;
+    }
+
+    body.dark-mode .app {
+      background:
+        radial-gradient(circle at 75% 0%, rgba(124, 58, 237, 0.26), transparent 36%),
+        linear-gradient(180deg, #09031a 0%, #070314 100%);
+    }
+
+    body.dark-mode .header {
+      background:
+        radial-gradient(circle at 75% 0%, rgba(168, 85, 247, 0.30), transparent 36%),
+        linear-gradient(135deg, #05020d 0%, #12042b 48%, #1d0b45 100%);
+      border-bottom: 1px solid rgba(196, 164, 255, 0.16);
+      box-shadow: 0 20px 55px rgba(0, 0, 0, 0.48);
+    }
+
+    body.dark-mode .card,
+    body.dark-mode .modal,
+    body.dark-mode .item,
+    body.dark-mode .catalog-item,
+    body.dark-mode .suggestion-btn,
+    body.dark-mode .search-suggestions,
+    body.dark-mode .empty,
+    body.dark-mode .preview-text,
+    body.dark-mode .bottom-bar {
+      background: rgba(17, 8, 39, 0.92);
+      color: var(--text);
+      border-color: rgba(196, 164, 255, 0.18);
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.30);
+    }
+
+    body.dark-mode .search-box input,
+    body.dark-mode .edit-field,
+    body.dark-mode .menu-search-input,
+    body.dark-mode .suggestion-qty-input,
+    body.dark-mode .catalog-qty-input,
+    body.dark-mode .qty-input {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border-color: rgba(196, 164, 255, 0.18);
+    }
+
+    body.dark-mode .search-box input::placeholder,
+    body.dark-mode .menu-search-input::placeholder,
+    body.dark-mode .edit-field::placeholder {
+      color: rgba(231, 222, 255, 0.62);
+    }
+
+    body.dark-mode .catalog-item:hover,
+    body.dark-mode .suggestion-btn:hover,
+    body.dark-mode .product-menu-card:hover {
+      background: rgba(124, 58, 237, 0.20);
+      border-color: rgba(196, 164, 255, 0.38);
+    }
+
+    body.dark-mode .product-menu-card,
+    body.dark-mode .category-btn,
+    body.dark-mode .quick-btn,
+    body.dark-mode .tab-btn,
+    body.dark-mode .qty-control {
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--text);
+      border-color: rgba(196, 164, 255, 0.18);
+    }
+
+    body.dark-mode .tab-btn.active,
+    body.dark-mode .btn-primary {
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      color: white;
+      border-color: transparent;
+    }
+
+    body.dark-mode .btn-soft,
+    body.dark-mode .clear-search,
+    body.dark-mode .menu-search-clear {
+      background: rgba(255, 255, 255, 0.10);
+      color: var(--text);
+      border-color: rgba(196, 164, 255, 0.18);
+    }
+
+    body.dark-mode .supplier-title,
+    body.dark-mode .summary-box,
+    body.dark-mode .supplier-chip {
+      background: rgba(124, 58, 237, 0.16);
+      color: #ddd6fe;
+      border-color: rgba(196, 164, 255, 0.25);
+    }
+
+    body.dark-mode .supplier-title span,
+    body.dark-mode .catalog-category,
+    body.dark-mode .item-meta,
+    body.dark-mode .small-info,
+    body.dark-mode .quick-title,
+    body.dark-mode .product-menu-desc,
+    body.dark-mode .suggestion-category {
+      color: var(--muted);
+    }
+
+    body.dark-mode .bottom-bar {
+      backdrop-filter: blur(18px);
+      background: rgba(7, 3, 20, 0.82);
+    }
+
+    .theme-toggle-btn {
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      background: rgba(255, 255, 255, 0.14);
+      color: white;
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14);
+      transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .theme-toggle-btn:hover { transform: translateY(-1px); background: rgba(255, 255, 255, 0.22); }
+
+    body.dark-mode .theme-toggle-btn {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.95), rgba(168, 85, 247, 0.85));
+      border-color: rgba(216, 180, 254, 0.42);
+      box-shadow: 0 0 26px rgba(124, 58, 237, 0.42);
+    }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     body {
@@ -1132,6 +1280,8 @@
         </div>
 
         <div class="header-right-tools">
+          <button id="themeToggleBtn" class="theme-toggle-btn" type="button" title="Aktifkan dark mode" aria-label="Aktifkan dark mode">🌙</button>
+
           <div id="suggestionTopActions" class="suggestion-top-actions">
             <button id="suggestionViewListBtn" class="suggestion-mini-btn" type="button">📦 Liat List</button>
             <button id="suggestionChangeSupplierBtn" class="suggestion-mini-btn" type="button" style="display:none;">🔁 Ganti Supplier</button>
@@ -1265,6 +1415,7 @@
   <script>
     const STORAGE_KEY = "barang_habis_pakai_toko_v13_history_100_custom_supplier";
     const SUPPLIER_STORAGE_KEY = "barang_habis_custom_suppliers_v1";
+    const THEME_STORAGE_KEY = "barang_habis_theme_mode_v1";
     const WA_NUMBER = "628175777488";
 
     const SUPPLIERS = [
@@ -1381,6 +1532,7 @@
       itemList: $("itemList"),
       totalItems: $("totalItems"),
       totalBadge: $("totalBadge"),
+      themeToggleBtn: $("themeToggleBtn"),
       suggestionTopActions: $("suggestionTopActions"),
       suggestionViewListBtn: $("suggestionViewListBtn"),
       suggestionChangeSupplierBtn: $("suggestionChangeSupplierBtn"),
@@ -1524,6 +1676,26 @@
       el.toast.textContent = cleanText(message) || "Berhasil";
       el.toast.classList.add("show");
       setTimeout(() => el.toast.classList.remove("show"), 1800);
+    }
+
+
+    function applyThemeMode(mode) {
+      const isDark = mode === "dark";
+      document.body.classList.toggle("dark-mode", isDark);
+      el.themeToggleBtn.textContent = isDark ? "☀️" : "🌙";
+      el.themeToggleBtn.title = isDark ? "Matikan dark mode" : "Aktifkan dark mode";
+      el.themeToggleBtn.setAttribute("aria-label", isDark ? "Matikan dark mode" : "Aktifkan dark mode");
+    }
+
+    function getSavedThemeMode() {
+      return localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light";
+    }
+
+    function toggleThemeMode() {
+      const nextMode = document.body.classList.contains("dark-mode") ? "light" : "dark";
+      localStorage.setItem(THEME_STORAGE_KEY, nextMode);
+      applyThemeMode(nextMode);
+      showToast(nextMode === "dark" ? "Dark mode aktif" : "Light mode aktif");
     }
 
     function showSearchOverlay() {
@@ -3302,6 +3474,7 @@
     });
 
     el.topResetBtn.addEventListener("click", openResetModal);
+    el.themeToggleBtn.addEventListener("click", toggleThemeMode);
 
     el.copyBtn.addEventListener("click", copyList);
     el.waBtn.addEventListener("click", sendToWhatsApp);
@@ -3356,6 +3529,7 @@
       renderSummary();
     });
 
+    applyThemeMode(getSavedThemeMode());
     renderSupplierDropdown();
     openHomePage();
   </script>
