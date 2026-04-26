@@ -411,6 +411,7 @@
     .header-actions.list-mode { justify-content: space-between; }
 
     .view-added-btn,
+    .menu-back-btn,
     .top-reset-btn {
       border: 1px solid rgba(255, 255, 255, 0.32);
       background: rgba(255, 255, 255, 0.16);
@@ -428,10 +429,14 @@
       min-height: 30px;
     }
 
+    .menu-back-btn { display: none; }
+    .menu-back-btn.show { display: inline-flex; }
+
     .top-reset-btn { display: none; background: rgba(220, 38, 38, 0.25); }
     .top-reset-btn.show { display: inline-flex; }
 
-    .view-added-btn span {
+    .view-added-btn span,
+    .menu-back-btn span {
       background: rgba(255, 255, 255, 0.22);
       border-radius: 999px;
       padding: 4px 7px;
@@ -1156,6 +1161,11 @@
       <div id="searchStatus" class="search-status">Mencari...</div>
 
       <div id="headerActions" class="header-actions">
+        <button id="menuBackBtn" class="menu-back-btn" type="button">
+          <strong id="menuBackLabel">← Kembali</strong>
+          <span id="menuBackCount">0 item</span>
+        </button>
+
         <button id="viewAddedBtn" class="view-added-btn" type="button">
           <strong id="viewAddedLabel">📦 Lihat semua List</strong>
           <span id="viewAddedCount">0 item</span>
@@ -1350,6 +1360,7 @@
       pageTitle: $("pageTitle"),
       pageSubtitle: $("pageSubtitle"),
       headerActions: $("headerActions"),
+      menuBackBtn: $("menuBackBtn"),
       viewAddedBtn: $("viewAddedBtn"),
       viewAddedLabel: $("viewAddedLabel"),
       viewAddedCount: $("viewAddedCount"),
@@ -1711,6 +1722,7 @@
           el.searchInput.value = "";
           el.clearSearchBtn.style.display = "none";
           closeSuggestionsCurtainUp();
+          renderSummary();
           renderSelectedSupplier();
           renderCatalog();
         });
@@ -2221,6 +2233,13 @@
         el.quickMenuTitle.title = selectedProductMenu ? "Klik untuk kembali ke menu awal" : "";
       }
 
+      if (currentPage === "home" && selectedProductMenu) {
+        const activeMenu = getMenuConfig(selectedProductMenu);
+        el.searchInput.placeholder = "Cari barang di menu " + (activeMenu ? activeMenu.title : "ini") + "...";
+      } else if (currentPage === "home") {
+        el.searchInput.placeholder = "Cari barang di katalog...";
+      }
+
       if (currentPage === "home") {
         el.pageSubtitle.textContent = supplier
           ? `Supplier aktif: ${supplier}`
@@ -2690,8 +2709,19 @@
       const supplierTotal = Object.keys(groupBySupplier(items)).length;
 
       el.totalItems.textContent = items.length;
-      el.viewAddedCount.textContent = `${items.length} item`;
-      el.totalQty.textContent = `Total qty: ${qtyTotal}`;
+      el.viewAddedCount.textContent = items.length + " item";
+      const isInsideProductMenu = currentPage === "home" && Boolean(selectedProductMenu);
+      const menuBackCountEl = el.menuBackBtn.querySelector("span");
+      const menuBackLabelEl = el.menuBackBtn.querySelector("strong");
+      const menuBackItemCount = isInsideProductMenu ? getProductMenuItems(selectedProductMenu).length : 0;
+
+      if (menuBackLabelEl) menuBackLabelEl.textContent = "← Kembali";
+      if (menuBackCountEl) menuBackCountEl.textContent = menuBackItemCount + " item";
+
+      el.menuBackBtn.classList.toggle("show", isInsideProductMenu);
+      el.headerActions.classList.toggle("list-mode", currentPage === "added" || isInsideProductMenu);
+      el.viewAddedLabel.textContent = currentPage === "home" ? "📦 Lihat semua List" : "← Kembali";
+      el.totalQty.textContent = "Total qty: " + qtyTotal;
       el.summaryText.textContent = items.length === 0
         ? "Belum ada barang habis."
         : `${items.length} jenis barang habis dari ${supplierTotal} supplier dengan total quantity ${qtyTotal}.`;
@@ -2851,6 +2881,7 @@
           el.headerActions.classList.toggle("list-mode", currentPage === "added");
           el.topResetBtn.classList.toggle("show", currentPage === "added");
           el.viewAddedLabel.textContent = currentPage === "home" ? "📦 Lihat semua List" : "← Kembali";
+          el.menuBackBtn.classList.toggle("show", currentPage === "home" && Boolean(selectedProductMenu));
 
           el.searchInput.value = keepKeyword;
           searchQuery = keepKeyword;
@@ -2921,8 +2952,22 @@
     }
 
     function handleSearchInput() {
-      if (selectedProductMenu) return;
       const value = cleanText(el.searchInput.value);
+
+      if (selectedProductMenu && currentPage === "home") {
+        clearTimeout(menuSearchTimer);
+        clearTimeout(menuSearchLoadingTimer);
+        menuSearchDraft = value;
+        menuSearchQuery = value;
+        searchQuery = value;
+        isMenuSearchFocused = false;
+        isMenuCatalogLoading = false;
+        el.clearSearchBtn.style.display = value ? "block" : "none";
+        closeSuggestionsCurtainUp();
+        renderSummary();
+        renderCatalog();
+        return;
+      }
 
       if (value && openSupplierPickerFromListSearch()) return;
 
@@ -3133,6 +3178,7 @@
       el.searchInput.value = "";
       el.clearSearchBtn.style.display = "none";
       closeSuggestionsCurtainUp();
+      renderSummary();
       renderSelectedSupplier();
       renderCatalog();
     });
@@ -3233,6 +3279,23 @@
         el.catalogResults.classList.add("hide");
         renderSelectedSupplier();
       });
+    });
+
+    el.menuBackBtn.addEventListener("click", () => {
+      if (!(currentPage === "home" && selectedProductMenu)) return;
+
+      selectedProductMenu = "";
+      clearTimeout(menuSearchTimer);
+      clearTimeout(menuSearchLoadingTimer);
+      isMenuSearchFocused = false;
+      menuSearchDraft = "";
+      menuSearchQuery = "";
+      isMenuCatalogLoading = false;
+      searchQuery = "";
+      el.searchInput.value = "";
+      el.clearSearchBtn.style.display = "none";
+      closeSuggestionsCurtainUp();
+      render();
     });
 
     el.viewAddedBtn.addEventListener("click", () => {
