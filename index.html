@@ -2201,6 +2201,73 @@
       clearMenuSearchOnly(true);
     }
 
+
+    function renderMenuCatalogBodyOnly() {
+      if (currentPage !== "home" || !selectedProductMenu) return false;
+
+      const menuSearchWrap = el.catalogResults.querySelector(".menu-search-wrap");
+      if (!menuSearchWrap) return false;
+
+      let sibling = menuSearchWrap.nextSibling;
+      while (sibling) {
+        const next = sibling.nextSibling;
+        sibling.remove();
+        sibling = next;
+      }
+
+      if (isMenuCatalogLoading) {
+        el.catalogResults.insertAdjacentHTML("beforeend", Array.from({ length: 4 }).map(() => `
+          <div class="catalog-skeleton">
+            <div class="catalog-skeleton-row long skeleton"></div>
+            <div class="catalog-skeleton-row short skeleton"></div>
+          </div>
+        `).join(""));
+        return true;
+      }
+
+      const filteredCatalog = getFilteredCatalog();
+
+      if (filteredCatalog.length === 0) {
+        el.catalogResults.insertAdjacentHTML("beforeend", `
+          <div class="empty" style="padding:18px;">
+            <strong>Barang tidak ada di menu ini</strong>
+            <span>Hapus pencarian atau coba kata lain.</span>
+          </div>
+        `);
+        return true;
+      }
+
+      filteredCatalog.forEach(item => {
+        const button = document.createElement("button");
+        button.className = "catalog-item";
+        button.type = "button";
+        button.innerHTML = `
+          <span>
+            <span class="catalog-name">${escapeHTML(item.name)}</span>
+            <span class="catalog-category">${escapeHTML(item.category)}</span>
+          </span>
+          <span class="catalog-add">+ Tambah</span>
+        `;
+
+        button.addEventListener("click", event => {
+          event.preventDefault();
+          event.stopPropagation();
+          closeSuggestionsCurtainUp();
+          addItem(item.name);
+          if (selectedProductMenu) {
+            isMenuSearchFocused = true;
+            isMenuCatalogLoading = false;
+            renderMenuCatalogBodyOnly();
+          }
+        });
+
+        el.catalogResults.appendChild(button);
+      });
+
+      return true;
+    }
+
+
     function renderCatalog() {
       if (currentPage !== "home") {
         el.catalogResults.innerHTML = "";
@@ -2231,7 +2298,7 @@
         menuSearch.className = "menu-search-wrap";
         menuSearch.innerHTML = `
           <span class="menu-search-icon">🔎</span>
-          <input class="menu-search-input" type="text" value="${escapeHTML(displaySearchValue)}" placeholder="Cari di menu ${escapeHTML(activeMenu ? activeMenu.title : "barang")}..." autocomplete="off" inputmode="search" />
+          <input class="menu-search-input" type="text" value="${escapeHTML(displaySearchValue)}" placeholder="Cari di menu ${escapeHTML(activeMenu ? activeMenu.title : "barang")}..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" inputmode="search" />
           <button class="menu-search-clear${cleanText(displaySearchValue) ? " show" : ""}" type="button">×</button>
         `;
 
@@ -2263,25 +2330,37 @@
           clearTimeout(menuSearchLoadingTimer);
           isMenuCatalogLoading = false;
 
-          if (!menuSearchDraft) {
-            menuSearchQuery = "";
-            searchQuery = "";
-            renderCatalog();
+          if (!cleanText(menuInput.value)) {
+            clearMenuSearchOnly(true);
             return;
           }
 
           menuSearchLoadingTimer = setTimeout(() => {
+            if (!cleanText(menuSearchDraft)) {
+              clearMenuSearchOnly(true);
+              return;
+            }
             isMenuCatalogLoading = true;
-            renderCatalog();
+            renderMenuCatalogBodyOnly();
           }, LOADING_DELAY_BEFORE_SHOW);
 
           menuSearchTimer = setTimeout(() => {
             clearTimeout(menuSearchLoadingTimer);
+            if (!cleanText(menuSearchDraft)) {
+              clearMenuSearchOnly(true);
+              return;
+            }
             menuSearchQuery = cleanText(menuSearchDraft);
             searchQuery = menuSearchQuery;
             isMenuCatalogLoading = false;
-            renderCatalog();
+            if (!renderMenuCatalogBodyOnly()) renderCatalog();
           }, SEARCH_DELAY);
+        });
+
+        menuInput.addEventListener("keyup", () => {
+          if (!cleanText(menuInput.value) && (menuSearchDraft || menuSearchQuery || searchQuery || isMenuCatalogLoading)) {
+            clearMenuSearchOnly(true);
+          }
         });
 
         menuInput.addEventListener("keydown", event => {
@@ -2296,7 +2375,7 @@
             el.searchInput.value = menuSearchQuery;
             isMenuCatalogLoading = false;
             closeSuggestionsCurtainUp();
-            renderCatalog();
+            if (!renderMenuCatalogBodyOnly()) renderCatalog();
           }
         });
 
@@ -2374,7 +2453,7 @@
           if (selectedProductMenu) {
             isMenuSearchFocused = true;
             isMenuCatalogLoading = false;
-            renderCatalog();
+            if (!renderMenuCatalogBodyOnly()) renderCatalog();
           }
         });
         el.catalogResults.appendChild(button);
