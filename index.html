@@ -250,14 +250,19 @@
     .suggestion-category { display: block; font-size: 12px; color: var(--muted); margin-top: 4px; }
 
     .suggestion-added-note {
-      display: inline-flex;
+      display: inline-block;
       margin-top: 4px;
       font-size: 11px;
       font-weight: 900;
       color: var(--primary-dark);
       opacity: 0.88;
       cursor: pointer;
-      border-bottom: 1px dashed rgba(17, 94, 89, 0.55);
+      text-decoration: none !important;
+    }
+
+    .suggestion-added-note:hover {
+      opacity: 1;
+      text-decoration: none !important;
     }
 
 
@@ -517,6 +522,12 @@
     .category-btn.active {
       border-color: var(--primary);
       background: var(--primary-soft);
+      color: var(--primary-dark);
+    }
+
+    .category-btn.custom-supplier-btn {
+      border-style: dashed;
+      background: #f8fafc;
       color: var(--primary-dark);
     }
 
@@ -861,11 +872,8 @@
     .header.search-active .search-suggestions { z-index: 90; }
 
     @media (max-width: 420px) {
-      .item { grid-template-columns: 1fr auto; }
-      .item-actions { justify-content: flex-end; }
-      .qty-btn { width: 30px; }
-      .qty-input { width: 38px; }
-      .delete-btn { width: 34px; height: 38px; }
+      .item { grid-template-columns: 1fr; }
+      .item-actions { justify-content: space-between; }
       .supplier-title { align-items: flex-start; flex-direction: column; }
       .supplier-title-right { width: 100%; justify-content: flex-end; }
     }
@@ -943,7 +951,7 @@
 
           <div class="input-group">
             <div class="quick-head">
-              <p class="quick-title">Menu supplier</p>
+              <p id="quickMenuTitle" class="quick-title">Menu barang</p>
               <div class="supplier-control">
                 <button id="quickSupplierBtn" class="quick-btn" type="button">🏷️ Pilih Supplier</button>
                 <div id="selectedSupplierChip" class="supplier-chip" title="Klik untuk lihat list supplier ini" style="display:none;"></div>
@@ -996,6 +1004,18 @@
     </div>
   </div>
 
+  <div id="addSupplierModal" class="modal-backdrop">
+    <div class="modal">
+      <h3>Tambah supplier baru</h3>
+      <p>Masukkan nama supplier custom. Setelah disimpan, supplier ini langsung jadi supplier aktif.</p>
+      <input id="addSupplierInput" class="edit-field" type="text" placeholder="Contoh: LJE Denpasar" />
+      <div class="modal-actions">
+        <button id="cancelAddSupplierBtn" class="btn btn-soft" type="button">Batal</button>
+        <button id="saveAddSupplierBtn" class="btn btn-primary" type="button">Simpan Supplier</button>
+      </div>
+    </div>
+  </div>
+
   <div id="editSupplierModal" class="modal-backdrop">
     <div class="modal">
       <h3>Edit nama supplier</h3>
@@ -1008,21 +1028,9 @@
     </div>
   </div>
 
-  <div id="customSupplierModal" class="modal-backdrop">
-    <div class="modal">
-      <h3>Tambah supplier custom</h3>
-      <p>Masukkan nama supplier baru. Setelah disimpan, supplier ini langsung aktif dan muncul di menu supplier.</p>
-      <input id="customSupplierInput" class="edit-field" type="text" placeholder="Contoh: Toko Baru" />
-      <div class="modal-actions">
-        <button id="cancelCustomSupplierBtn" class="btn btn-soft" type="button">Batal</button>
-        <button id="saveCustomSupplierBtn" class="btn btn-primary" type="button">Tambah Supplier</button>
-      </div>
-    </div>
-  </div>
-
   <script>
-    const STORAGE_KEY = "barang_habis_pakai_toko_v14_50_custom_supplier_fix";
-    const CUSTOM_SUPPLIERS_KEY = "barang_habis_custom_suppliers_v1";
+    const STORAGE_KEY = "barang_habis_pakai_toko_v13_history_100_custom_supplier";
+    const SUPPLIER_STORAGE_KEY = "barang_habis_custom_suppliers_v1";
     const WA_NUMBER = "628175777488";
 
     const SUPPLIERS = [
@@ -1036,7 +1044,6 @@
     ];
 
     const MASTER_ITEMS = [
-   
   {
     "name": "PO Intel 1150 i3 4170 Tray + Fan",
     "category": "Fan"
@@ -20861,8 +20868,7 @@
     "name": "A2.18",
     "category": "Lainnya"
   }
-
-    ];
+];
 
     const $ = id => document.getElementById(id);
 
@@ -20886,6 +20892,7 @@
       searchWarmup: $("searchWarmup"),
       searchStatus: $("searchStatus"),
       quickSupplierBtn: $("quickSupplierBtn"),
+      quickMenuTitle: $("quickMenuTitle"),
       supplierDropdown: $("supplierDropdown"),
       selectedSupplierChip: $("selectedSupplierChip"),
       formMainTitle: $("formMainTitle"),
@@ -20909,14 +20916,14 @@
       confirmModal: $("confirmModal"),
       cancelResetBtn: $("cancelResetBtn"),
       confirmResetBtn: $("confirmResetBtn"),
+      addSupplierModal: $("addSupplierModal"),
+      addSupplierInput: $("addSupplierInput"),
+      cancelAddSupplierBtn: $("cancelAddSupplierBtn"),
+      saveAddSupplierBtn: $("saveAddSupplierBtn"),
       editSupplierModal: $("editSupplierModal"),
       editSupplierInput: $("editSupplierInput"),
       cancelEditSupplierBtn: $("cancelEditSupplierBtn"),
-      saveEditSupplierBtn: $("saveEditSupplierBtn"),
-      customSupplierModal: $("customSupplierModal"),
-      customSupplierInput: $("customSupplierInput"),
-      cancelCustomSupplierBtn: $("cancelCustomSupplierBtn"),
-      saveCustomSupplierBtn: $("saveCustomSupplierBtn")
+      saveEditSupplierBtn: $("saveEditSupplierBtn")
     };
 
     let items = loadItems();
@@ -21004,13 +21011,9 @@
       }
     }
 
-    function saveItems() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    }
-
     function loadCustomSuppliers() {
       try {
-        const parsed = JSON.parse(localStorage.getItem(CUSTOM_SUPPLIERS_KEY) || "[]");
+        const parsed = JSON.parse(localStorage.getItem(SUPPLIER_STORAGE_KEY) || "[]");
         return Array.isArray(parsed)
           ? parsed.map(cleanText).filter(Boolean)
           : [];
@@ -21021,56 +21024,11 @@
     }
 
     function saveCustomSuppliers() {
-      const unique = [];
-      customSuppliers.forEach(name => {
-        const cleanName = cleanText(name);
-        if (cleanName && !unique.some(item => item.toLowerCase() === cleanName.toLowerCase())) {
-          unique.push(cleanName);
-        }
-      });
-      customSuppliers = unique;
-      localStorage.setItem(CUSTOM_SUPPLIERS_KEY, JSON.stringify(customSuppliers));
+      localStorage.setItem(SUPPLIER_STORAGE_KEY, JSON.stringify(customSuppliers));
     }
 
-    function openCustomSupplierModal() {
-      el.customSupplierInput.value = "";
-      el.customSupplierModal.classList.add("show");
-      setTimeout(() => el.customSupplierInput.focus(), 80);
-    }
-
-    function closeCustomSupplierModal() {
-      el.customSupplierModal.classList.remove("show");
-      el.customSupplierInput.value = "";
-    }
-
-    function saveCustomSupplierFromModal() {
-      const name = cleanText(el.customSupplierInput.value);
-
-      if (!name) {
-        showToast("Nama supplier belum diisi");
-        el.customSupplierInput.focus();
-        return;
-      }
-
-      const exists = getAllSupplierNames().some(supplier => supplier.toLowerCase() === name.toLowerCase());
-      if (!exists) {
-        customSuppliers.push(name);
-        saveCustomSuppliers();
-      }
-
-      selectedSupplier = name;
-      isSupplierMenuOpen = false;
-      supplierContextFilter = "";
-      currentPage = "home";
-      closeCustomSupplierModal();
-      el.supplierDropdown.classList.remove("show");
-      el.catalogResults.classList.remove("hide");
-      showToast(`Supplier aktif: ${name}`);
-      render();
-    }
-
-    function addCustomSupplier() {
-      openCustomSupplierModal();
+    function saveItems() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     }
 
     function showToast(message) {
@@ -21173,7 +21131,10 @@
     }
 
     function getAllSupplierNames() {
-      const set = new Set([...SUPPLIERS, ...customSuppliers]);
+      const set = new Set(SUPPLIERS);
+      customSuppliers.forEach(supplier => {
+        if (cleanText(supplier)) set.add(cleanText(supplier));
+      });
       items.forEach(item => {
         if (cleanText(item.supplier)) set.add(cleanText(item.supplier));
       });
@@ -21198,9 +21159,33 @@
       );
     }
 
+    function getHistoryCatalogItems() {
+      const map = new Map();
+
+      items
+        .slice()
+        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+        .forEach(item => {
+          const key = cleanText(item.name).toLowerCase();
+          if (!key || map.has(key)) return;
+
+          const masterItem = findMasterItem(item.name);
+          map.set(key, masterItem || {
+            name: item.name,
+            category: item.category || "Riwayat"
+          });
+        });
+
+      const historyItems = Array.from(map.values());
+      const historyKeys = new Set(historyItems.map(item => cleanText(item.name).toLowerCase()));
+      const restMasterItems = MASTER_ITEMS.filter(item => !historyKeys.has(item.name.toLowerCase()));
+
+      return historyItems.concat(restMasterItems).slice(0, 50);
+    }
+
     function getFilteredCatalog() {
       const keyword = currentPage === "home" ? cleanText(searchQuery).toLowerCase() : "";
-      if (!keyword) return MASTER_ITEMS.slice(0, 50);
+      if (!keyword) return getHistoryCatalogItems();
 
       return MASTER_ITEMS.filter(item =>
         item.name.toLowerCase().includes(keyword) ||
@@ -21292,29 +21277,6 @@
       if (shouldRender) render();
     }
 
-    function openSupplierPickerFromAnywhere() {
-      currentPage = "home";
-      supplierContextFilter = "";
-      isSupplierMenuOpen = true;
-
-      el.homePage.style.display = "block";
-      el.addedPage.style.display = "none";
-      el.searchBox.classList.remove("hidden");
-      el.headerActions.classList.remove("list-mode");
-      el.topResetBtn.classList.remove("show");
-      el.viewAddedLabel.textContent = "📦 Lihat semua List";
-      el.pageTitle.textContent = "Elektra bali";
-      el.pageSubtitle.textContent = "Pilih supplier dulu sebelum tambah barang.";
-      el.searchInput.placeholder = "Cari barang di katalog.";
-
-      resetSearchState(false);
-      renderSupplierDropdown();
-      el.supplierDropdown.classList.add("show");
-      el.catalogResults.classList.add("hide");
-      renderSelectedSupplier();
-      renderSummary();
-    }
-
     function openHomePage(restoreLastHome = false) {
       if (restoreLastHome && savedHomeSuggestionState) {
         restoreHomeSuggestionState();
@@ -21392,7 +21354,11 @@
 
       if (!activeSupplierForAdd) {
         showToast("Pilih supplier dulu");
-        openSupplierPickerFromAnywhere();
+        isSupplierMenuOpen = true;
+        renderSupplierDropdown();
+        el.supplierDropdown.classList.add("show");
+        el.catalogResults.classList.add("hide");
+        renderSelectedSupplier();
         return;
       }
 
@@ -21486,6 +21452,49 @@
       showToast("Barang dihapus");
     }
 
+
+    function openAddSupplierModal() {
+      el.addSupplierInput.value = "";
+      el.addSupplierModal.classList.add("show");
+
+      setTimeout(() => {
+        el.addSupplierInput.focus();
+      }, 80);
+    }
+
+    function closeAddSupplierModal() {
+      el.addSupplierInput.value = "";
+      el.addSupplierModal.classList.remove("show");
+    }
+
+    function saveAddSupplier() {
+      const supplierName = cleanText(el.addSupplierInput.value);
+
+      if (!supplierName) {
+        showToast("Isi nama supplier dulu");
+        el.addSupplierInput.focus();
+        return;
+      }
+
+      const exists = getAllSupplierNames().some(name =>
+        cleanText(name).toLowerCase() === supplierName.toLowerCase()
+      );
+
+      if (!exists) {
+        customSuppliers.push(supplierName);
+        customSuppliers = Array.from(new Set(customSuppliers.map(cleanText).filter(Boolean)));
+        saveCustomSuppliers();
+      }
+
+      selectedSupplier = supplierName;
+      isSupplierMenuOpen = false;
+      closeAddSupplierModal();
+      el.supplierDropdown.classList.remove("show");
+      el.catalogResults.classList.remove("hide");
+      showToast(`Supplier aktif: ${supplierName}`);
+      render();
+    }
+
     function openEditSupplierModal(supplier) {
       editingSupplierName = supplier;
       el.editSupplierInput.value = supplier;
@@ -21559,13 +21568,6 @@
     function renderSupplierDropdown() {
       el.supplierDropdown.innerHTML = "";
 
-      const customBtn = document.createElement("button");
-      customBtn.className = "category-btn";
-      customBtn.type = "button";
-      customBtn.textContent = "➕ Custom Supplier";
-      customBtn.addEventListener("click", addCustomSupplier);
-      el.supplierDropdown.appendChild(customBtn);
-
       getAllSupplierNames().forEach(supplier => {
         const btn = document.createElement("button");
         btn.className = `category-btn${selectedSupplier === supplier ? " active" : ""}`;
@@ -21583,6 +21585,15 @@
 
         el.supplierDropdown.appendChild(btn);
       });
+
+      const customBtn = document.createElement("button");
+      customBtn.className = "category-btn custom-supplier-btn";
+      customBtn.type = "button";
+      customBtn.textContent = "+ Custom nama supplier";
+      customBtn.addEventListener("click", () => {
+        openAddSupplierModal();
+      });
+      el.supplierDropdown.appendChild(customBtn);
     }
 
     function renderSelectedSupplier() {
@@ -21604,6 +21615,10 @@
 
       if (el.formMainTitle) {
         el.formMainTitle.textContent = supplierMenuOpen ? "Pilih Supplier" : "Pilih Barang Habis";
+      }
+
+      if (el.quickMenuTitle) {
+        el.quickMenuTitle.textContent = supplierMenuOpen ? "Menu supplier" : "Menu barang";
       }
 
       if (currentPage === "home") {
@@ -21818,7 +21833,7 @@
           item.name.toLowerCase().includes(rawKeyword) ||
           item.category.toLowerCase().includes(rawKeyword)
         )
-        .slice(0, 50);
+        .slice(0, 100);
     }
 
     function getSuggestionSignature(suggestions) {
@@ -21910,19 +21925,10 @@
           <span>
             <span class="suggestion-name">${escapeHTML(item.name)}</span>
             <span class="suggestion-category">${escapeHTML(item.category || "Barang")}</span>
-            ${alreadyAdded ? `<span class="suggestion-added-note" title="Klik untuk lihat list supplier ini">✓ Sudah di list (${alreadyAddedItem.qty})</span>` : ""}
+            ${alreadyAdded ? `<span class="suggestion-added-note">✓ Sudah di list (${alreadyAddedItem.qty})</span>` : ""}
           </span>
           <span class="suggestion-action">+ Tambah</span>
         `;
-
-        const addedNote = button.querySelector(".suggestion-added-note");
-        if (addedNote && alreadyAddedItem) {
-          addedNote.addEventListener("click", event => {
-            event.preventDefault();
-            event.stopPropagation();
-            closeSuggestionsCurtainUp(() => openSupplierList(alreadyAddedItem.supplier));
-          });
-        }
 
         button.addEventListener("click", event => {
           event.preventDefault();
@@ -21974,6 +21980,17 @@
           });
         });
 
+        const addedNote = button.querySelector(".suggestion-added-note");
+        if (addedNote && alreadyAddedItem) {
+          addedNote.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            closeSuggestionsCurtainUp(() => {
+              openSupplierList(alreadyAddedItem.supplier);
+            });
+          });
+        }
+
         el.searchSuggestions.appendChild(button);
       });
 
@@ -21988,8 +22005,37 @@
       renderSuggestions();
     }
 
+    function openSupplierPickerFromListSearch() {
+      if (currentPage !== "added") return false;
+      if (getCurrentSupplier() || cleanText(supplierContextFilter)) return false;
+
+      clearTimeout(searchTimer);
+      clearTimeout(suggestionTimer);
+      clearTimeout(suggestionLoadingTimer);
+
+      searchQuery = "";
+      isSearching = false;
+      isSuggestionLoading = false;
+      lastSuggestionSignature = "";
+      currentSuggestionItems = [];
+
+      openHomePage();
+      isSupplierMenuOpen = true;
+      renderSupplierDropdown();
+      el.supplierDropdown.classList.add("show");
+      el.catalogResults.classList.add("hide");
+      el.searchInput.value = "";
+      el.clearSearchBtn.style.display = "none";
+      renderSelectedSupplier();
+      showToast("Pilih supplier dulu");
+      return true;
+    }
+
     function handleSearchInput() {
       const value = cleanText(el.searchInput.value);
+
+      if (value && openSupplierPickerFromListSearch()) return;
+
       clearTimeout(suggestionTimer);
       clearTimeout(suggestionLoadingTimer);
 
@@ -22070,6 +22116,9 @@
 
     function runSearch() {
       const value = cleanText(el.searchInput.value);
+
+      if (openSupplierPickerFromListSearch()) return;
+
       clearTimeout(searchTimer);
       clearTimeout(suggestionTimer);
       clearTimeout(suggestionLoadingTimer);
@@ -22170,6 +22219,14 @@
 
     el.searchInput.addEventListener("input", handleSearchInput);
 
+    el.searchInput.addEventListener("focus", () => {
+      openSupplierPickerFromListSearch();
+    });
+
+    el.searchInput.addEventListener("click", () => {
+      openSupplierPickerFromListSearch();
+    });
+
     el.searchInput.addEventListener("keydown", event => {
       if (event.key === "Enter") {
         event.preventDefault();
@@ -22182,24 +22239,6 @@
     el.clearSearchBtn.addEventListener("click", () => {
       resetSearchState();
       el.searchInput.focus();
-    });
-
-    el.cancelCustomSupplierBtn.addEventListener("click", closeCustomSupplierModal);
-
-    el.customSupplierModal.addEventListener("click", event => {
-      if (event.target === el.customSupplierModal) closeCustomSupplierModal();
-    });
-
-    el.saveCustomSupplierBtn.addEventListener("click", saveCustomSupplierFromModal);
-
-    el.customSupplierInput.addEventListener("keydown", event => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        saveCustomSupplierFromModal();
-      }
-      if (event.key === "Escape") {
-        closeCustomSupplierModal();
-      }
     });
 
     el.quickSupplierBtn.addEventListener("click", () => {
@@ -22226,7 +22265,14 @@
     });
 
     el.suggestionChangeSupplierBtn.addEventListener("click", () => {
-      closeSuggestionsCurtainUp(openSupplierPickerFromAnywhere);
+      closeSuggestionsCurtainUp(() => {
+        if (currentPage === "added") openHomePage();
+        isSupplierMenuOpen = true;
+        renderSupplierDropdown();
+        el.supplierDropdown.classList.add("show");
+        el.catalogResults.classList.add("hide");
+        renderSelectedSupplier();
+      });
     });
 
     el.viewAddedBtn.addEventListener("click", () => {
@@ -22247,6 +22293,16 @@
     el.cancelResetBtn.addEventListener("click", closeResetModal);
     el.confirmResetBtn.addEventListener("click", resetAll);
 
+    el.cancelAddSupplierBtn.addEventListener("click", closeAddSupplierModal);
+    el.saveAddSupplierBtn.addEventListener("click", saveAddSupplier);
+
+    el.addSupplierInput.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        saveAddSupplier();
+      }
+    });
+
     el.cancelEditSupplierBtn.addEventListener("click", closeEditSupplierModal);
     el.saveEditSupplierBtn.addEventListener("click", saveEditSupplier);
 
@@ -22259,6 +22315,10 @@
 
     el.confirmModal.addEventListener("click", event => {
       if (event.target === el.confirmModal) closeResetModal();
+    });
+
+    el.addSupplierModal.addEventListener("click", event => {
+      if (event.target === el.addSupplierModal) closeAddSupplierModal();
     });
 
     el.editSupplierModal.addEventListener("click", event => {
