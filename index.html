@@ -250,12 +250,14 @@
     .suggestion-category { display: block; font-size: 12px; color: var(--muted); margin-top: 4px; }
 
     .suggestion-added-note {
-      display: block;
+      display: inline-flex;
       margin-top: 4px;
       font-size: 11px;
       font-weight: 900;
       color: var(--primary-dark);
       opacity: 0.88;
+      cursor: pointer;
+      border-bottom: 1px dashed rgba(17, 94, 89, 0.55);
     }
 
 
@@ -859,8 +861,11 @@
     .header.search-active .search-suggestions { z-index: 90; }
 
     @media (max-width: 420px) {
-      .item { grid-template-columns: 1fr; }
-      .item-actions { justify-content: space-between; }
+      .item { grid-template-columns: 1fr auto; }
+      .item-actions { justify-content: flex-end; }
+      .qty-btn { width: 30px; }
+      .qty-input { width: 38px; }
+      .delete-btn { width: 34px; height: 38px; }
       .supplier-title { align-items: flex-start; flex-direction: column; }
       .supplier-title-right { width: 100%; justify-content: flex-end; }
     }
@@ -1003,8 +1008,21 @@
     </div>
   </div>
 
+  <div id="customSupplierModal" class="modal-backdrop">
+    <div class="modal">
+      <h3>Tambah supplier custom</h3>
+      <p>Masukkan nama supplier baru. Setelah disimpan, supplier ini langsung aktif dan muncul di menu supplier.</p>
+      <input id="customSupplierInput" class="edit-field" type="text" placeholder="Contoh: Toko Baru" />
+      <div class="modal-actions">
+        <button id="cancelCustomSupplierBtn" class="btn btn-soft" type="button">Batal</button>
+        <button id="saveCustomSupplierBtn" class="btn btn-primary" type="button">Tambah Supplier</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    const STORAGE_KEY = "barang_habis_pakai_toko_v12_search_same_in_list";
+    const STORAGE_KEY = "barang_habis_pakai_toko_v14_50_custom_supplier_fix";
+    const CUSTOM_SUPPLIERS_KEY = "barang_habis_custom_suppliers_v1";
     const WA_NUMBER = "628175777488";
 
     const SUPPLIERS = [
@@ -20894,10 +20912,15 @@
       editSupplierModal: $("editSupplierModal"),
       editSupplierInput: $("editSupplierInput"),
       cancelEditSupplierBtn: $("cancelEditSupplierBtn"),
-      saveEditSupplierBtn: $("saveEditSupplierBtn")
+      saveEditSupplierBtn: $("saveEditSupplierBtn"),
+      customSupplierModal: $("customSupplierModal"),
+      customSupplierInput: $("customSupplierInput"),
+      cancelCustomSupplierBtn: $("cancelCustomSupplierBtn"),
+      saveCustomSupplierBtn: $("saveCustomSupplierBtn")
     };
 
     let items = loadItems();
+    let customSuppliers = loadCustomSuppliers();
     let activeTab = "list";
     let currentPage = "home";
     let searchQuery = "";
@@ -20983,6 +21006,71 @@
 
     function saveItems() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }
+
+    function loadCustomSuppliers() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(CUSTOM_SUPPLIERS_KEY) || "[]");
+        return Array.isArray(parsed)
+          ? parsed.map(cleanText).filter(Boolean)
+          : [];
+      } catch (error) {
+        console.warn("Gagal membaca custom supplier:", error);
+        return [];
+      }
+    }
+
+    function saveCustomSuppliers() {
+      const unique = [];
+      customSuppliers.forEach(name => {
+        const cleanName = cleanText(name);
+        if (cleanName && !unique.some(item => item.toLowerCase() === cleanName.toLowerCase())) {
+          unique.push(cleanName);
+        }
+      });
+      customSuppliers = unique;
+      localStorage.setItem(CUSTOM_SUPPLIERS_KEY, JSON.stringify(customSuppliers));
+    }
+
+    function openCustomSupplierModal() {
+      el.customSupplierInput.value = "";
+      el.customSupplierModal.classList.add("show");
+      setTimeout(() => el.customSupplierInput.focus(), 80);
+    }
+
+    function closeCustomSupplierModal() {
+      el.customSupplierModal.classList.remove("show");
+      el.customSupplierInput.value = "";
+    }
+
+    function saveCustomSupplierFromModal() {
+      const name = cleanText(el.customSupplierInput.value);
+
+      if (!name) {
+        showToast("Nama supplier belum diisi");
+        el.customSupplierInput.focus();
+        return;
+      }
+
+      const exists = getAllSupplierNames().some(supplier => supplier.toLowerCase() === name.toLowerCase());
+      if (!exists) {
+        customSuppliers.push(name);
+        saveCustomSuppliers();
+      }
+
+      selectedSupplier = name;
+      isSupplierMenuOpen = false;
+      supplierContextFilter = "";
+      currentPage = "home";
+      closeCustomSupplierModal();
+      el.supplierDropdown.classList.remove("show");
+      el.catalogResults.classList.remove("hide");
+      showToast(`Supplier aktif: ${name}`);
+      render();
+    }
+
+    function addCustomSupplier() {
+      openCustomSupplierModal();
     }
 
     function showToast(message) {
@@ -21085,7 +21173,7 @@
     }
 
     function getAllSupplierNames() {
-      const set = new Set(SUPPLIERS);
+      const set = new Set([...SUPPLIERS, ...customSuppliers]);
       items.forEach(item => {
         if (cleanText(item.supplier)) set.add(cleanText(item.supplier));
       });
@@ -21112,12 +21200,12 @@
 
     function getFilteredCatalog() {
       const keyword = currentPage === "home" ? cleanText(searchQuery).toLowerCase() : "";
-      if (!keyword) return MASTER_ITEMS.slice(0, 8);
+      if (!keyword) return MASTER_ITEMS.slice(0, 50);
 
       return MASTER_ITEMS.filter(item =>
         item.name.toLowerCase().includes(keyword) ||
         item.category.toLowerCase().includes(keyword)
-      );
+      ).slice(0, 50);
     }
 
     function captureHomeSuggestionState() {
@@ -21204,6 +21292,29 @@
       if (shouldRender) render();
     }
 
+    function openSupplierPickerFromAnywhere() {
+      currentPage = "home";
+      supplierContextFilter = "";
+      isSupplierMenuOpen = true;
+
+      el.homePage.style.display = "block";
+      el.addedPage.style.display = "none";
+      el.searchBox.classList.remove("hidden");
+      el.headerActions.classList.remove("list-mode");
+      el.topResetBtn.classList.remove("show");
+      el.viewAddedLabel.textContent = "📦 Lihat semua List";
+      el.pageTitle.textContent = "Elektra bali";
+      el.pageSubtitle.textContent = "Pilih supplier dulu sebelum tambah barang.";
+      el.searchInput.placeholder = "Cari barang di katalog.";
+
+      resetSearchState(false);
+      renderSupplierDropdown();
+      el.supplierDropdown.classList.add("show");
+      el.catalogResults.classList.add("hide");
+      renderSelectedSupplier();
+      renderSummary();
+    }
+
     function openHomePage(restoreLastHome = false) {
       if (restoreLastHome && savedHomeSuggestionState) {
         restoreHomeSuggestionState();
@@ -21281,11 +21392,7 @@
 
       if (!activeSupplierForAdd) {
         showToast("Pilih supplier dulu");
-        isSupplierMenuOpen = true;
-        renderSupplierDropdown();
-        el.supplierDropdown.classList.add("show");
-        el.catalogResults.classList.add("hide");
-        renderSelectedSupplier();
+        openSupplierPickerFromAnywhere();
         return;
       }
 
@@ -21451,6 +21558,13 @@
 
     function renderSupplierDropdown() {
       el.supplierDropdown.innerHTML = "";
+
+      const customBtn = document.createElement("button");
+      customBtn.className = "category-btn";
+      customBtn.type = "button";
+      customBtn.textContent = "➕ Custom Supplier";
+      customBtn.addEventListener("click", addCustomSupplier);
+      el.supplierDropdown.appendChild(customBtn);
 
       getAllSupplierNames().forEach(supplier => {
         const btn = document.createElement("button");
@@ -21704,7 +21818,7 @@
           item.name.toLowerCase().includes(rawKeyword) ||
           item.category.toLowerCase().includes(rawKeyword)
         )
-        .slice(0, 20);
+        .slice(0, 50);
     }
 
     function getSuggestionSignature(suggestions) {
@@ -21796,10 +21910,19 @@
           <span>
             <span class="suggestion-name">${escapeHTML(item.name)}</span>
             <span class="suggestion-category">${escapeHTML(item.category || "Barang")}</span>
-            ${alreadyAdded ? `<span class="suggestion-added-note">✓ Sudah di list (${alreadyAddedItem.qty})</span>` : ""}
+            ${alreadyAdded ? `<span class="suggestion-added-note" title="Klik untuk lihat list supplier ini">✓ Sudah di list (${alreadyAddedItem.qty})</span>` : ""}
           </span>
           <span class="suggestion-action">+ Tambah</span>
         `;
+
+        const addedNote = button.querySelector(".suggestion-added-note");
+        if (addedNote && alreadyAddedItem) {
+          addedNote.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            closeSuggestionsCurtainUp(() => openSupplierList(alreadyAddedItem.supplier));
+          });
+        }
 
         button.addEventListener("click", event => {
           event.preventDefault();
@@ -22061,6 +22184,24 @@
       el.searchInput.focus();
     });
 
+    el.cancelCustomSupplierBtn.addEventListener("click", closeCustomSupplierModal);
+
+    el.customSupplierModal.addEventListener("click", event => {
+      if (event.target === el.customSupplierModal) closeCustomSupplierModal();
+    });
+
+    el.saveCustomSupplierBtn.addEventListener("click", saveCustomSupplierFromModal);
+
+    el.customSupplierInput.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        saveCustomSupplierFromModal();
+      }
+      if (event.key === "Escape") {
+        closeCustomSupplierModal();
+      }
+    });
+
     el.quickSupplierBtn.addEventListener("click", () => {
       isSupplierMenuOpen = !isSupplierMenuOpen;
       renderSupplierDropdown();
@@ -22085,14 +22226,7 @@
     });
 
     el.suggestionChangeSupplierBtn.addEventListener("click", () => {
-      closeSuggestionsCurtainUp(() => {
-        if (currentPage === "added") openHomePage();
-        isSupplierMenuOpen = true;
-        renderSupplierDropdown();
-        el.supplierDropdown.classList.add("show");
-        el.catalogResults.classList.add("hide");
-        renderSelectedSupplier();
-      });
+      closeSuggestionsCurtainUp(openSupplierPickerFromAnywhere);
     });
 
     el.viewAddedBtn.addEventListener("click", () => {
