@@ -2232,10 +2232,9 @@
         el.quickMenuTitle.title = selectedProductMenu ? "Klik untuk kembali ke menu awal" : "";
       }
 
-      if (currentPage === "home" && selectedProductMenu) {
-        const activeMenu = getMenuConfig(selectedProductMenu);
-        el.searchInput.placeholder = `Cari barang ${activeMenu?.title || "menu ini"}...`;
-      } else if (currentPage === "home") {
+      // Search paling atas dikunci sebagai search global.
+      // Jadi saat masuk menu DVR/HTB/dll, placeholder atas tidak ikut berubah.
+      if (currentPage === "home") {
         el.searchInput.placeholder = "Cari semua barang...";
       }
 
