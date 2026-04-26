@@ -1371,6 +1371,7 @@
     let isSupplierMenuOpen = false;
     let supplierContextFilter = "";
     let selectedProductMenu = "";
+    let isMenuSearchFocused = false;
     let savedHomeSuggestionState = null;
 
     const SEARCH_DELAY = 2000;
@@ -1897,6 +1898,12 @@
       }
 
       saveItems();
+      if (selectedProductMenu) {
+        closeSuggestionsCurtainUp();
+        isSuggestionLoading = false;
+        currentSuggestionItems = [];
+        lastSuggestionSignature = "";
+      }
       render();
     }
 
@@ -2181,26 +2188,45 @@
         const menuInput = menuSearch.querySelector(".menu-search-input");
         const menuClear = menuSearch.querySelector(".menu-search-clear");
 
+        menuInput.addEventListener("focus", () => {
+          isMenuSearchFocused = true;
+          closeSuggestionsCurtainUp();
+        });
+
+        menuInput.addEventListener("blur", () => {
+          setTimeout(() => {
+            if (!document.activeElement || !document.activeElement.classList || !document.activeElement.classList.contains("menu-search-input")) {
+              isMenuSearchFocused = false;
+            }
+          }, 80);
+        });
+
         menuInput.addEventListener("input", () => {
-          searchQuery = cleanText(menuInput.value);
+          isMenuSearchFocused = true;
+          searchQuery = menuInput.value.trimStart().replace(/\s+/g, " ");
           el.searchInput.value = searchQuery;
           el.clearSearchBtn.style.display = searchQuery ? "block" : "none";
+          closeSuggestionsCurtainUp();
           renderCatalog();
         });
 
         menuInput.addEventListener("keydown", event => {
           if (event.key === "Enter") {
             event.preventDefault();
+            isMenuSearchFocused = true;
             searchQuery = cleanText(menuInput.value);
             el.searchInput.value = searchQuery;
+            closeSuggestionsCurtainUp();
             renderCatalog();
           }
         });
 
         menuClear.addEventListener("click", () => {
+          isMenuSearchFocused = true;
           searchQuery = "";
           el.searchInput.value = "";
           el.clearSearchBtn.style.display = "none";
+          closeSuggestionsCurtainUp();
           renderCatalog();
           setTimeout(() => {
             const nextInput = el.catalogResults.querySelector(".menu-search-input");
@@ -2210,17 +2236,16 @@
 
         el.catalogResults.appendChild(menuSearch);
 
-        setTimeout(() => {
-          const activeElement = document.activeElement;
-          const shouldFocusBack = activeElement && activeElement.classList && activeElement.classList.contains("menu-search-input");
-          if (shouldFocusBack) {
+        if (isMenuSearchFocused) {
+          requestAnimationFrame(() => {
             const nextInput = el.catalogResults.querySelector(".menu-search-input");
             if (nextInput) {
               nextInput.focus();
-              nextInput.setSelectionRange(nextInput.value.length, nextInput.value.length);
+              const cursorPosition = nextInput.value.length;
+              nextInput.setSelectionRange(cursorPosition, cursorPosition);
             }
-          }
-        }, 0);
+          });
+        }
       }
 
       if (filteredCatalog.length === 0) {
@@ -2446,7 +2471,8 @@
       if (
         !rawKeyword ||
         isSearching ||
-        isSupplierMenuOpen
+        isSupplierMenuOpen ||
+        selectedProductMenu
       ) {
         lastSuggestionSignature = "";
         currentSuggestionItems = [];
@@ -2781,6 +2807,7 @@
       if (isSupplierMenuOpen || !selectedProductMenu) return;
 
       selectedProductMenu = "";
+      isMenuSearchFocused = false;
       searchQuery = "";
       el.searchInput.value = "";
       el.clearSearchBtn.style.display = "none";
