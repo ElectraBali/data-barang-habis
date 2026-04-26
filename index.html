@@ -1148,7 +1148,7 @@
 
       <div id="searchBox" class="search-box">
         <button id="searchIconBtn" class="search-icon" type="button">🔎</button>
-        <input id="searchInput" type="text" placeholder="Cari barang di katalog..." autocomplete="off" />
+        <input id="searchInput" type="text" placeholder="Cari semua barang..." autocomplete="off" />
         <button id="clearSearchBtn" class="clear-search" type="button">×</button>
         <div id="searchSuggestions" class="search-suggestions"></div>
       </div>
@@ -1730,20 +1730,39 @@
     }
 
     function getFilteredCatalog() {
-      const source = selectedProductMenu ? getProductMenuItems(selectedProductMenu) : MASTER_ITEMS;
-      const keyword = currentPage === "home"
-        ? cleanText(selectedProductMenu ? menuSearchQuery : searchQuery).toLowerCase()
-        : "";
+      if (currentPage !== "home") return [];
+
+      const topSearchKeyword = cleanText(searchQuery || el.searchInput.value).toLowerCase();
+      const menuSearchKeyword = cleanText(menuSearchQuery).toLowerCase();
+
+      let source = MASTER_ITEMS;
+      let keyword = topSearchKeyword;
+      let limit = 50;
+
+      if (selectedProductMenu) {
+        if (topSearchKeyword) {
+          // Search paling atas tetap cari SEMUA barang seperti halaman awal,
+          // walaupun user sedang berada di menu DVR / NVR / HTB / menu lainnya.
+          source = MASTER_ITEMS;
+          keyword = topSearchKeyword;
+          limit = 100;
+        } else {
+          // Search kecil di dalam menu tetap khusus untuk menu yang sedang dibuka.
+          source = getProductMenuItems(selectedProductMenu);
+          keyword = menuSearchKeyword;
+          limit = 100;
+        }
+      }
 
       if (keyword) {
         return source.filter(item =>
           item.name.toLowerCase().includes(keyword) ||
           item.category.toLowerCase().includes(keyword)
-        ).slice(0, selectedProductMenu ? 100 : 50);
+        ).slice(0, limit);
       }
 
       if (selectedProductMenu) {
-        return source.slice(0, 100);
+        return source.slice(0, limit);
       }
 
       return [];
@@ -1801,7 +1820,7 @@
 
       el.pageTitle.textContent = "Elektra bali";
       el.viewAddedLabel.textContent = "📦 Lihat semua List";
-      el.searchInput.placeholder = "Cari barang di katalog...";
+      el.searchInput.placeholder = "Cari semua barang...";
       el.searchInput.value = "";
       el.clearSearchBtn.style.display = "none";
       closeSuggestionsCurtainUp();
@@ -1862,7 +1881,7 @@
       el.topResetBtn.classList.remove("show");
 
       el.pageTitle.textContent = "Elektra bali";
-      el.searchInput.placeholder = "Cari barang di katalog...";
+      el.searchInput.placeholder = "Cari semua barang...";
       el.viewAddedLabel.textContent = "📦 Lihat semua List";
       el.searchInput.value = cleanText(state && state.searchValue);
 
@@ -1933,7 +1952,7 @@
 
       el.pageTitle.textContent = "Elektra bali";
       el.pageSubtitle.textContent = `Supplier aktif: ${getCurrentSupplier()}`;
-      el.searchInput.placeholder = "Cari barang di katalog...";
+      el.searchInput.placeholder = "Cari semua barang...";
       el.viewAddedLabel.textContent = "📦 Lihat semua List";
 
       resetSearchState(false);
@@ -1959,9 +1978,7 @@
         ? `Menampilkan supplier: ${supplierContextFilter}`
         : "List barang otomatis digrup per supplier.";
 
-      el.searchInput.placeholder = supplierContextFilter
-        ? `Cari barang di ${supplierContextFilter}...`
-        : "Cari barang yang sudah ditambahkan...";
+      el.searchInput.placeholder = "Cari semua barang...";
 
       el.viewAddedLabel.textContent = "← Kembali";
 
@@ -2009,7 +2026,6 @@
       if (existing) { existing.qty += parsedQty; existing.updatedAt = new Date().toISOString(); showToast(`Qty barang ditambahkan ${parsedQty} pcs`); }
       else { items.unshift({ id: String(Date.now() + Math.random()), name: masterItem.name, category: masterItem.category, supplier, qty: parsedQty, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }); showToast(`Barang tercatat ${parsedQty} pcs ke ${supplier}`); }
       saveItems();
-      if (selectedProductMenu) { closeSuggestionsCurtainUp(); isSuggestionLoading = false; currentSuggestionItems = []; lastSuggestionSignature = ""; }
       render(); return true;
     }
 
@@ -2143,7 +2159,7 @@
       if (supplierContextFilter.toLowerCase() === oldName.toLowerCase()) {
         supplierContextFilter = newName;
         el.pageSubtitle.textContent = `Menampilkan supplier: ${newName}`;
-        el.searchInput.placeholder = `Cari barang di ${newName}...`;
+        el.searchInput.placeholder = "Cari semua barang...";
       }
 
       saveItems();
@@ -2235,9 +2251,9 @@
 
       if (currentPage === "home" && selectedProductMenu) {
         const activeMenu = getMenuConfig(selectedProductMenu);
-        el.searchInput.placeholder = "Cari barang di menu " + (activeMenu ? activeMenu.title : "ini") + "...";
+        el.searchInput.placeholder = "Cari semua barang...";
       } else if (currentPage === "home") {
-        el.searchInput.placeholder = "Cari barang di katalog...";
+        el.searchInput.placeholder = "Cari semua barang...";
       }
 
       if (currentPage === "home") {
@@ -2292,6 +2308,27 @@
     function forceRestoreMenuItemsAfterEmptySearch() {
       if (currentPage !== "home" || !selectedProductMenu) return;
       clearMenuSearchOnly(true);
+    }
+
+    function clearTopSearchOnly(shouldFocus = true) {
+      clearTimeout(searchTimer);
+      clearTimeout(suggestionTimer);
+      clearTimeout(suggestionLoadingTimer);
+      searchTimer = null;
+      suggestionTimer = null;
+      suggestionLoadingTimer = null;
+      searchQuery = "";
+      isSearching = false;
+      isSuggestionLoading = false;
+      lastSuggestionSignature = "";
+      currentSuggestionItems = [];
+      el.searchInput.value = "";
+      el.clearSearchBtn.style.display = "none";
+      el.searchWarmup.classList.remove("show");
+      el.searchStatus.classList.remove("show");
+      closeSuggestionsCurtainUp();
+      render();
+      if (shouldFocus) setTimeout(() => el.searchInput.focus(), 0);
     }
 
 
@@ -2408,7 +2445,7 @@
         menuSearch.className = "menu-search-wrap";
         menuSearch.innerHTML = `
           <span class="menu-search-icon">🔎</span>
-          <input class="menu-search-input" type="text" value="${escapeHTML(displaySearchValue)}" placeholder="Cari di menu ${escapeHTML(activeMenu ? activeMenu.title : "barang")}..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" inputmode="search" />
+          <input class="menu-search-input" type="text" value="${escapeHTML(displaySearchValue)}" placeholder="Cari semua barang..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" inputmode="search" />
           <button class="menu-search-clear${cleanText(displaySearchValue) ? " show" : ""}" type="button">×</button>
         `;
 
@@ -2727,7 +2764,7 @@
         : `${items.length} jenis barang habis dari ${supplierTotal} supplier dengan total quantity ${qtyTotal}.`;
 
       el.previewText.value = generateMessage();
-      el.clearSearchBtn.style.display = selectedProductMenu ? (cleanText(menuSearchDraft) ? "block" : "none") : (cleanText(el.searchInput.value) ? "block" : "none");
+      el.clearSearchBtn.style.display = cleanText(el.searchInput.value) ? "block" : "none";
       el.searchStatus.classList.toggle("show", isSearching);
       el.searchWarmup.classList.toggle("show", isSearching || isSuggestionLoading);
     }
@@ -2795,8 +2832,7 @@
       if (
         !rawKeyword ||
         isSearching ||
-        isSupplierMenuOpen ||
-        selectedProductMenu
+        isSupplierMenuOpen
       ) {
         lastSuggestionSignature = "";
         currentSuggestionItems = [];
@@ -2954,21 +2990,6 @@
     function handleSearchInput() {
       const value = cleanText(el.searchInput.value);
 
-      if (selectedProductMenu && currentPage === "home") {
-        clearTimeout(menuSearchTimer);
-        clearTimeout(menuSearchLoadingTimer);
-        menuSearchDraft = value;
-        menuSearchQuery = value;
-        searchQuery = value;
-        isMenuSearchFocused = false;
-        isMenuCatalogLoading = false;
-        el.clearSearchBtn.style.display = value ? "block" : "none";
-        closeSuggestionsCurtainUp();
-        renderSummary();
-        renderCatalog();
-        return;
-      }
-
       if (value && openSupplierPickerFromListSearch()) return;
 
       clearTimeout(suggestionTimer);
@@ -2990,6 +3011,10 @@
         render();
         return;
       }
+
+      // Search paling atas selalu dianggap pencarian global katalog,
+      // termasuk saat sedang berada di dalam menu seperti DVR / HTB / KABEL.
+      searchQuery = value;
 
       const nextSuggestions = getSuggestionItems(value);
       const nextSignature = getSuggestionSignature(nextSuggestions);
@@ -3051,18 +3076,6 @@
 
     function runSearch() {
       const value = cleanText(el.searchInput.value);
-
-      if (selectedProductMenu && currentPage === "home") {
-        clearTimeout(menuSearchTimer);
-        clearTimeout(menuSearchLoadingTimer);
-        menuSearchDraft = value;
-        menuSearchQuery = value;
-        searchQuery = value;
-        isMenuCatalogLoading = false;
-        closeSuggestionsCurtainUp();
-        renderCatalog();
-        return;
-      }
 
       if (openSupplierPickerFromListSearch()) return;
 
@@ -3230,7 +3243,7 @@
       event.preventDefault();
 
       if (selectedProductMenu && currentPage === "home") {
-        clearMenuSearchOnly(true);
+        clearTopSearchOnly(true);
         return;
       }
 
