@@ -277,6 +277,45 @@
     }
 
 
+    .suggestion-add-tools, .catalog-add-tools {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .suggestion-qty-input,
+    .catalog-qty-input,
+    .search-box .suggestion-qty-input,
+    .search-box .catalog-qty-input {
+      width: 48px;
+      min-width: 48px;
+      max-width: 48px;
+      height: 32px;
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      color: var(--text);
+      border-radius: 999px;
+      outline: none;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 900;
+      padding: 0 5px;
+      flex: 0 0 48px;
+      appearance: textfield;
+    }
+
+    .suggestion-qty-input::-webkit-outer-spin-button,
+    .suggestion-qty-input::-webkit-inner-spin-button,
+    .catalog-qty-input::-webkit-outer-spin-button,
+    .catalog-qty-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .suggestion-qty-input:focus, .catalog-qty-input:focus { border-color:var(--primary); background:white; box-shadow:0 0 0 3px var(--primary-soft); }
+    .suggestion-action-btn, .catalog-add-btn { border:0; color:var(--primary-dark); background:var(--primary-soft); border-radius:999px; padding:8px 10px; font-size:12px; font-weight:900; cursor:pointer; white-space:nowrap; }
+
     .search-status {
       margin-top: 7px;
       font-size: 11px;
@@ -1930,73 +1969,36 @@
       showToast(`Menampilkan list ${name}`);
     }
 
-    function addItem(selectedName) {
+    function parseAddQty(value) {
+      const raw = cleanText(value);
+      if (!raw) return null;
+      const qty = parseInt(raw, 10);
+      if (Number.isNaN(qty) || qty <= 0) return null;
+      return qty;
+    }
+
+    function addItem(selectedName, qtyToAdd = 1) {
       const requestedName = cleanText(selectedName || searchQuery);
+      const parsedQty = parseAddQty(qtyToAdd);
+
+      if (!parsedQty) { showToast("Masukkan jumlah barang dulu"); return false; }
 
       const activeSupplierForAdd = getCurrentSupplier() || cleanText(supplierContextFilter);
-
       if (!activeSupplierForAdd) {
-        showToast("Pilih supplier dulu");
-        isSupplierMenuOpen = true;
-        renderSupplierDropdown();
-        el.supplierDropdown.classList.add("show");
-        el.catalogResults.classList.add("hide");
-        renderSelectedSupplier();
-        return;
+        showToast("Pilih supplier dulu"); isSupplierMenuOpen = true; renderSupplierDropdown();
+        el.supplierDropdown.classList.add("show"); el.catalogResults.classList.add("hide"); renderSelectedSupplier(); return false;
       }
-
-      if (!requestedName) {
-        showToast("Cari atau pilih barang dulu");
-        el.searchInput.focus();
-        return;
-      }
-
+      if (!requestedName) { showToast("Cari atau pilih barang dulu"); el.searchInput.focus(); return false; }
       let masterItem = findMasterItem(requestedName);
-
-      if (!masterItem) {
-        const firstMatch = getFilteredCatalog()[0];
-        if (firstMatch) masterItem = firstMatch;
-      }
-
-      if (!masterItem) {
-        showToast("Barang tidak ada di katalog");
-        el.searchInput.focus();
-        return;
-      }
-
+      if (!masterItem) { const firstMatch = getFilteredCatalog()[0]; if (firstMatch) masterItem = firstMatch; }
+      if (!masterItem) { showToast("Barang tidak ada di katalog"); el.searchInput.focus(); return false; }
       const supplier = activeSupplierForAdd;
-
-      const existing = items.find(item =>
-        item.name.toLowerCase() === masterItem.name.toLowerCase() &&
-        item.supplier.toLowerCase() === supplier.toLowerCase()
-      );
-
-      if (existing) {
-        existing.qty += 1;
-        existing.updatedAt = new Date().toISOString();
-        showToast("Qty barang ditambahkan");
-      } else {
-        items.unshift({
-          id: String(Date.now() + Math.random()),
-          name: masterItem.name,
-          category: masterItem.category,
-          supplier,
-          qty: 1,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        });
-
-        showToast(`Barang tercatat ke ${supplier}`);
-      }
-
+      const existing = items.find(item => item.name.toLowerCase() === masterItem.name.toLowerCase() && item.supplier.toLowerCase() === supplier.toLowerCase());
+      if (existing) { existing.qty += parsedQty; existing.updatedAt = new Date().toISOString(); showToast(`Qty barang ditambahkan ${parsedQty} pcs`); }
+      else { items.unshift({ id: String(Date.now() + Math.random()), name: masterItem.name, category: masterItem.category, supplier, qty: parsedQty, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }); showToast(`Barang tercatat ${parsedQty} pcs ke ${supplier}`); }
       saveItems();
-      if (selectedProductMenu) {
-        closeSuggestionsCurtainUp();
-        isSuggestionLoading = false;
-        currentSuggestionItems = [];
-        lastSuggestionSignature = "";
-      }
-      render();
+      if (selectedProductMenu) { closeSuggestionsCurtainUp(); isSuggestionLoading = false; currentSuggestionItems = []; lastSuggestionSignature = ""; }
+      render(); return true;
     }
 
     function increaseQty(id) {
@@ -2310,6 +2312,8 @@
       }
 
       filteredCatalog.forEach(item => {
+        const alreadyAddedItem = getAddedItemForSuggestion(item.name);
+        const alreadyAdded = Boolean(alreadyAddedItem);
         const button = document.createElement("button");
         button.className = "catalog-item";
         button.type = "button";
@@ -2317,21 +2321,36 @@
           <span>
             <span class="catalog-name">${escapeHTML(item.name)}</span>
             <span class="catalog-category">${escapeHTML(item.category)}</span>
+            ${alreadyAdded ? `<span class="suggestion-added-note">✓ Sudah di list (${alreadyAddedItem.qty})</span>` : ""}
           </span>
-          <span class="catalog-add">+ Tambah</span>
+          <span class="catalog-add-tools">
+            <input class="catalog-qty-input" type="number" min="1" inputmode="numeric" placeholder="Qty" aria-label="Jumlah barang" />
+            <button class="catalog-add-btn" type="button">+ Tambah</button>
+          </span>
         `;
 
-        button.addEventListener("click", event => {
-          event.preventDefault();
-          event.stopPropagation();
+        const qtyInput = button.querySelector(".catalog-qty-input");
+        const addButton = button.querySelector(".catalog-add-btn");
+        qtyInput.addEventListener("click", event => event.stopPropagation());
+        qtyInput.addEventListener("keydown", event => { event.stopPropagation(); if (event.key === "Enter") { event.preventDefault(); addButton.click(); } });
+        addButton.addEventListener("click", event => {
+          event.preventDefault(); event.stopPropagation();
+          const qty = parseAddQty(qtyInput.value);
+          if (!qty) { showToast("Masukkan jumlah barang dulu"); qtyInput.focus(); return; }
           closeSuggestionsCurtainUp();
-          addItem(item.name);
-          if (selectedProductMenu) {
-            isMenuSearchFocused = true;
-            isMenuCatalogLoading = false;
-            renderMenuCatalogBodyOnly();
-          }
+          const success = addItem(item.name, qty);
+          if (success && selectedProductMenu) { isMenuSearchFocused = true; isMenuCatalogLoading = false; renderMenuCatalogBodyOnly(); }
         });
+        button.addEventListener("click", event => { if (event.target.closest("input, button, .suggestion-added-note")) return; qtyInput.focus(); });
+
+        const addedNote = button.querySelector(".suggestion-added-note");
+        if (addedNote && alreadyAddedItem) {
+          addedNote.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            openSupplierList(alreadyAddedItem.supplier);
+          });
+        }
 
         el.catalogResults.appendChild(button);
       });
@@ -2506,6 +2525,8 @@
       }
 
       filteredCatalog.forEach(item => {
+        const alreadyAddedItem = getAddedItemForSuggestion(item.name);
+        const alreadyAdded = Boolean(alreadyAddedItem);
         const button = document.createElement("button");
         button.className = "catalog-item";
         button.type = "button";
@@ -2513,21 +2534,37 @@
           <span>
             <span class="catalog-name">${escapeHTML(item.name)}</span>
             <span class="catalog-category">${escapeHTML(item.category)}</span>
+            ${alreadyAdded ? `<span class="suggestion-added-note">✓ Sudah di list (${alreadyAddedItem.qty})</span>` : ""}
           </span>
-          <span class="catalog-add">+ Tambah</span>
+          <span class="catalog-add-tools">
+            <input class="catalog-qty-input" type="number" min="1" inputmode="numeric" placeholder="Qty" aria-label="Jumlah barang" />
+            <button class="catalog-add-btn" type="button">+ Tambah</button>
+          </span>
         `;
 
-        button.addEventListener("click", event => {
-          event.preventDefault();
-          event.stopPropagation();
+        const qtyInput = button.querySelector(".catalog-qty-input");
+        const addButton = button.querySelector(".catalog-add-btn");
+        qtyInput.addEventListener("click", event => event.stopPropagation());
+        qtyInput.addEventListener("keydown", event => { event.stopPropagation(); if (event.key === "Enter") { event.preventDefault(); addButton.click(); } });
+        addButton.addEventListener("click", event => {
+          event.preventDefault(); event.stopPropagation();
+          const qty = parseAddQty(qtyInput.value);
+          if (!qty) { showToast("Masukkan jumlah barang dulu"); qtyInput.focus(); return; }
           closeSuggestionsCurtainUp();
-          addItem(item.name);
-          if (selectedProductMenu) {
-            isMenuSearchFocused = true;
-            isMenuCatalogLoading = false;
-            if (!renderMenuCatalogBodyOnly()) renderCatalog();
-          }
+          const success = addItem(item.name, qty);
+          if (success && selectedProductMenu) { isMenuSearchFocused = true; isMenuCatalogLoading = false; if (!renderMenuCatalogBodyOnly()) renderCatalog(); }
         });
+        button.addEventListener("click", event => { if (event.target.closest("input, button, .suggestion-added-note")) return; qtyInput.focus(); });
+
+        const addedNote = button.querySelector(".suggestion-added-note");
+        if (addedNote && alreadyAddedItem) {
+          addedNote.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            openSupplierList(alreadyAddedItem.supplier);
+          });
+        }
+
         el.catalogResults.appendChild(button);
       });
     }
@@ -2769,13 +2806,21 @@
             <span class="suggestion-category">${escapeHTML(item.category || "Barang")}</span>
             ${alreadyAdded ? `<span class="suggestion-added-note">✓ Sudah di list (${alreadyAddedItem.qty})</span>` : ""}
           </span>
-          <span class="suggestion-action">+ Tambah</span>
+          <span class="suggestion-add-tools">
+            <input class="suggestion-qty-input" type="number" min="1" inputmode="numeric" placeholder="Qty" aria-label="Jumlah barang" />
+            <button class="suggestion-action-btn" type="button">+ Tambah</button>
+          </span>
         `;
 
-        button.addEventListener("click", event => {
-          event.preventDefault();
-          event.stopPropagation();
-
+        const qtyInput = button.querySelector(".suggestion-qty-input");
+        const addButton = button.querySelector(".suggestion-action-btn");
+        qtyInput.addEventListener("click", event => event.stopPropagation());
+        qtyInput.addEventListener("keydown", event => { event.stopPropagation(); if (event.key === "Enter") { event.preventDefault(); addButton.click(); } });
+        button.addEventListener("click", event => { if (event.target.closest("input, button, .suggestion-added-note")) return; qtyInput.focus(); });
+        addButton.addEventListener("click", event => {
+          event.preventDefault(); event.stopPropagation();
+          const qty = parseAddQty(qtyInput.value);
+          if (!qty) { showToast("Masukkan jumlah barang dulu"); qtyInput.focus(); return; }
           const lastScroll = window.scrollY;
           const keepKeyword = cleanText(el.searchInput.value);
           const selectedItemName = item.name;
@@ -2789,13 +2834,14 @@
 
           if (!getCurrentSupplier() && !supplierContextFilter) {
             closeSuggestionsCurtainUp(() => {
-              addItem(selectedItemName);
+              addItem(selectedItemName, qty);
               renderSummary();
             });
             return;
           }
 
-          addItem(selectedItemName);
+          const success = addItem(selectedItemName, qty);
+          if (!success) return;
 
           currentPage = pageBeforeAdd;
           supplierContextFilter = supplierBeforeAdd;
