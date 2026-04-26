@@ -941,7 +941,7 @@
         <div class="header-right-tools">
           <div id="suggestionTopActions" class="suggestion-top-actions">
             <button id="suggestionViewListBtn" class="suggestion-mini-btn" type="button">📦 Liat List</button>
-            <button id="suggestionChangeSupplierBtn" class="suggestion-mini-btn" type="button">🔁 Ganti Supplier</button>
+            <button id="suggestionChangeSupplierBtn" class="suggestion-mini-btn" type="button" style="display:none;">🔁 Ganti Supplier</button>
           </div>
 
           <div id="totalBadge" class="badge">
@@ -990,7 +990,7 @@
               <p id="quickMenuTitle" class="quick-title">Menu barang</p>
               <div class="supplier-control">
                 <button id="quickSupplierBtn" class="quick-btn" type="button">🏷️ Pilih Supplier</button>
-                <div id="selectedSupplierChip" class="supplier-chip" title="Klik untuk lihat list supplier ini" style="display:none;"></div>
+                <div id="selectedSupplierChip" class="supplier-chip" title="Klik untuk ganti supplier" style="display:none;"></div>
               </div>
             </div>
 
@@ -1856,15 +1856,19 @@
       if (supplier) {
         el.selectedSupplierChip.style.display = "block";
         el.selectedSupplierChip.textContent = supplier;
-        el.quickSupplierBtn.textContent = "🔁 ganti suppliyer";
+        el.selectedSupplierChip.title = "Klik untuk ganti supplier";
+        el.quickSupplierBtn.textContent = "🏷️ Pilih Supplier";
       } else {
         el.selectedSupplierChip.style.display = "none";
         el.selectedSupplierChip.textContent = "";
+        el.selectedSupplierChip.title = "";
         el.quickSupplierBtn.textContent = "🏷️ Pilih Supplier";
       }
 
-      el.quickSupplierBtn.style.display = supplierMenuOpen ? "none" : "inline-flex";
-      el.quickSupplierBtn.classList.toggle("active", Boolean(supplier));
+      // Jika supplier sudah dipilih, tombol ganti supplier dihilangkan.
+      // Untuk ganti supplier, klik chip/keterangan nama supplier yang sudah aktif.
+      el.quickSupplierBtn.style.display = supplier ? "none" : "inline-flex";
+      el.quickSupplierBtn.classList.toggle("active", Boolean(supplierMenuOpen));
 
       if (el.formMainTitle) {
         el.formMainTitle.textContent = supplierMenuOpen ? "Pilih Supplier" : "Pilih Barang Habis";
@@ -2504,7 +2508,15 @@
     });
 
     el.selectedSupplierChip.addEventListener("click", () => {
-      if (getCurrentSupplier()) openSupplierList(getCurrentSupplier());
+      // Klik nama supplier aktif untuk membuka menu ganti supplier.
+      closeSuggestionsCurtainUp(() => {
+        if (currentPage === "added") openHomePage();
+        isSupplierMenuOpen = true;
+        renderSupplierDropdown();
+        el.supplierDropdown.classList.add("show");
+        el.catalogResults.classList.add("hide");
+        renderSelectedSupplier();
+      });
     });
 
     el.suggestionViewListBtn.addEventListener("click", () => {
