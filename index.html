@@ -569,6 +569,91 @@
       font-weight: 900;
     }
 
+
+    .product-menu-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .product-menu-card {
+      min-height: 92px;
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, #ffffff, #f8fafc);
+      color: var(--text);
+      border-radius: 18px;
+      padding: 13px;
+      cursor: pointer;
+      text-align: left;
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.045);
+      display: grid;
+      align-content: space-between;
+      gap: 8px;
+    }
+
+    .product-menu-card:hover {
+      border-color: #99f6e4;
+      background: linear-gradient(135deg, #ecfeff, #f0fdfa);
+    }
+
+    .product-menu-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .product-menu-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 13px;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      display: grid;
+      place-items: center;
+      font-size: 17px;
+      font-weight: 900;
+    }
+
+    .product-menu-count {
+      font-size: 11px;
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      border-radius: 999px;
+      padding: 5px 8px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .product-menu-name {
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--text);
+      line-height: 1.25;
+    }
+
+    .product-menu-desc {
+      display: block;
+      margin-top: 3px;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .catalog-back-btn {
+      border: 1px solid #99f6e4;
+      background: #ecfeff;
+      color: var(--primary-dark);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      width: fit-content;
+      margin-bottom: 2px;
+    }
+
+
     .tabs {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -1120,7 +1205,36 @@
       { name: "Monitor", category: "Display" },
       { name: "Memory Card 32GB", category: "Storage" },
       { name: "Memory Card 64GB", category: "Storage" },
-      { name: "Memory Card 128GB", category: "Storage" }
+      { name: "Memory Card 128GB", category: "Storage" },
+      { name: "DVR-204G-M1/T Hilook", category: "DVR" },
+      { name: "DVR 4CH", category: "DVR" },
+      { name: "DVR 8CH", category: "DVR" },
+      { name: "DVR 16CH", category: "DVR" },
+      { name: "NVR 4CH", category: "NVR" },
+      { name: "NVR 8CH", category: "NVR" },
+      { name: "NVR 16CH", category: "NVR" },
+      { name: "HTB A+B", category: "HTB" },
+      { name: "HTB Gigabit", category: "HTB" },
+      { name: "HTB Netlink", category: "HTB" },
+      { name: "Kabel Listrik NYM 2x1.5", category: "Kabel Listrik" },
+      { name: "Kabel Listrik NYM 3x1.5", category: "Kabel Listrik" },
+      { name: "Kabel CCTV RG59", category: "Kabel CCTV" },
+      { name: "Kabel CCTV RG6", category: "Kabel CCTV" },
+      { name: "Kabel LAN CAT5E", category: "Kabel CCTV" },
+      { name: "Kabel LAN CAT6", category: "Kabel CCTV" },
+    ];
+
+    const PRODUCT_MENUS = [
+      { id: "dvr", title: "DVR", icon: "📹", desc: "Recorder analog", keywords: ["dvr", "recorder"] },
+      { id: "nvr", title: "NVR", icon: "🎛️", desc: "Recorder IP camera", keywords: ["nvr"] },
+      { id: "htb", title: "HTB", icon: "🔌", desc: "Fiber converter", keywords: ["htb"] },
+      { id: "kabel-listrik", title: "KABEL LISTRIK", icon: "⚡", desc: "NYM, power, terminal", keywords: ["kabel listrik", "kabel nym", "kabel power", "power cctv", "stop kontak", "terminal listrik", "listrik"] },
+      { id: "kabel-cctv", title: "KABEL CCTV", icon: "🧵", desc: "RG, LAN, konektor jaringan", keywords: ["kabel cctv", "kabel lan", "rg59", "rg6", "rj45", "kabel & jaringan"] },
+      { id: "kamera", title: "KAMERA", icon: "📷", desc: "Indoor, outdoor, WiFi", keywords: ["kamera", "cctv indoor", "cctv outdoor", "wifi"] },
+      { id: "fan", title: "FAN", icon: "🌀", desc: "Kipas 12V", keywords: ["fan"] },
+      { id: "power", title: "POWER", icon: "🔋", desc: "Adaptor & PSU", keywords: ["power", "adaptor", "power supply"] },
+      { id: "storage", title: "STORAGE", icon: "💾", desc: "HDD & memory card", keywords: ["storage", "harddisk", "memory card"] },
+      { id: "aksesoris", title: "AKSESORIS", icon: "🧰", desc: "BNC, jack, klem", keywords: ["aksesoris", "konektor", "instalasi", "bnc", "jack", "klem", "ties", "isolasi", "pipa"] }
     ];
 
     const $ = id => document.getElementById(id);
@@ -1196,6 +1310,7 @@
     let editingSupplierName = "";
     let isSupplierMenuOpen = false;
     let supplierContextFilter = "";
+    let selectedProductMenu = "";
     let savedHomeSuggestionState = null;
 
     const SEARCH_DELAY = 2000;
@@ -1436,14 +1551,68 @@
       return historyItems.concat(restMasterItems).slice(0, 50);
     }
 
+
+    function getMenuConfig(menuId) {
+      return PRODUCT_MENUS.find(menu => menu.id === menuId) || null;
+    }
+
+    function itemMatchesProductMenu(item, menu) {
+      if (!item || !menu) return false;
+      const haystack = `${item.name} ${item.category}`.toLowerCase();
+      return menu.keywords.some(keyword => haystack.includes(keyword.toLowerCase()));
+    }
+
+    function getProductMenuItems(menuId) {
+      const menu = getMenuConfig(menuId);
+      if (!menu) return [];
+      return MASTER_ITEMS.filter(item => itemMatchesProductMenu(item, menu));
+    }
+
+    function renderProductMenuCards() {
+      el.catalogResults.innerHTML = `
+        <div class="product-menu-grid">
+          ${PRODUCT_MENUS.map(menu => {
+            const count = getProductMenuItems(menu.id).length;
+            return `
+              <button class="product-menu-card" type="button" data-menu-id="${escapeHTML(menu.id)}">
+                <span class="product-menu-top">
+                  <span class="product-menu-icon">${escapeHTML(menu.icon)}</span>
+                  <span class="product-menu-count">${count} item</span>
+                </span>
+                <span>
+                  <span class="product-menu-name">${escapeHTML(menu.title)}</span>
+                  <span class="product-menu-desc">${escapeHTML(menu.desc)}</span>
+                </span>
+              </button>
+            `;
+          }).join("")}
+        </div>
+      `;
+
+      el.catalogResults.querySelectorAll(".product-menu-card").forEach(button => {
+        button.addEventListener("click", () => {
+          selectedProductMenu = button.dataset.menuId || "";
+          renderSelectedSupplier();
+          renderCatalog();
+        });
+      });
+    }
+
     function getFilteredCatalog() {
       const keyword = currentPage === "home" ? cleanText(searchQuery).toLowerCase() : "";
-      if (!keyword) return getHistoryCatalogItems();
 
-      return MASTER_ITEMS.filter(item =>
-        item.name.toLowerCase().includes(keyword) ||
-        item.category.toLowerCase().includes(keyword)
-      ).slice(0, 50);
+      if (keyword) {
+        return MASTER_ITEMS.filter(item =>
+          item.name.toLowerCase().includes(keyword) ||
+          item.category.toLowerCase().includes(keyword)
+        ).slice(0, 50);
+      }
+
+      if (selectedProductMenu) {
+        return getProductMenuItems(selectedProductMenu).slice(0, 100);
+      }
+
+      return [];
     }
 
     function captureHomeSuggestionState() {
@@ -1468,6 +1637,7 @@
 
       currentPage = "home";
       supplierContextFilter = "";
+      selectedProductMenu = "";
       isSupplierMenuOpen = false;
       isSearching = false;
       isSuggestionLoading = false;
@@ -1519,6 +1689,7 @@
       searchTimer = null;
       suggestionTimer = null;
       searchQuery = "";
+      selectedProductMenu = "";
       isSearching = false;
       isSuggestionLoading = false;
 
@@ -1539,6 +1710,7 @@
       savedHomeSuggestionState = null;
       currentPage = "home";
       supplierContextFilter = "";
+      selectedProductMenu = "";
       isSupplierMenuOpen = false;
 
       el.homePage.style.display = "block";
@@ -1875,7 +2047,7 @@
       }
 
       if (el.quickMenuTitle) {
-        el.quickMenuTitle.textContent = supplierMenuOpen ? "Menu supplier" : "Menu barang";
+        el.quickMenuTitle.textContent = supplierMenuOpen ? "Menu supplier" : (selectedProductMenu ? `List ${getMenuConfig(selectedProductMenu)?.title || "Barang"}` : "Menu barang");
       }
 
       if (currentPage === "home") {
@@ -1918,14 +2090,33 @@
         return;
       }
 
+      if (!cleanText(searchQuery) && !selectedProductMenu) {
+        renderProductMenuCards();
+        return;
+      }
+
       const filteredCatalog = getFilteredCatalog();
+      const activeMenu = getMenuConfig(selectedProductMenu);
       el.catalogResults.innerHTML = "";
 
+      if (selectedProductMenu && !cleanText(searchQuery)) {
+        const backBtn = document.createElement("button");
+        backBtn.className = "catalog-back-btn";
+        backBtn.type = "button";
+        backBtn.textContent = `← Menu Barang${activeMenu ? " / " + activeMenu.title : ""}`;
+        backBtn.addEventListener("click", () => {
+          selectedProductMenu = "";
+          renderSelectedSupplier();
+          renderCatalog();
+        });
+        el.catalogResults.appendChild(backBtn);
+      }
+
       if (filteredCatalog.length === 0) {
-        el.catalogResults.innerHTML = `
+        el.catalogResults.innerHTML += `
           <div class="empty" style="padding:18px;">
-            <strong>Barang tidak ada di katalog</strong>
-            <span>Tambahkan nama barang ke MASTER_ITEMS di kode jika ingin masuk pilihan.</span>
+            <strong>Barang tidak ada di menu ini</strong>
+            <span>Coba pilih menu barang lain atau gunakan pencarian.</span>
           </div>
         `;
         return;
@@ -2271,6 +2462,7 @@
       clearTimeout(suggestionLoadingTimer);
 
       searchQuery = "";
+      selectedProductMenu = "";
       isSearching = false;
       isSuggestionLoading = false;
       lastSuggestionSignature = "";
@@ -2299,6 +2491,7 @@
       isSupplierMenuOpen = false;
       el.supplierDropdown.classList.remove("show");
       el.catalogResults.classList.remove("hide");
+      if (value) selectedProductMenu = "";
       el.clearSearchBtn.style.display = value ? "block" : "none";
 
       if (!value) {
