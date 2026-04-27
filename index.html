@@ -704,6 +704,27 @@
       min-width: 0;
     }
 
+    .top-add-item-btn {
+      flex: 0 0 auto;
+      border: 1px dashed var(--primary);
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .top-add-item-btn:hover { transform: translateY(-1px); }
+
+    body.dark-mode .top-add-item-btn {
+      background: rgba(124, 58, 237, 0.18);
+      color: #ddd6fe;
+      border-color: rgba(196, 164, 255, 0.34);
+    }
+
     .quick-btn {
       flex: 0 0 auto;
       border: 1px solid var(--line);
@@ -1268,6 +1289,82 @@
 
 
 
+
+
+    .supplier-menu-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 7px;
+      align-items: stretch;
+    }
+
+    .supplier-menu-row.edit-active {
+      grid-template-columns: minmax(0, 1fr) 36px;
+    }
+
+    .supplier-menu-row .category-btn { width: 100%; }
+
+    .supplier-menu-edit-btn {
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      color: var(--primary-dark);
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 900;
+      cursor: pointer;
+      min-height: 40px;
+    }
+
+    body.dark-mode .supplier-menu-edit-btn {
+      background: rgba(255, 255, 255, 0.07);
+      color: #ddd6fe;
+      border-color: rgba(196, 164, 255, 0.18);
+    }
+
+    .supplier-menu-action-row {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .supplier-menu-action-row .category-btn {
+      width: 100%;
+      min-height: 40px;
+      text-align: center;
+    }
+
+    .supplier-edit-mode-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    body.dark-mode .supplier-edit-mode-btn.active {
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      color: white;
+      border-color: transparent;
+    }
+
+    .manual-add-card {
+      border: 1px dashed var(--primary);
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      border-radius: 16px;
+      padding: 13px;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .manual-add-card:hover { transform: translateY(-1px); }
+
+    .add-product-menu-card {
+      border-style: dashed;
+      background: linear-gradient(135deg, #ecfeff, #f8fafc);
+    }
+
     .supplier-picker-list {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1508,6 +1605,21 @@
     </div>
   </div>
 
+
+
+  <div id="addItemModal" class="modal-backdrop">
+    <div class="modal">
+      <h3>Tambah barang baru</h3>
+      <p>Barang baru akan disimpan ke katalog custom. Setelah tersimpan, barang bisa dicari dan ditambahkan seperti barang lainnya.</p>
+      <input id="addItemNameInput" class="edit-field" type="text" placeholder="Nama barang baru" />
+      <input id="addItemCategoryInput" class="edit-field" type="text" placeholder="Kategori barang" />
+      <div class="modal-actions">
+        <button id="cancelAddItemBtn" class="btn btn-soft" type="button">Batal</button>
+        <button id="saveAddItemBtn" class="btn btn-primary" type="button">Simpan Barang</button>
+      </div>
+    </div>
+  </div>
+
   <div id="editSupplierModal" class="modal-backdrop">
     <div class="modal">
       <h3>Edit nama supplier</h3>
@@ -1523,7 +1635,9 @@
   <script>
     const STORAGE_KEY = "barang_habis_pakai_toko_v15_qty0_supplier_context";
     const SUPPLIER_STORAGE_KEY = "barang_habis_custom_suppliers_v1";
+    const CUSTOM_ITEM_STORAGE_KEY = "barang_habis_custom_items_v1";
     const THEME_STORAGE_KEY = "barang_habis_theme_mode_v1";
+    const SUPPLIER_RENAME_STORAGE_KEY = "barang_habis_supplier_rename_map_v1";
     const WA_NUMBER = "628175777488";
 
     const SUPPLIERS = [
@@ -21400,6 +21514,7 @@
       searchSuggestions: $("searchSuggestions"),
       searchWarmup: $("searchWarmup"),
       searchStatus: $("searchStatus"),
+      topAddItemBtn: $("topAddItemBtn"),
       quickSupplierBtn: $("quickSupplierBtn"),
       quickMenuTitle: $("quickMenuTitle"),
       supplierDropdown: $("supplierDropdown"),
@@ -21433,6 +21548,11 @@
       listSupplierModal: $("listSupplierModal"),
       listSupplierPicker: $("listSupplierPicker"),
       closeListSupplierBtn: $("closeListSupplierBtn"),
+      addItemModal: $("addItemModal"),
+      addItemNameInput: $("addItemNameInput"),
+      addItemCategoryInput: $("addItemCategoryInput"),
+      cancelAddItemBtn: $("cancelAddItemBtn"),
+      saveAddItemBtn: $("saveAddItemBtn"),
       editSupplierModal: $("editSupplierModal"),
       editSupplierInput: $("editSupplierInput"),
       cancelEditSupplierBtn: $("cancelEditSupplierBtn"),
@@ -21441,6 +21561,8 @@
 
     let items = loadItems();
     let customSuppliers = loadCustomSuppliers();
+    let supplierRenameMap = loadSupplierRenameMap();
+    let customItems = loadCustomItems();
     let activeTab = "list";
     let currentPage = "home";
     let searchQuery = "";
@@ -21455,6 +21577,7 @@
     let selectedSupplier = "";
     let editingSupplierName = "";
     let isSupplierMenuOpen = false;
+    let isSupplierEditMode = false;
     let supplierContextFilter = "";
     let selectedProductMenu = "";
     let isMenuSearchFocused = false;
@@ -21496,7 +21619,7 @@
     function findMasterItem(name) {
       const cleanName = cleanText(name).toLowerCase();
       if (!cleanName) return null;
-      return MASTER_ITEMS.find(item => item.name.toLowerCase() === cleanName) || null;
+      return getAllCatalogItems().find(item => item.name.toLowerCase() === cleanName) || null;
     }
 
     function normalizeStoredItem(item) {
@@ -21554,6 +21677,64 @@
     function saveCustomSuppliers() {
       localStorage.setItem(SUPPLIER_STORAGE_KEY, JSON.stringify(customSuppliers));
     }
+
+    function loadSupplierRenameMap() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(SUPPLIER_RENAME_STORAGE_KEY) || "{}");
+        return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+      } catch (error) {
+        console.warn("Gagal membaca rename supplier:", error);
+        return {};
+      }
+    }
+
+    function saveSupplierRenameMap() {
+      localStorage.setItem(SUPPLIER_RENAME_STORAGE_KEY, JSON.stringify(supplierRenameMap));
+    }
+
+    function getRenamedSupplierName(name) {
+      const originalName = cleanText(name);
+      if (!originalName) return "";
+
+      const directKey = Object.keys(supplierRenameMap).find(key =>
+        cleanText(key).toLowerCase() === originalName.toLowerCase()
+      );
+
+      return directKey ? cleanText(supplierRenameMap[directKey]) || originalName : originalName;
+    }
+
+    function loadCustomItems() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(CUSTOM_ITEM_STORAGE_KEY) || "[]");
+        return Array.isArray(parsed)
+          ? parsed.map(item => ({
+              name: cleanText(item && item.name),
+              category: cleanText(item && item.category) || "Lainnya"
+            })).filter(item => item.name)
+          : [];
+      } catch (error) {
+        console.warn("Gagal membaca barang custom:", error);
+        return [];
+      }
+    }
+
+    function saveCustomItems() {
+      localStorage.setItem(CUSTOM_ITEM_STORAGE_KEY, JSON.stringify(customItems));
+    }
+
+    function getAllCatalogItems() {
+      const map = new Map();
+      MASTER_ITEMS.concat(customItems).forEach(item => {
+        const name = cleanText(item && item.name);
+        if (!name) return;
+        const key = name.toLowerCase();
+        if (!map.has(key)) {
+          map.set(key, { name, category: cleanText(item && item.category) || "Lainnya" });
+        }
+      });
+      return Array.from(map.values());
+    }
+
 
     function saveItems() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
@@ -21680,13 +21861,23 @@
     }
 
     function getAllSupplierNames() {
-      const set = new Set(SUPPLIERS);
+      const set = new Set();
+
+      SUPPLIERS.forEach(supplier => {
+        const renamed = getRenamedSupplierName(supplier);
+        if (renamed) set.add(renamed);
+      });
+
       customSuppliers.forEach(supplier => {
-        if (cleanText(supplier)) set.add(cleanText(supplier));
+        const renamed = getRenamedSupplierName(supplier);
+        if (renamed) set.add(renamed);
       });
+
       items.forEach(item => {
-        if (cleanText(item.supplier)) set.add(cleanText(item.supplier));
+        const supplier = cleanText(item.supplier);
+        if (supplier) set.add(supplier);
       });
+
       return Array.from(set);
     }
 
@@ -21729,7 +21920,7 @@
 
       const historyItems = Array.from(map.values());
       const historyKeys = new Set(historyItems.map(item => cleanText(item.name).toLowerCase()));
-      const restMasterItems = MASTER_ITEMS.filter(item => !historyKeys.has(item.name.toLowerCase()));
+      const restMasterItems = getAllCatalogItems().filter(item => !historyKeys.has(item.name.toLowerCase()));
 
       return historyItems.concat(restMasterItems).slice(0, 50);
     }
@@ -21787,7 +21978,7 @@
     function getProductMenuItems(menuId) {
       const menu = getMenuConfig(menuId);
       if (!menu) return [];
-      return MASTER_ITEMS.filter(item => itemMatchesProductMenu(item, menu));
+      return getAllCatalogItems().filter(item => itemMatchesProductMenu(item, menu));
     }
 
     function renderProductMenuCards() {
@@ -21808,10 +21999,23 @@
               </button>
             `;
           }).join("")}
+          <button class="product-menu-card add-product-menu-card" type="button" id="menuAddItemCard">
+            <span class="product-menu-top">
+              <span class="product-menu-icon">＋</span>
+              <span class="product-menu-count">Baru</span>
+            </span>
+            <span>
+              <span class="product-menu-name">Tambah barang</span>
+              <span class="product-menu-desc">Buat barang custom</span>
+            </span>
+          </button>
         </div>
       `;
 
-      el.catalogResults.querySelectorAll(".product-menu-card").forEach(button => {
+      const menuAddItemCard = el.catalogResults.querySelector("#menuAddItemCard");
+      if (menuAddItemCard) menuAddItemCard.addEventListener("click", () => openAddItemModal(searchQuery));
+
+      el.catalogResults.querySelectorAll(".product-menu-card[data-menu-id]").forEach(button => {
         button.addEventListener("click", () => {
           selectedProductMenu = button.dataset.menuId || "";
           clearTimeout(menuSearchTimer);
@@ -21840,7 +22044,7 @@
       if (currentPage !== "home") return [];
 
       const isInsideProductMenu = Boolean(selectedProductMenu);
-      const source = isInsideProductMenu ? getProductMenuItems(selectedProductMenu) : MASTER_ITEMS;
+      const source = isInsideProductMenu ? getProductMenuItems(selectedProductMenu) : getAllCatalogItems();
       const keyword = cleanText(isInsideProductMenu ? menuSearchQuery : searchQuery).toLowerCase();
       const limit = isInsideProductMenu ? 100 : 50;
 
@@ -22055,6 +22259,7 @@
     function openAddedPage(filterSupplier = "") {
       currentPage = "added";
       isSupplierMenuOpen = false;
+      isSupplierEditMode = false;
       supplierContextFilter = cleanText(filterSupplier);
 
       el.homePage.style.display = "none";
@@ -22216,6 +22421,61 @@
       render();
     }
 
+
+    function getDefaultNewItemCategory() {
+      const menu = getMenuConfig(selectedProductMenu);
+      return menu && menu.title ? menu.title : "Lainnya";
+    }
+
+    function openAddItemModal(prefillName = "") {
+      const defaultCategory = getDefaultNewItemCategory();
+      el.addItemNameInput.value = cleanText(prefillName);
+      el.addItemCategoryInput.value = "";
+      el.addItemCategoryInput.placeholder = defaultCategory && defaultCategory !== "Lainnya"
+        ? `Kategori barang (${defaultCategory})`
+        : "Kategori barang";
+      el.addItemModal.classList.add("show");
+      setTimeout(() => {
+        el.addItemNameInput.focus();
+        if (prefillName) el.addItemNameInput.select();
+      }, 80);
+    }
+
+    function closeAddItemModal() {
+      el.addItemModal.classList.remove("show");
+      el.addItemNameInput.value = "";
+      el.addItemCategoryInput.value = "";
+    }
+
+    function saveAddItem() {
+      const name = cleanText(el.addItemNameInput.value);
+      const category = cleanText(el.addItemCategoryInput.value) || getDefaultNewItemCategory();
+
+      if (!name) {
+        showToast("Isi nama barang dulu");
+        el.addItemNameInput.focus();
+        return;
+      }
+
+      const existsInCatalog = findMasterItem(name);
+      if (existsInCatalog) {
+        showToast("Barang sudah ada di katalog");
+        el.addItemNameInput.focus();
+        el.addItemNameInput.select();
+        return;
+      }
+
+      customItems.unshift({ name, category });
+      customItems = Array.from(new Map(customItems.map(item => [cleanText(item.name).toLowerCase(), item])).values());
+      saveCustomItems();
+
+      closeAddItemModal();
+      showToast("Barang baru berhasil disimpan");
+      renderSummary();
+      renderCatalog();
+      renderSuggestions();
+    }
+
     function openEditSupplierModal(supplier) {
       editingSupplierName = supplier;
       el.editSupplierInput.value = supplier;
@@ -22237,7 +22497,10 @@
       const newName = cleanText(el.editSupplierInput.value);
 
       if (!oldName) {
+        showToast("Pilih supplier yang mau diedit dulu");
+        isSupplierEditMode = false;
         closeEditSupplierModal();
+        renderSupplierDropdown();
         return;
       }
 
@@ -22247,27 +22510,95 @@
         return;
       }
 
+      const oldNameLower = oldName.toLowerCase();
+      const newNameLower = newName.toLowerCase();
+
+      // Kalau nama tidak berubah, tetap matikan mode edit setelah klik Simpan.
+      if (oldNameLower === newNameLower) {
+        isSupplierEditMode = false;
+        closeEditSupplierModal();
+        renderSupplierDropdown();
+        renderSelectedSupplier();
+        showToast("Mode edit supplier mati");
+        return;
+      }
+
+      const nameAlreadyUsed = getAllSupplierNames().some(name => {
+        const cleanNameLower = cleanText(name).toLowerCase();
+        return cleanNameLower === newNameLower && cleanNameLower !== oldNameLower;
+      });
+
+      if (nameAlreadyUsed) {
+        showToast("Nama supplier sudah ada");
+        el.editSupplierInput.focus();
+        el.editSupplierInput.select();
+        return;
+      }
+
+      const defaultSupplierMatch = SUPPLIERS.find(name => {
+        const originalNameLower = cleanText(name).toLowerCase();
+        const renamedNameLower = getRenamedSupplierName(name).toLowerCase();
+        return originalNameLower === oldNameLower || renamedNameLower === oldNameLower;
+      });
+
+      if (defaultSupplierMatch) {
+        supplierRenameMap[defaultSupplierMatch] = newName;
+      }
+
+      let customSupplierUpdated = false;
+      customSuppliers = customSuppliers.map(name => {
+        const cleanName = cleanText(name);
+        const renamedName = getRenamedSupplierName(cleanName);
+        const cleanNameLower = cleanName.toLowerCase();
+        const renamedNameLower = renamedName.toLowerCase();
+
+        if (cleanNameLower === oldNameLower || renamedNameLower === oldNameLower) {
+          customSupplierUpdated = true;
+          return newName;
+        }
+
+        return cleanName;
+      });
+
+      if (!defaultSupplierMatch && !customSupplierUpdated) {
+        customSuppliers.push(newName);
+      }
+
+      customSuppliers = Array.from(
+        new Map(customSuppliers.map(name => [cleanText(name).toLowerCase(), cleanText(name)])).values()
+      ).filter(Boolean);
+
       items.forEach(item => {
-        if (item.supplier.toLowerCase() === oldName.toLowerCase()) {
+        if (cleanText(item.supplier).toLowerCase() === oldNameLower) {
           item.supplier = newName;
           item.updatedAt = new Date().toISOString();
         }
       });
 
-      if (selectedSupplier.toLowerCase() === oldName.toLowerCase()) {
+      if (cleanText(selectedSupplier).toLowerCase() === oldNameLower) {
         selectedSupplier = newName;
       }
 
-      if (supplierContextFilter.toLowerCase() === oldName.toLowerCase()) {
+      if (cleanText(supplierContextFilter).toLowerCase() === oldNameLower) {
         supplierContextFilter = newName;
         el.pageSubtitle.textContent = `Menampilkan supplier: ${newName}`;
-        el.searchInput.placeholder = "Cari semua barang...";
       }
 
+      // Setelah klik Simpan: mode edit langsung mati, modal tertutup,
+      // dan semua tampilan supplier langsung refresh ke nama baru.
+      isSupplierEditMode = false;
+      editingSupplierName = "";
+      el.editSupplierModal.classList.remove("show");
+      el.editSupplierInput.value = "";
+
       saveItems();
-      closeEditSupplierModal();
+      saveCustomSuppliers();
+      saveSupplierRenameMap();
+
+      renderSupplierDropdown();
+      renderListSupplierPicker();
       render();
-      showToast("Nama supplier diperbarui");
+      showToast("Nama supplier berhasil diedit");
     }
 
     function formatDate(iso) {
@@ -22290,31 +22621,73 @@
       el.supplierDropdown.innerHTML = "";
 
       getAllSupplierNames().forEach(supplier => {
+        const row = document.createElement("div");
+        row.className = `supplier-menu-row${isSupplierEditMode ? " edit-active" : ""}`;
+
         const btn = document.createElement("button");
         btn.className = `category-btn${selectedSupplier === supplier ? " active" : ""}`;
         btn.type = "button";
         btn.textContent = supplier;
 
         btn.addEventListener("click", () => {
+          if (isSupplierEditMode) {
+            openEditSupplierModal(supplier);
+            return;
+          }
+
           selectedSupplier = supplier;
           isSupplierMenuOpen = false;
+          isSupplierEditMode = false;
           el.supplierDropdown.classList.remove("show");
           el.catalogResults.classList.remove("hide");
           showToast(`Supplier aktif: ${supplier}`);
           render();
         });
 
-        el.supplierDropdown.appendChild(btn);
+        row.appendChild(btn);
+
+        if (isSupplierEditMode) {
+          const editBtn = document.createElement("button");
+          editBtn.className = "supplier-menu-edit-btn";
+          editBtn.type = "button";
+          editBtn.title = `Edit ${supplier}`;
+          editBtn.textContent = "✎";
+          editBtn.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            openEditSupplierModal(supplier);
+          });
+          row.appendChild(editBtn);
+        }
+
+        el.supplierDropdown.appendChild(row);
       });
+
+      const actionRow = document.createElement("div");
+      actionRow.className = "supplier-menu-action-row";
 
       const customBtn = document.createElement("button");
       customBtn.className = "category-btn custom-supplier-btn";
       customBtn.type = "button";
       customBtn.textContent = "+ Custom nama supplier";
       customBtn.addEventListener("click", () => {
+        isSupplierEditMode = false;
         openAddSupplierModal();
       });
-      el.supplierDropdown.appendChild(customBtn);
+
+      const editModeBtn = document.createElement("button");
+      editModeBtn.className = `category-btn custom-supplier-btn supplier-edit-mode-btn${isSupplierEditMode ? " active" : ""}`;
+      editModeBtn.type = "button";
+      editModeBtn.textContent = isSupplierEditMode ? "✓ Mode edit aktif" : "✎ Edit nama supplier";
+      editModeBtn.addEventListener("click", () => {
+        isSupplierEditMode = !isSupplierEditMode;
+        renderSupplierDropdown();
+        showToast(isSupplierEditMode ? "Pilih supplier yang mau diedit" : "Mode edit supplier mati");
+      });
+
+      actionRow.appendChild(customBtn);
+      actionRow.appendChild(editModeBtn);
+      el.supplierDropdown.appendChild(actionRow);
     }
 
     function renderSelectedSupplier() {
@@ -22454,6 +22827,7 @@
       }
 
       const filteredCatalog = getFilteredCatalog();
+
 
       if (filteredCatalog.length === 0) {
         el.catalogResults.insertAdjacentHTML("beforeend", `
@@ -22667,6 +23041,7 @@
           });
         }
       }
+
       if (filteredCatalog.length === 0) {
         el.catalogResults.innerHTML += `
           <div class="empty" style="padding:18px;">
@@ -22937,6 +23312,7 @@
       if (!el.listSupplierModal) return;
       closeSuggestionsCurtainUp();
       isSupplierMenuOpen = false;
+      isSupplierEditMode = false;
       renderListSupplierPicker();
       el.listSupplierModal.classList.add("show");
     }
@@ -22982,7 +23358,7 @@
 
       // Field search paling atas selalu GLOBAL: cari semua produk,
       // walaupun sedang berada di menu DVR / HTB / KABEL / menu lainnya.
-      return MASTER_ITEMS
+      return getAllCatalogItems()
         .filter(item =>
           item.name.toLowerCase().includes(rawKeyword) ||
           item.category.toLowerCase().includes(rawKeyword)
@@ -23461,8 +23837,11 @@
       el.searchInput.focus();
     });
 
+    if (el.topAddItemBtn) el.topAddItemBtn.addEventListener("click", () => openAddItemModal(menuSearchDraft || menuSearchQuery || searchQuery));
+
     el.quickSupplierBtn.addEventListener("click", () => {
       isSupplierMenuOpen = !isSupplierMenuOpen;
+      if (!isSupplierMenuOpen) isSupplierEditMode = false;
       renderSupplierDropdown();
       el.supplierDropdown.classList.toggle("show", isSupplierMenuOpen);
       el.catalogResults.classList.toggle("hide", isSupplierMenuOpen);
@@ -23475,6 +23854,7 @@
       closeSuggestionsCurtainUp(() => {
         if (currentPage === "added") openHomePage();
         isSupplierMenuOpen = true;
+        isSupplierEditMode = false;
         renderSupplierDropdown();
         el.supplierDropdown.classList.add("show");
         el.catalogResults.classList.add("hide");
@@ -23497,6 +23877,7 @@
       closeSuggestionsCurtainUp(() => {
         if (currentPage === "added") openHomePage();
         isSupplierMenuOpen = true;
+        isSupplierEditMode = false;
         renderSupplierDropdown();
         el.supplierDropdown.classList.add("show");
         el.catalogResults.classList.add("hide");
@@ -23572,6 +23953,17 @@
 
     if (el.closeListSupplierBtn) el.closeListSupplierBtn.addEventListener("click", closeListSupplierModal);
 
+    if (el.cancelAddItemBtn) el.cancelAddItemBtn.addEventListener("click", closeAddItemModal);
+    if (el.saveAddItemBtn) el.saveAddItemBtn.addEventListener("click", saveAddItem);
+    if (el.addItemNameInput) el.addItemNameInput.addEventListener("keydown", event => {
+      if (event.key === "Enter") { event.preventDefault(); el.addItemCategoryInput.focus(); }
+      if (event.key === "Escape") closeAddItemModal();
+    });
+    if (el.addItemCategoryInput) el.addItemCategoryInput.addEventListener("keydown", event => {
+      if (event.key === "Enter") { event.preventDefault(); saveAddItem(); }
+      if (event.key === "Escape") closeAddItemModal();
+    });
+
     el.cancelEditSupplierBtn.addEventListener("click", closeEditSupplierModal);
     el.saveEditSupplierBtn.addEventListener("click", saveEditSupplier);
 
@@ -23589,6 +23981,12 @@
     el.addSupplierModal.addEventListener("click", event => {
       if (event.target === el.addSupplierModal) closeAddSupplierModal();
     });
+
+    if (el.addItemModal) {
+      el.addItemModal.addEventListener("click", event => {
+        if (event.target === el.addItemModal) closeAddItemModal();
+      });
+    }
 
     if (el.listSupplierModal) {
       el.listSupplierModal.addEventListener("click", event => {
