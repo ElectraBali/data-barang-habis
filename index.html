@@ -1440,13 +1440,12 @@
     const WA_NUMBER = "628175777488";
 
     const SUPPLIERS = [
-      "LJE",
-      "LPA",
-      "Supplier A",
-      "Supplier B",
-      "Supplier C",
-      "Toko Bali CCTV",
-      "Tanpa Supplier"
+      "CNC",
+      "BTG",
+      "JATIM",
+      "DAHUA",
+      "HILOOK",
+      "EZVIZ"
     ];
 
     const MASTER_ITEMS = [
@@ -21278,15 +21277,16 @@
 
     const PRODUCT_MENUS = [
       { id: "komponen", title: "KOMPONEN", icon: "🧩", desc: "IC, sensor, modul, elco", keywords: ["komponen", "ic ", "sensor", "modul", "relay", "transistor", "resistor", "elco", "capacitor", "capasitor", "led", "arduino", "buzzer", "regulator"] },
-      { id: "kabel-listrik", title: "KABEL LISTRIK", icon: "⚡", desc: "Kabel power & instalasi", keywords: ["kabel listrik", "kabel nym", "kabel power", "kabel ac", "kabel strika", "kabel roll", "terminal listrik", "stop kontak", "saklar", "listrik"] },
-      { id: "aksesoris", title: "AKSESORIS", icon: "🧰", desc: "Perlengkapan tambahan", keywords: ["aksesoris", "headset", "mouse", "keyboard", "otg", "mic", "pinset", "remote", "double tape", "isolasi", "bracket", "box", "case"] },
-      { id: "kabel-cctv", title: "KABEL CCTV", icon: "🧵", desc: "RG, LAN, HDMI, konektor", keywords: ["kabel cctv", "kabel lan", "kabel & jaringan", "rg59", "rg6", "utp", "rj45", "bnc", "hdmi", "vga", "rca", "usb extender", "video balun"] },
+      { id: "kabel-listrik", title: "KABEL LISTRIK", icon: "⚡", desc: "Kabel power & instalasi", keywords: ["kabel listrik", "kabel nym", "kabel nyy", "kabel power", "kabel ac", "kabel strika", "kabel roll"] },
+      { id: "aksesoris", title: "AKSESORIS", icon: "🧰", desc: "Perlengkapan tambahan", keywords: ["aksesoris", "headset", "mouse", "keyboard", "otg", "mic", "pinset", "remote", "double tape", "bracket", "box", "case"] },
+      { id: "kabel-cctv", title: "KABEL CCTV", icon: "🧵", desc: "RG59, RG6, CAT6 100/300m", keywords: ["rg59", "rg6", "cat 6 300m", "cat6 300m", "cat 6 100", "cat6 100", "cat 6 100m", "cat6 100m", "cat 6 100 / 300m", "cat6 100 / 300m", "cat 6", "cat6"] },
       { id: "cctv", title: "CCTV", icon: "📷", desc: "Kamera & perangkat CCTV", keywords: ["cctv", "kamera", "camera", "webcam", "smart camera", "ip camera", "bracket kamera", "video balun"] },
       { id: "dvr", title: "DVR", icon: "📹", desc: "Recorder analog", keywords: ["dvr", "digital video recorder"] },
       { id: "penyimpanan", title: "PENYIMPANAN", icon: "💾", desc: "HDD, SSD, memory", keywords: ["storage", "harddisk", "hdd", "ssd", "memory card", "micro sd", "flashdisk", "case hdd", "enclosure"] },
       { id: "nvr", title: "NVR", icon: "🎛️", desc: "Recorder IP camera", keywords: ["nvr", "network video recorder"] },
       { id: "adaptor", title: "ADAPTOR", icon: "🔌", desc: "Adaptor berbagai voltase", keywords: ["adaptor", "adapter", "charger", "poe 48v"] },
-      { id: "power-supplay", title: "POWER SUPPLAY", icon: "🔋", desc: "PSU, power bank, battery", keywords: ["power supply", "power supplay", "psu", "power bank", "battery", "batere", "baterai", "aki", "bms", "step down", "dc to dc"] }
+      { id: "power-supplay", title: "POWER SUPPLAY", icon: "🔋", desc: "PSU, power bank, battery", keywords: ["power supply", "power supplay", "psu", "power bank", "battery", "batere", "baterai", "aki", "bms", "step down", "dc to dc"] },
+      { id: "tinta", title: "TINTA", icon: "🖨️", desc: "Tinta refill printer", keywords: ["tinta", "ink", "reffil", "refill", "canon gi", "brother bt", "epson"] }
     ];
 
     const $ = id => document.getElementById(id);
@@ -21640,7 +21640,46 @@
 
     function itemMatchesProductMenu(item, menu) {
       if (!item || !menu) return false;
-      const haystack = `${item.name} ${item.category}`.toLowerCase();
+
+      const name = cleanText(item.name).toLowerCase();
+      const category = cleanText(item.category).toLowerCase();
+      const haystack = `${name} ${category}`;
+
+      if (menu.id === "kabel-listrik") {
+        if (name.includes("relay") || name.includes("isolasi") || name.includes("solasi")) return false;
+        return (
+          name.includes("kabel listrik") ||
+          name.includes("kabel nym") ||
+          name.includes("kabel nyy") ||
+          name.includes("kabel power") ||
+          name.includes("kabel ac") ||
+          name.includes("kabel strika") ||
+          name.includes("kabel roll")
+        );
+      }
+
+      if (menu.id === "kabel-cctv") {
+        const compactName = name.replace(/\s+/g, "");
+        const hasCat6 = compactName.includes("cat6") || name.includes("cat 6");
+        const hasTargetLength =
+          name.includes("300m") ||
+          name.includes("300 m") ||
+          name.includes("100m") ||
+          name.includes("100 m") ||
+          name.includes("100 / 300m") ||
+          name.includes("100/300m");
+
+        return (
+          name.includes("rg59") ||
+          name.includes("rg6") ||
+          (hasCat6 && hasTargetLength)
+        );
+      }
+
+      if (menu.id === "tinta") {
+        return name.includes("tinta") || name.includes("ink") || name.includes("reffil") || name.includes("refill");
+      }
+
       return menu.keywords.some(keyword => haystack.includes(keyword.toLowerCase()));
     }
 
