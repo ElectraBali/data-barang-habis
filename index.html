@@ -586,6 +586,11 @@
 
     .header-actions.list-mode #viewAddedBtn { margin-right: auto; }
 
+    .header-actions.product-menu-mode #viewAddedBtn {
+      margin-left: auto;
+      margin-right: 0;
+    }
+
     .view-added-btn,
     .menu-back-btn,
     .top-change-supplier-btn,
@@ -1412,8 +1417,6 @@
         </button>
 
         <button id="listChangeSupplierBtn" class="top-change-supplier-btn" type="button">🏷️ Pilih Supplier</button>
-
-        <button id="listAddSupplierBtn" class="top-add-supplier-btn" type="button">➕ Supplier</button>
 
         <button id="topResetBtn" class="top-reset-btn" type="button">🗑️ Reset</button>
       </div>
@@ -21690,7 +21693,9 @@
     function getFilteredItems() {
       let source = items;
 
-      if (supplierContextFilter) {
+      // Di halaman daftar catatan barang habis, semua supplier yang punya catatan tetap tampil.
+      // supplierContextFilter sekarang dipakai sebagai prioritas urutan, bukan untuk menyaring/hide supplier lain.
+      if (supplierContextFilter && currentPage !== "added") {
         const filter = supplierContextFilter.toLowerCase();
         source = source.filter(item => item.supplier.toLowerCase() === filter);
       }
@@ -21899,6 +21904,7 @@
       el.catalogResults.classList.remove("hide");
       el.searchBox.classList.remove("hidden");
       el.headerActions.classList.remove("list-mode");
+      el.headerActions.classList.remove("product-menu-mode");
       el.topResetBtn.classList.remove("show");
       el.searchWarmup.classList.remove("show");
       el.searchStatus.classList.remove("show");
@@ -21963,6 +21969,7 @@
       el.catalogResults.classList.remove("hide");
       el.searchBox.classList.remove("hidden");
       el.headerActions.classList.remove("list-mode");
+      el.headerActions.classList.remove("product-menu-mode");
       el.topResetBtn.classList.remove("show");
 
       el.pageTitle.textContent = "Elektra bali";
@@ -22033,6 +22040,7 @@
       el.searchBox.classList.remove("hidden");
 
       el.headerActions.classList.remove("list-mode");
+      el.headerActions.classList.remove("product-menu-mode");
       el.topResetBtn.classList.remove("show");
 
       el.pageTitle.textContent = "Elektra bali";
@@ -22060,7 +22068,7 @@
 
       el.pageTitle.textContent = "Daftar List barang habis";
       el.pageSubtitle.textContent = supplierContextFilter
-        ? `Menampilkan supplier: ${supplierContextFilter}`
+        ? `Prioritas supplier: ${supplierContextFilter}`
         : "List barang otomatis digrup per supplier.";
 
       el.searchInput.placeholder = "Cari semua barang...";
@@ -22730,16 +22738,26 @@
       if (filteredItems.length === 0) {
         el.itemList.innerHTML = `
           <div class="empty">
-            <strong>${supplierContextFilter ? "Supplier ini belum ada barang" : searchQuery ? "Barang tidak ditemukan" : "Belum ada barang"}</strong>
-            <span>${supplierContextFilter ? (searchQuery ? "Coba kata kunci lain di supplier ini." : "Klik tombol + di supplier atau kembali ke menu awal untuk tambah barang.") : searchQuery ? "Coba kata kunci lain." : "Tambahkan barang dari halaman awal."}</span>
+            <strong>${searchQuery ? "Barang tidak ditemukan" : "Belum ada barang"}</strong>
+            <span>${searchQuery ? "Coba kata kunci lain." : "Tambahkan barang dari halaman awal."}</span>
           </div>
         `;
         return;
       }
 
       const grouped = groupBySupplier(filteredItems);
+      const prioritySupplier = cleanText(supplierContextFilter || selectedSupplier).toLowerCase();
+      const supplierOrder = Object.keys(grouped).sort((a, b) => {
+        const aIsPriority = prioritySupplier && a.toLowerCase() === prioritySupplier;
+        const bIsPriority = prioritySupplier && b.toLowerCase() === prioritySupplier;
+        if (aIsPriority && !bIsPriority) return -1;
+        if (!aIsPriority && bIsPriority) return 1;
+        const aLatest = Math.max(...grouped[a].map(item => new Date(item.updatedAt || item.createdAt || 0).getTime() || 0));
+        const bLatest = Math.max(...grouped[b].map(item => new Date(item.updatedAt || item.createdAt || 0).getTime() || 0));
+        return bLatest - aLatest;
+      });
 
-      Object.keys(grouped).forEach(supplier => {
+      supplierOrder.forEach(supplier => {
         const supplierItems = grouped[supplier];
         const supplierQty = supplierItems.reduce((total, item) => total + item.qty, 0);
 
@@ -22945,6 +22963,7 @@
 
       el.menuBackBtn.classList.toggle("show", isInsideProductMenu);
       el.headerActions.classList.toggle("list-mode", currentPage === "added" || isInsideProductMenu);
+      el.headerActions.classList.toggle("product-menu-mode", isInsideProductMenu);
       el.viewAddedLabel.textContent = currentPage === "home" ? "📦 Lihat semua List" : "← Kembali";
       el.totalQty.textContent = "Total qty: " + qtyTotal;
       el.summaryText.textContent = items.length === 0
