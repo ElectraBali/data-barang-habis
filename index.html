@@ -23736,6 +23736,20 @@
       return cleanText(selectedSupplier);
     }
 
+    function syncSavedHomeSupplierState(supplierName) {
+      const supplier = cleanText(supplierName || selectedSupplier);
+      if (savedHomeMenuState) savedHomeMenuState.selectedSupplierValue = supplier;
+      if (savedHomeSuggestionState) savedHomeSuggestionState.selectedSupplierValue = supplier;
+    }
+
+    function setActiveSupplier(supplierName, keepListContext = true) {
+      const supplier = cleanText(supplierName);
+      if (!supplier) return;
+      selectedSupplier = supplier;
+      if (keepListContext && currentPage === "added") supplierContextFilter = supplier;
+      syncSavedHomeSupplierState(supplier);
+    }
+
 
     function setPendingAddItem(name, qty) {
       const cleanName = cleanText(name);
@@ -23750,7 +23764,7 @@
 
       const pending = pendingAddItem;
       pendingAddItem = null;
-      selectedSupplier = supplier;
+      setActiveSupplier(supplier, true);
 
       const success = addItem(pending.name, pending.qty);
       if (success) {
@@ -23996,7 +24010,7 @@
       currentPage = "home";
       supplierContextFilter = "";
       selectedProductMenu = cleanText(state.selectedProductMenuValue);
-      selectedSupplier = cleanText(state.selectedSupplierValue);
+      selectedSupplier = cleanText(selectedSupplier || state.selectedSupplierValue);
       isSupplierMenuOpen = false;
       isSearching = false;
       isSuggestionLoading = false;
@@ -24068,7 +24082,7 @@
       isSupplierMenuOpen = false;
       isSearching = false;
       isSuggestionLoading = false;
-      selectedSupplier = cleanText(state && state.selectedSupplierValue);
+      selectedSupplier = cleanText(selectedSupplier || (state && state.selectedSupplierValue));
       searchQuery = cleanText((state && state.searchQueryValue) || (state && state.searchValue));
       lastSuggestionSignature = cleanText(state && state.suggestionSignature);
       currentSuggestionItems = Array.isArray(state && state.suggestionItems) ? state.suggestionItems.slice() : [];
@@ -24201,7 +24215,7 @@
 
     function openSupplierList(supplier) {
       const name = cleanText(supplier) || getCurrentSupplier();
-      if (name) selectedSupplier = name;
+      if (name) setActiveSupplier(name, true);
       openAddedPage(name);
       showToast(`Menampilkan list ${name}`);
     }
@@ -24323,8 +24337,7 @@
         saveCustomSuppliers();
       }
 
-      selectedSupplier = supplierName;
-      if (currentPage === "added") supplierContextFilter = supplierName;
+      setActiveSupplier(supplierName, true);
       isSupplierMenuOpen = false;
       closeAddSupplierModal();
       el.supplierDropdown.classList.remove("show");
@@ -24504,7 +24517,7 @@
       });
 
       if (cleanText(selectedSupplier).toLowerCase() === oldNameLower) {
-        selectedSupplier = newName;
+        setActiveSupplier(newName, true);
       }
 
       if (cleanText(supplierContextFilter).toLowerCase() === oldNameLower) {
@@ -24542,7 +24555,9 @@
     }
 
     function formatQtyText(qty) {
-      return qty === 1 ? "1" : `${qty}PCS`;
+      const parsedQty = parseInt(qty, 10);
+      const safeQty = Number.isFinite(parsedQty) && parsedQty >= 0 ? parsedQty : 0;
+      return `${safeQty} Pcs`;
     }
 
     function renderSupplierDropdown() {
@@ -24553,7 +24568,7 @@
         row.className = `supplier-menu-row${isSupplierEditMode ? " edit-active" : ""}`;
 
         const btn = document.createElement("button");
-        btn.className = `category-btn${selectedSupplier === supplier ? " active" : ""}`;
+        btn.className = `category-btn${cleanText(selectedSupplier).toLowerCase() === cleanText(supplier).toLowerCase() ? " active" : ""}`;
         btn.type = "button";
         btn.textContent = supplier;
 
@@ -24563,8 +24578,7 @@
             return;
           }
 
-          selectedSupplier = supplier;
-          if (currentPage === "added") supplierContextFilter = supplier;
+          setActiveSupplier(supplier, true);
           isSupplierMenuOpen = false;
           isSupplierEditMode = false;
           el.supplierDropdown.classList.remove("show");
@@ -25146,18 +25160,31 @@
       });
     }
 
+    function getMessageSupplierOrder(grouped) {
+      const prioritySupplier = cleanText(supplierContextFilter || selectedSupplier).toLowerCase();
+
+      return Object.keys(grouped).sort((a, b) => {
+        const aIsPriority = prioritySupplier && a.toLowerCase() === prioritySupplier;
+        const bIsPriority = prioritySupplier && b.toLowerCase() === prioritySupplier;
+        if (aIsPriority && !bIsPriority) return -1;
+        if (!aIsPriority && bIsPriority) return 1;
+
+        const aLatest = Math.max(...grouped[a].map(item => new Date(item.updatedAt || item.createdAt || 0).getTime() || 0));
+        const bLatest = Math.max(...grouped[b].map(item => new Date(item.updatedAt || item.createdAt || 0).getTime() || 0));
+        return bLatest - aLatest;
+      });
+    }
+
     function generateMessage() {
       if (items.length === 0) return "Belum ada barang habis.";
 
       const grouped = groupBySupplier(items);
-      const title = getListHeadingText();
-
-      const sections = Object.keys(grouped).map(supplier => {
-        const lines = grouped[supplier].map(item => `- ${item.name} (${formatQtyText(item.qty)})`);
+      const sections = getMessageSupplierOrder(grouped).map(supplier => {
+        const lines = grouped[supplier].map(item => `- ${item.name} ( ${formatQtyText(item.qty)} )`);
         return `Barang ${supplier}\n\n${lines.join("\n")}`;
       });
 
-      return `${title}\n\n${sections.join("\n\n")}`;
+      return `Catatan Barang Habis\n\n${sections.join("\n\n")}`;
     }
 
     function goToSupplierPicker(message) {
@@ -25217,16 +25244,13 @@
       getAllSupplierNames().forEach(supplier => {
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "supplier-picker-btn" + (supplier === active ? " active" : "");
+        btn.className = "supplier-picker-btn" + (cleanText(supplier).toLowerCase() === cleanText(active).toLowerCase() ? " active" : "");
         btn.textContent = supplier === active ? `✓ ${supplier}` : supplier;
         btn.addEventListener("click", () => {
-          selectedSupplier = supplier;
-          if (currentPage === "added") supplierContextFilter = supplier;
+          setActiveSupplier(supplier, true);
           closeListSupplierModal();
           if (completePendingAddAfterSupplier(supplier)) return;
-          renderSelectedSupplier();
-          renderSummary();
-          renderSuggestions();
+          render();
           showToast(`Supplier aktif: ${supplier}`);
         });
         el.listSupplierPicker.appendChild(btn);
@@ -25283,6 +25307,12 @@
       el.headerActions.classList.toggle("list-mode", currentPage === "added" || isInsideProductMenu);
       el.headerActions.classList.toggle("product-menu-mode", isInsideProductMenu);
       el.viewAddedLabel.textContent = currentPage === "home" ? "📦 Lihat semua List" : "← Kembali";
+      if (currentPage === "home") {
+        el.pageTitle.textContent = "Elektra bali";
+        el.pageSubtitle.textContent = getCurrentSupplier()
+          ? `Supplier aktif: ${getCurrentSupplier()}`
+          : "Pilih supplier lalu tambahkan barang ke list.";
+      }
       if (el.listHeading) el.listHeading.textContent = getListHeadingText();
       if (currentPage === "added") {
         const activeSupplierTitle = cleanText(supplierContextFilter || getCurrentSupplier());
