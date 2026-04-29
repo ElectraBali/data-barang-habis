@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Catatan Barang Habis Pakai</title>
+  <title>Catatan Barang Habis Untuk Supplier BTG</title>
 
   <style>
     :root {
@@ -1550,7 +1550,7 @@
 
         <section id="listSection">
           <div class="section-head">
-            <h2>Catatan Barang Habis</h2>
+            <h2 id="listHeading">Catatan Barang Habis</h2>
             <span id="totalQty">Total qty: 0</span>
           </div>
           <div id="itemList" class="item-list"></div>
@@ -23422,6 +23422,7 @@
       previewSection: $("previewSection"),
       previewText: $("previewText"),
       summaryText: $("summaryText"),
+      listHeading: $("listHeading"),
       confirmModal: $("confirmModal"),
       cancelResetBtn: $("cancelResetBtn"),
       confirmResetBtn: $("confirmResetBtn"),
@@ -24180,9 +24181,9 @@
       el.headerActions.classList.add("list-mode");
       el.topResetBtn.classList.add("show");
 
-      el.pageTitle.textContent = "Daftar List barang habis";
+      el.pageTitle.textContent = getListHeadingText();
       el.pageSubtitle.textContent = supplierContextFilter
-        ? `Prioritas supplier: ${supplierContextFilter}`
+        ? `Catatan aktif untuk supplier: ${supplierContextFilter}`
         : "List barang otomatis digrup per supplier.";
 
       el.searchInput.placeholder = "Cari semua barang...";
@@ -24323,6 +24324,7 @@
       }
 
       selectedSupplier = supplierName;
+      if (currentPage === "added") supplierContextFilter = supplierName;
       isSupplierMenuOpen = false;
       closeAddSupplierModal();
       el.supplierDropdown.classList.remove("show");
@@ -24562,6 +24564,7 @@
           }
 
           selectedSupplier = supplier;
+          if (currentPage === "added") supplierContextFilter = supplier;
           isSupplierMenuOpen = false;
           isSupplierEditMode = false;
           el.supplierDropdown.classList.remove("show");
@@ -24793,7 +24796,8 @@
           const qty = parseAddQty(qtyInput.value, 0);
           if (qty === null) { showToast("Qty tidak valid"); qtyInput.focus(); return; }
           if (!getCurrentSupplier() && !cleanText(supplierContextFilter)) {
-            goToSupplierPicker("Pilih supplier dulu");
+            setPendingAddItem(item.name, qty);
+            goToSupplierPicker("Pilih supplier dulu, barang akan otomatis masuk setelah supplier dipilih");
             return;
           }
           closeSuggestionsCurtainUp();
@@ -25006,7 +25010,8 @@
           const qty = parseAddQty(qtyInput.value, 0);
           if (qty === null) { showToast("Qty tidak valid"); qtyInput.focus(); return; }
           if (!getCurrentSupplier() && !cleanText(supplierContextFilter)) {
-            goToSupplierPicker("Pilih supplier dulu");
+            setPendingAddItem(item.name, qty);
+            goToSupplierPicker("Pilih supplier dulu, barang akan otomatis masuk setelah supplier dipilih");
             return;
           }
           closeSuggestionsCurtainUp();
@@ -25145,13 +25150,14 @@
       if (items.length === 0) return "Belum ada barang habis.";
 
       const grouped = groupBySupplier(items);
+      const title = getListHeadingText();
 
       const sections = Object.keys(grouped).map(supplier => {
         const lines = grouped[supplier].map(item => `- ${item.name} (${formatQtyText(item.qty)})`);
         return `Barang ${supplier}\n\n${lines.join("\n")}`;
       });
 
-      return sections.join("\n\n");
+      return `${title}\n\n${sections.join("\n\n")}`;
     }
 
     function goToSupplierPicker(message) {
@@ -25215,6 +25221,7 @@
         btn.textContent = supplier === active ? `✓ ${supplier}` : supplier;
         btn.addEventListener("click", () => {
           selectedSupplier = supplier;
+          if (currentPage === "added") supplierContextFilter = supplier;
           closeListSupplierModal();
           if (completePendingAddAfterSupplier(supplier)) return;
           renderSelectedSupplier();
@@ -25250,6 +25257,13 @@
       el.listSupplierModal.classList.remove("show");
     }
 
+    function getListHeadingText() {
+      const supplierName = cleanText(supplierContextFilter || getCurrentSupplier());
+      return supplierName
+        ? `Catatan Barang Habis Untuk Supplier ${supplierName}`
+        : "Catatan Barang Habis";
+    }
+
     function renderSummary() {
       updateListChangeSupplierButton();
       const qtyTotal = items.reduce((total, item) => total + item.qty, 0);
@@ -25269,6 +25283,14 @@
       el.headerActions.classList.toggle("list-mode", currentPage === "added" || isInsideProductMenu);
       el.headerActions.classList.toggle("product-menu-mode", isInsideProductMenu);
       el.viewAddedLabel.textContent = currentPage === "home" ? "📦 Lihat semua List" : "← Kembali";
+      if (el.listHeading) el.listHeading.textContent = getListHeadingText();
+      if (currentPage === "added") {
+        const activeSupplierTitle = cleanText(supplierContextFilter || getCurrentSupplier());
+        el.pageTitle.textContent = getListHeadingText();
+        el.pageSubtitle.textContent = activeSupplierTitle
+          ? `Catatan aktif untuk supplier: ${activeSupplierTitle}`
+          : "List barang otomatis digrup per supplier.";
+      }
       el.totalQty.textContent = "Total qty: " + qtyTotal;
       el.summaryText.textContent = items.length === 0
         ? "Belum ada barang habis."
@@ -25504,7 +25526,8 @@
     function handleSearchInput() {
       const value = cleanText(el.searchInput.value);
 
-      if (value && openSupplierPickerFromListSearch()) return;
+      // Jangan paksa pilih supplier saat mulai mengetik di halaman daftar.
+      // Supplier baru diminta saat tombol + Tambah ditekan, supaya barang yang dipilih bisa disimpan sebagai pending.
 
       clearTimeout(suggestionTimer);
       clearTimeout(suggestionLoadingTimer);
@@ -25591,7 +25614,8 @@
     function runSearch() {
       const value = cleanText(el.searchInput.value);
 
-      if (openSupplierPickerFromListSearch()) return;
+      // Search tetap boleh jalan walau supplier belum dipilih.
+      // Jika user menekan + Tambah, item akan disimpan dulu lalu diminta pilih supplier.
 
       clearTimeout(searchTimer);
       clearTimeout(suggestionTimer);
