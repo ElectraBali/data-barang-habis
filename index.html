@@ -245,6 +245,9 @@
       gap: 7px;
       margin-left: auto;
       animation: suggestionToolsIn 0.22s ease both;
+      position: relative;
+      z-index: 120;
+      pointer-events: auto;
     }
 
     .header.suggestion-tools-active .suggestion-top-actions { display: flex; }
@@ -1180,6 +1183,72 @@
       font-size: 14px;
     }
 
+    .preview-editor-tools {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .preview-edit-note {
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .preview-edit-actions {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .preview-small-btn {
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      color: #334155;
+      border-radius: 999px;
+      padding: 9px 11px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .preview-small-btn.primary {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+    }
+
+    .preview-text.manual-edited {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-soft);
+      background: #ffffff;
+    }
+
+    body.dark-mode .preview-small-btn {
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--text);
+      border-color: rgba(196, 164, 255, 0.18);
+    }
+
+    body.dark-mode .preview-small-btn.primary {
+      background: rgba(124, 58, 237, 0.18);
+      color: #ddd6fe;
+      border-color: rgba(196, 164, 255, 0.34);
+    }
+
+    body.dark-mode .preview-text.manual-edited {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(196, 164, 255, 0.38);
+      box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.18);
+    }
+
     .bottom-bar {
       position: fixed;
       left: 50%;
@@ -1446,6 +1515,53 @@
       color: #ddd6fe;
       border-color: rgba(196, 164, 255, 0.34);
     }
+
+    .supplier-picker-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 7px;
+      align-items: stretch;
+    }
+
+    .supplier-picker-row.edit-active {
+      grid-template-columns: minmax(0, 1fr) 38px;
+    }
+
+    .supplier-picker-edit-btn {
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      color: var(--primary-dark);
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 900;
+      cursor: pointer;
+      min-height: 43px;
+    }
+
+    .supplier-picker-actions {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .supplier-picker-edit-mode-btn.active {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: white;
+    }
+
+    body.dark-mode .supplier-picker-edit-btn {
+      background: rgba(255, 255, 255, 0.07);
+      color: #ddd6fe;
+      border-color: rgba(196, 164, 255, 0.18);
+    }
+
+    body.dark-mode .supplier-picker-edit-mode-btn.active {
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      color: white;
+      border-color: transparent;
+    }
     @media (max-width: 420px) {
       .item {
         grid-template-columns: minmax(0, 1fr) auto;
@@ -1594,7 +1710,14 @@
 
         <section id="previewSection" style="display:none;">
           <div class="summary-box" id="summaryText">Belum ada barang habis.</div>
-          <textarea id="previewText" class="preview-text" readonly></textarea>
+          <div class="preview-editor-tools">
+            <div id="previewEditNote" class="preview-edit-note">Preview otomatis dari daftar barang. Bisa diedit manual, paste, atau ketik langsung.</div>
+            <div class="preview-edit-actions">
+              <button id="refreshPreviewBtn" class="preview-small-btn primary" type="button">↻ Pakai Otomatis</button>
+              <button id="clearPreviewBtn" class="preview-small-btn" type="button">Kosongkan</button>
+            </div>
+          </div>
+          <textarea id="previewText" class="preview-text" placeholder="Ketik atau paste catatan manual di sini..."></textarea>
         </section>
       </section>
     </main>
@@ -1673,6 +1796,7 @@
     const SUPPLIER_STORAGE_KEY = "barang_habis_custom_suppliers_v1";
     const CUSTOM_ITEM_STORAGE_KEY = "barang_habis_custom_items_v1";
     const THEME_STORAGE_KEY = "barang_habis_theme_mode_v1";
+    const PREVIEW_DRAFT_STORAGE_KEY = "barang_habis_preview_manual_draft_v1";
     const SUPPLIER_RENAME_STORAGE_KEY = "barang_habis_supplier_rename_map_v1";
     const WA_NUMBER = "628175777488";
 
@@ -23467,6 +23591,9 @@
       listSection: $("listSection"),
       previewSection: $("previewSection"),
       previewText: $("previewText"),
+      previewEditNote: $("previewEditNote"),
+      refreshPreviewBtn: $("refreshPreviewBtn"),
+      clearPreviewBtn: $("clearPreviewBtn"),
       summaryText: $("summaryText"),
       listHeading: $("listHeading"),
       confirmModal: $("confirmModal"),
@@ -23491,6 +23618,8 @@
     };
 
     let items = loadItems();
+    let manualPreviewText = localStorage.getItem(PREVIEW_DRAFT_STORAGE_KEY) || "";
+    let isPreviewManuallyEdited = Boolean(cleanText(manualPreviewText));
     let customSuppliers = loadCustomSuppliers();
     let supplierRenameMap = loadSupplierRenameMap();
     let customItems = loadCustomItems();
@@ -23830,6 +23959,28 @@
 
     function closeSearchSuggestionLayer() {
       closeSuggestionsCurtainUp();
+    }
+
+    function forceCloseSuggestionLayer() {
+      clearTimeout(suggestionCurtainTimer);
+      clearTimeout(searchTimer);
+      clearTimeout(suggestionTimer);
+      clearTimeout(suggestionLoadingTimer);
+
+      keepSuggestionsAfterClear = false;
+      isSearching = false;
+      isSuggestionLoading = false;
+      lastSuggestionSignature = "";
+      currentSuggestionItems = [];
+
+      el.searchSuggestions.innerHTML = "";
+      el.searchSuggestions.classList.remove("show", "curtain-up", "curtain-down");
+      el.searchOverlay.classList.remove("show", "fade-out");
+      el.appHeader.classList.remove("search-active", "suggestion-tools-active", "hide-badge");
+      el.searchWarmup.classList.remove("show");
+      el.searchStatus.classList.remove("show");
+      if (el.themeToggleBtn) el.themeToggleBtn.style.display = "inline-flex";
+      if (el.suggestionChangeSupplierBtn) el.suggestionChangeSupplierBtn.style.display = "none";
     }
 
     function getCurrentSupplier() {
@@ -25295,6 +25446,66 @@
       return `Catatan barang menipis / habis\n\n${sections.join("\n\n")}`;
     }
 
+    function getPreviewTextValue() {
+      return safeString(el.previewText ? el.previewText.value : "").trim();
+    }
+
+    function getShareText() {
+      const previewValue = getPreviewTextValue();
+      return previewValue || generateMessage();
+    }
+
+    function syncPreviewText(options = {}) {
+      if (!el.previewText) return;
+
+      const autoText = generateMessage();
+      const shouldForceAuto = Boolean(options.forceAuto);
+
+      if (shouldForceAuto) {
+        manualPreviewText = "";
+        isPreviewManuallyEdited = false;
+        localStorage.removeItem(PREVIEW_DRAFT_STORAGE_KEY);
+        el.previewText.value = autoText;
+      } else if (isPreviewManuallyEdited) {
+        el.previewText.value = manualPreviewText;
+      } else {
+        el.previewText.value = autoText;
+      }
+
+      el.previewText.classList.toggle("manual-edited", isPreviewManuallyEdited);
+
+      if (el.previewEditNote) {
+        el.previewEditNote.textContent = isPreviewManuallyEdited
+          ? "Preview sedang diedit manual. Tombol Salin/WA akan memakai teks manual ini."
+          : "Preview otomatis dari daftar barang. Bisa diedit manual, paste, atau ketik langsung.";
+      }
+    }
+
+    function handlePreviewManualInput() {
+      manualPreviewText = safeString(el.previewText.value);
+      isPreviewManuallyEdited = true;
+      localStorage.setItem(PREVIEW_DRAFT_STORAGE_KEY, manualPreviewText);
+      el.previewText.classList.add("manual-edited");
+      if (el.previewEditNote) {
+        el.previewEditNote.textContent = "Preview sedang diedit manual. Tombol Salin/WA akan memakai teks manual ini.";
+      }
+    }
+
+    function resetPreviewToAuto() {
+      syncPreviewText({ forceAuto: true });
+      showToast("Preview kembali otomatis");
+    }
+
+    function clearPreviewText() {
+      manualPreviewText = "";
+      isPreviewManuallyEdited = true;
+      localStorage.setItem(PREVIEW_DRAFT_STORAGE_KEY, manualPreviewText);
+      if (el.previewText) el.previewText.value = "";
+      if (el.previewText) el.previewText.classList.add("manual-edited");
+      if (el.previewEditNote) el.previewEditNote.textContent = "Preview dikosongkan. Ketik atau paste teks manual di sini.";
+      showToast("Preview dikosongkan");
+    }
+
     function goToSupplierPicker(message) {
       closeSuggestionsCurtainUp();
       currentPage = "home";
@@ -25303,29 +25514,22 @@
       menuSearchDraft = "";
       menuSearchQuery = "";
       searchQuery = "";
-      isSupplierMenuOpen = true;
+      isSupplierMenuOpen = false;
+      isSupplierEditMode = false;
 
       el.searchInput.value = "";
       el.clearSearchBtn.style.display = "none";
       el.homePage.style.display = "block";
       el.addedPage.style.display = "none";
+      el.supplierDropdown.classList.remove("show");
+      el.catalogResults.classList.remove("hide");
 
       renderSummary();
       renderSelectedSupplier();
-      renderSupplierDropdown();
-
-      // Paksa menu supplier tampil saat datang dari halaman daftar/list atau dari tambah barang.
-      el.supplierDropdown.classList.add("show");
-      el.catalogResults.classList.add("hide");
       renderCatalog();
-      el.supplierDropdown.classList.add("show");
-      el.catalogResults.classList.add("hide");
 
       if (message) showToast(message);
-
-      setTimeout(() => {
-        el.quickSupplierBtn.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 80);
+      openListSupplierModal();
     }
 
     function updateListChangeSupplierButton() {
@@ -25350,13 +25554,23 @@
       const active = getCurrentSupplier();
 
       getAllSupplierNames().forEach(supplier => {
+        const row = document.createElement("div");
+        row.className = `supplier-picker-row${isSupplierEditMode ? " edit-active" : ""}`;
+
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "supplier-picker-btn" + (cleanText(supplier).toLowerCase() === cleanText(active).toLowerCase() ? " active" : "");
-        btn.textContent = supplier === active ? `✓ ${supplier}` : supplier;
+        btn.textContent = cleanText(supplier).toLowerCase() === cleanText(active).toLowerCase() ? `✓ ${supplier}` : supplier;
         btn.addEventListener("click", () => {
+          if (isSupplierEditMode) {
+            openEditSupplierModal(supplier);
+            return;
+          }
+
           const shouldReturnToSuggestion = listSupplierModalReturnToSuggestion;
           setActiveSupplier(supplier, true);
+          isSupplierMenuOpen = false;
+          isSupplierEditMode = false;
           closeListSupplierModal();
           if (completePendingAddAfterSupplier(supplier)) return;
           if (shouldReturnToSuggestion) {
@@ -25367,8 +25581,27 @@
           }
           showToast(`Supplier aktif: ${supplier}`);
         });
-        el.listSupplierPicker.appendChild(btn);
+        row.appendChild(btn);
+
+        if (isSupplierEditMode) {
+          const editBtn = document.createElement("button");
+          editBtn.className = "supplier-picker-edit-btn";
+          editBtn.type = "button";
+          editBtn.title = `Edit ${supplier}`;
+          editBtn.textContent = "✎";
+          editBtn.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            openEditSupplierModal(supplier);
+          });
+          row.appendChild(editBtn);
+        }
+
+        el.listSupplierPicker.appendChild(row);
       });
+
+      const actionRow = document.createElement("div");
+      actionRow.className = "supplier-picker-actions";
 
       const customBtn = document.createElement("button");
       customBtn.type = "button";
@@ -25376,11 +25609,25 @@
       customBtn.textContent = "+ Tambah supplier baru";
       customBtn.addEventListener("click", () => {
         const shouldReturnToSuggestion = listSupplierModalReturnToSuggestion;
+        isSupplierEditMode = false;
         closeListSupplierModal({ keepSuggestionReturn: shouldReturnToSuggestion });
         listSupplierModalReturnToSuggestion = shouldReturnToSuggestion;
         openAddSupplierModal();
       });
-      el.listSupplierPicker.appendChild(customBtn);
+
+      const editModeBtn = document.createElement("button");
+      editModeBtn.type = "button";
+      editModeBtn.className = `supplier-picker-btn custom supplier-picker-edit-mode-btn${isSupplierEditMode ? " active" : ""}`;
+      editModeBtn.textContent = isSupplierEditMode ? "✓ Mode edit aktif" : "✎ Edit supplier";
+      editModeBtn.addEventListener("click", () => {
+        isSupplierEditMode = !isSupplierEditMode;
+        renderListSupplierPicker();
+        showToast(isSupplierEditMode ? "Pilih supplier yang mau diedit" : "Mode edit supplier mati");
+      });
+
+      actionRow.appendChild(customBtn);
+      actionRow.appendChild(editModeBtn);
+      el.listSupplierPicker.appendChild(actionRow);
     }
 
     function openListSupplierModal(options = {}) {
@@ -25394,6 +25641,9 @@
 
       isSupplierMenuOpen = false;
       isSupplierEditMode = false;
+      el.supplierDropdown.classList.remove("show");
+      el.catalogResults.classList.remove("hide");
+      renderSelectedSupplier();
       renderListSupplierPicker();
       openSmoothModal(el.listSupplierModal);
     }
@@ -25453,7 +25703,7 @@
         ? "Belum ada barang habis."
         : `${items.length} jenis barang habis dari ${supplierTotal} supplier dengan total quantity ${qtyTotal}.`;
 
-      el.previewText.value = generateMessage();
+      syncPreviewText();
       el.clearSearchBtn.style.display = cleanText(el.searchInput.value) ? "block" : "none";
       el.searchStatus.classList.toggle("show", isSearching);
       el.searchWarmup.classList.toggle("show", isSearching || isSuggestionLoading);
@@ -25826,31 +26076,31 @@
     }
 
     async function copyList() {
-      if (items.length === 0) {
-        showToast("Belum ada list untuk disalin");
+      const text = getShareText();
+      if (!cleanText(text) || text === "Belum ada barang menipis / habis.") {
+        showToast("Belum ada teks untuk disalin");
         return;
       }
 
-      const text = generateMessage();
-
       try {
         await navigator.clipboard.writeText(text);
-        showToast("List berhasil disalin");
+        showToast("Teks berhasil disalin");
       } catch (error) {
         el.previewText.value = text;
         el.previewText.select();
         document.execCommand("copy");
-        showToast("List berhasil disalin");
+        showToast("Teks berhasil disalin");
       }
     }
 
     function sendToWhatsApp() {
-      if (items.length === 0) {
-        showToast("Belum ada list untuk dikirim");
+      const textValue = getShareText();
+      if (!cleanText(textValue) || textValue === "Belum ada barang menipis / habis.") {
+        showToast("Belum ada teks untuk dikirim");
         return;
       }
 
-      const text = encodeURIComponent(generateMessage());
+      const text = encodeURIComponent(textValue);
       window.open(`https://wa.me/${WA_NUMBER}?text=${text}`, "_blank");
     }
 
@@ -25888,6 +26138,9 @@
     function resetAll() {
       items = [];
       saveItems();
+      manualPreviewText = "";
+      isPreviewManuallyEdited = false;
+      localStorage.removeItem(PREVIEW_DRAFT_STORAGE_KEY);
       supplierContextFilter = "";
       closeResetModal();
       render();
@@ -25992,38 +26245,46 @@
     if (el.topAddItemBtn) el.topAddItemBtn.addEventListener("click", () => openAddItemModal(menuSearchDraft || menuSearchQuery || searchQuery));
 
     el.quickSupplierBtn.addEventListener("click", () => {
-      isSupplierMenuOpen = !isSupplierMenuOpen;
-      if (!isSupplierMenuOpen) isSupplierEditMode = false;
-      renderSupplierDropdown();
-      el.supplierDropdown.classList.toggle("show", isSupplierMenuOpen);
-      el.catalogResults.classList.toggle("hide", isSupplierMenuOpen);
-      closeSuggestionsCurtainUp();
-      renderSelectedSupplier();
+      openListSupplierModal();
     });
 
     el.selectedSupplierChip.addEventListener("click", () => {
-      // Klik nama supplier aktif untuk membuka menu ganti supplier.
-      closeSuggestionsCurtainUp(() => {
-        if (currentPage === "added") openHomePage();
-        isSupplierMenuOpen = true;
-        isSupplierEditMode = false;
-        renderSupplierDropdown();
-        el.supplierDropdown.classList.add("show");
-        el.catalogResults.classList.add("hide");
-        renderSelectedSupplier();
-      });
+      openListSupplierModal();
     });
 
-    el.suggestionViewListBtn.addEventListener("click", () => {
+    function openListFromSuggestionButton(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
       if (currentPage === "home") {
         if (selectedProductMenu) captureHomeMenuState();
         else captureHomeSuggestionState();
-        openAddedPage();
-      } else {
-        closeSuggestionsCurtainUp();
-        setTab("list");
       }
-    });
+
+      forceCloseSuggestionLayer();
+      openAddedPage();
+      setTab("list", false);
+      renderList();
+      renderSummary();
+
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: "instant" });
+      });
+    }
+
+    if (el.suggestionViewListBtn) {
+      el.suggestionViewListBtn.addEventListener("pointerdown", openListFromSuggestionButton, { passive: false });
+      el.suggestionViewListBtn.addEventListener("touchend", openListFromSuggestionButton, { passive: false });
+      el.suggestionViewListBtn.addEventListener("click", openListFromSuggestionButton);
+    }
+
+    document.addEventListener("click", (event) => {
+      const target = event.target && event.target.closest ? event.target.closest("#suggestionViewListBtn") : null;
+      if (!target) return;
+      openListFromSuggestionButton(event);
+    }, true);
 
     el.suggestionChangeSupplierBtn.addEventListener("click", (event) => {
       event.preventDefault();
@@ -26052,6 +26313,7 @@
       if (currentPage === "home") {
         savedHomeSuggestionState = null;
         captureHomeMenuState();
+        forceCloseSuggestionLayer();
         openAddedPage();
       } else {
         if (savedHomeMenuState && savedHomeMenuState.shouldRestoreMenu) {
@@ -26082,6 +26344,12 @@
 
     el.copyBtn.addEventListener("click", copyList);
     el.waBtn.addEventListener("click", sendToWhatsApp);
+    el.previewText.addEventListener("input", handlePreviewManualInput);
+    el.previewText.addEventListener("paste", () => {
+      window.setTimeout(handlePreviewManualInput, 0);
+    });
+    el.refreshPreviewBtn.addEventListener("click", resetPreviewToAuto);
+    el.clearPreviewBtn.addEventListener("click", clearPreviewText);
     el.tabList.addEventListener("click", () => setTab("list"));
     el.tabPreview.addEventListener("click", () => setTab("preview"));
     el.cancelResetBtn.addEventListener("click", closeResetModal);
