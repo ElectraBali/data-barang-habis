@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Catatan Barang Habis Untuk Supplier BTG</title>
+  <title>Catat Barang Supplier BTU</title>
 
   <style>
     :root {
@@ -1228,9 +1228,27 @@
       align-items: flex-end;
       justify-content: center;
       padding: 14px;
+      opacity: 0;
+      backdrop-filter: blur(0);
+      -webkit-backdrop-filter: blur(0);
+      transition: opacity 0.28s ease, backdrop-filter 0.28s ease;
     }
 
-    .modal-backdrop.show { display: flex; }
+    .modal-backdrop.show,
+    .modal-backdrop.closing { display: flex; }
+
+    .modal-backdrop.show {
+      opacity: 1;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      animation: modalBackdropIn 0.28s ease both;
+    }
+
+    .modal-backdrop.closing {
+      opacity: 0;
+      pointer-events: none;
+      animation: modalBackdropOut 0.24s ease both;
+    }
 
     .modal {
       width: 100%;
@@ -1241,6 +1259,22 @@
       box-shadow: var(--shadow);
       position: relative;
       z-index: 1001;
+      will-change: transform, opacity;
+    }
+
+    .modal-backdrop.show .modal { animation: modalSheetIn 0.34s cubic-bezier(.16, 1, .3, 1) both; }
+    .modal-backdrop.closing .modal { animation: modalSheetOut 0.24s cubic-bezier(.4, 0, .2, 1) both; }
+
+    @keyframes modalBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes modalBackdropOut { from { opacity: 1; } to { opacity: 0; } }
+    @keyframes modalSheetIn {
+      0% { opacity: 0; transform: translateY(34px) scale(0.96); }
+      65% { opacity: 1; transform: translateY(-4px) scale(1.01); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes modalSheetOut {
+      from { opacity: 1; transform: translateY(0) scale(1); }
+      to { opacity: 0; transform: translateY(24px) scale(0.97); }
     }
 
     .modal h3 { margin: 0 0 8px; font-size: 18px; }
@@ -1469,7 +1503,7 @@
     <header id="appHeader" class="header">
       <div class="header-top">
         <div class="title">
-          <h1 id="pageTitle">Data barang habis</h1>
+          <h1 id="pageTitle">Catat Barang Supplier BTU</h1>
           <p id="pageSubtitle">Pilih supplier lalu tambahkan barang ke list.</p>
         </div>
 
@@ -1552,7 +1586,7 @@
 
         <section id="listSection">
           <div class="section-head">
-            <h2 id="listHeading">Catatan Barang Habis</h2>
+            <h2 id="listHeading">Catat Barang Supplier BTU</h2>
             <span id="totalQty">Total qty: 0</span>
           </div>
           <div id="itemList" class="item-list"></div>
@@ -1644,11 +1678,21 @@
 
     const SUPPLIERS = [
       "CNC",
-      "BTG",
       "JATIM",
-      "DAHUA",
-      "HILOOK",
-      "EZVIZ"
+      "BTG",
+      "MAS",
+      "BANDAR",
+      "SDS",
+      "BLESSING",
+      "SCK",
+      "MBC",
+      "PT ARTA BOGA",
+      "MATANOVA",
+      "MAGNUM SOLUSION",
+      "BALINDO",
+      "ASTRINDO",
+      "SIP",
+      "PT BEST"
     ];
 
     const MASTER_ITEMS = [
@@ -23483,6 +23527,25 @@
     const SUGGESTION_DELAY = 990;
     const LOADING_DELAY_BEFORE_SHOW = 400;
 
+    function openSmoothModal(modalEl) {
+      if (!modalEl) return;
+      modalEl.classList.remove("closing");
+      modalEl.classList.add("show");
+    }
+
+    function closeSmoothModal(modalEl) {
+      if (!modalEl) return;
+      if (!modalEl.classList.contains("show")) {
+        modalEl.classList.remove("closing");
+        return;
+      }
+
+      modalEl.classList.add("closing");
+      window.setTimeout(() => {
+        modalEl.classList.remove("show", "closing");
+      }, 260);
+    }
+
     function safeString(value) {
       if (typeof value === "string") return value;
       if (value === null || value === undefined) return "";
@@ -24074,7 +24137,7 @@
       el.searchWarmup.classList.remove("show");
       el.searchStatus.classList.remove("show");
 
-      el.pageTitle.textContent = "Elektra bali";
+      el.pageTitle.textContent = "Catat Barang Supplier BTU";
       el.viewAddedLabel.textContent = "📦 Lihat semua List";
       el.searchInput.placeholder = "Cari semua barang...";
       el.searchInput.value = "";
@@ -24137,7 +24200,7 @@
       el.headerActions.classList.remove("product-menu-mode");
       el.topResetBtn.classList.remove("show");
 
-      el.pageTitle.textContent = "Elektra bali";
+      el.pageTitle.textContent = "Catat Barang Supplier BTU";
       el.searchInput.placeholder = "Cari semua barang...";
       el.viewAddedLabel.textContent = "📦 Lihat semua List";
       el.searchInput.value = cleanText(state && state.searchValue);
@@ -24209,7 +24272,7 @@
       el.headerActions.classList.remove("product-menu-mode");
       el.topResetBtn.classList.remove("show");
 
-      el.pageTitle.textContent = "Elektra bali";
+      el.pageTitle.textContent = "Catat Barang Supplier BTU";
       el.pageSubtitle.textContent = `Supplier aktif: ${getCurrentSupplier()}`;
       el.searchInput.placeholder = "Cari semua barang...";
       el.viewAddedLabel.textContent = "📦 Lihat semua List";
@@ -24344,7 +24407,7 @@
 
     function openAddSupplierModal() {
       el.addSupplierInput.value = "";
-      el.addSupplierModal.classList.add("show");
+      openSmoothModal(el.addSupplierModal);
 
       setTimeout(() => {
         el.addSupplierInput.focus();
@@ -24353,7 +24416,7 @@
 
     function closeAddSupplierModal() {
       el.addSupplierInput.value = "";
-      el.addSupplierModal.classList.remove("show");
+      closeSmoothModal(el.addSupplierModal);
     }
 
     function saveAddSupplier() {
@@ -24403,7 +24466,7 @@
       el.addItemCategoryInput.placeholder = defaultCategory && defaultCategory !== "Lainnya"
         ? `Kategori barang (${defaultCategory})`
         : "Kategori barang";
-      el.addItemModal.classList.add("show");
+      openSmoothModal(el.addItemModal);
       setTimeout(() => {
         el.addItemNameInput.focus();
         if (prefillName) el.addItemNameInput.select();
@@ -24411,7 +24474,7 @@
     }
 
     function closeAddItemModal() {
-      el.addItemModal.classList.remove("show");
+      closeSmoothModal(el.addItemModal);
       el.addItemNameInput.value = "";
       el.addItemCategoryInput.value = "";
     }
@@ -24463,7 +24526,7 @@
     function openEditSupplierModal(supplier) {
       editingSupplierName = supplier;
       el.editSupplierInput.value = supplier;
-      el.editSupplierModal.classList.add("show");
+      openSmoothModal(el.editSupplierModal);
 
       setTimeout(() => {
         el.editSupplierInput.focus();
@@ -24473,7 +24536,7 @@
 
     function closeEditSupplierModal() {
       editingSupplierName = "";
-      el.editSupplierModal.classList.remove("show");
+      closeSmoothModal(el.editSupplierModal);
     }
 
     function saveEditSupplier() {
@@ -24572,7 +24635,7 @@
       // dan semua tampilan supplier langsung refresh ke nama baru.
       isSupplierEditMode = false;
       editingSupplierName = "";
-      el.editSupplierModal.classList.remove("show");
+      closeSmoothModal(el.editSupplierModal);
       el.editSupplierInput.value = "";
 
       saveItems();
@@ -25331,21 +25394,21 @@
       isSupplierMenuOpen = false;
       isSupplierEditMode = false;
       renderListSupplierPicker();
-      el.listSupplierModal.classList.add("show");
+      openSmoothModal(el.listSupplierModal);
     }
 
     function closeListSupplierModal(options = {}) {
       if (!el.listSupplierModal) return;
       const shouldRestore = listSupplierModalReturnToSuggestion && !options.keepSuggestionReturn;
-      el.listSupplierModal.classList.remove("show");
+      closeSmoothModal(el.listSupplierModal);
       if (shouldRestore) restoreSuggestionAfterSupplierModal();
     }
 
     function getListHeadingText() {
       const supplierName = cleanText(supplierContextFilter || getCurrentSupplier());
       return supplierName
-        ? `Catatan Barang Habis Untuk Supplier ${supplierName}`
-        : "Catatan Barang Habis";
+        ? `Catat Barang Supplier ${supplierName}`
+        : "Catat Barang Supplier BTU";
     }
 
     function renderSummary() {
@@ -25368,7 +25431,7 @@
       el.headerActions.classList.toggle("product-menu-mode", isInsideProductMenu);
       el.viewAddedLabel.textContent = currentPage === "home" ? "📦 Lihat semua List" : "← Kembali";
       if (currentPage === "home") {
-        el.pageTitle.textContent = "Elektra bali";
+        el.pageTitle.textContent = "Catat Barang Supplier BTU";
         el.pageSubtitle.textContent = getCurrentSupplier()
           ? `Supplier aktif: ${getCurrentSupplier()}`
           : "Pilih supplier lalu tambahkan barang ke list.";
@@ -25811,11 +25874,11 @@
         return;
       }
 
-      el.confirmModal.classList.add("show");
+      openSmoothModal(el.confirmModal);
     }
 
     function closeResetModal() {
-      el.confirmModal.classList.remove("show");
+      closeSmoothModal(el.confirmModal);
     }
 
     function resetAll() {
