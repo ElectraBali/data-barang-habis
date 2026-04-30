@@ -1597,7 +1597,7 @@
   <div id="listSupplierModal" class="modal-backdrop">
     <div class="modal">
       <h3>Pilih / ganti supplier</h3>
-      <p>Supplier aktif akan diganti tanpa keluar dari halaman daftar list barang habis.</p>
+      <p>Supplier aktif akan diganti tanpa meninggalkan halaman yang sedang dibuka.</p>
       <div id="listSupplierPicker" class="supplier-picker-list"></div>
       <div class="modal-actions" style="margin-top:12px; grid-template-columns:1fr;">
         <button id="closeListSupplierBtn" class="btn btn-soft" type="button">Tutup</button>
@@ -23475,6 +23475,7 @@
     let isMenuCatalogLoading = false;
     let savedHomeSuggestionState = null;
     let savedHomeMenuState = null;
+    let listSupplierModalReturnToSuggestion = false;
 
     const SEARCH_DELAY = 2000;
     const SUGGESTION_DELAY = 990;
@@ -23734,6 +23735,32 @@
 
       if (shouldShowOverlay) showSearchOverlay();
       else hideSearchOverlaySmooth();
+    }
+
+    function isSuggestionCurrentlyActive() {
+      return Boolean(
+        currentPage === "home" &&
+        !el.searchBox.classList.contains("hidden") &&
+        el.searchSuggestions.classList.contains("show") &&
+        !el.searchSuggestions.classList.contains("curtain-up") &&
+        (cleanText(el.searchInput.value) || keepSuggestionsAfterClear || currentSuggestionItems.length > 0)
+      );
+    }
+
+    function restoreSuggestionAfterSupplierModal() {
+      if (!listSupplierModalReturnToSuggestion) return;
+      listSupplierModalReturnToSuggestion = false;
+      isSupplierMenuOpen = false;
+      isSearching = false;
+      isSuggestionLoading = false;
+      el.searchWarmup.classList.remove("show");
+      el.searchBox.classList.remove("hidden");
+      renderSelectedSupplier();
+      renderCatalog();
+      renderSummary();
+      renderSuggestions();
+      updateSearchOverlay();
+      setTimeout(() => el.searchInput.focus(), 80);
     }
 
     function closeSearchSuggestionLayer() {
@@ -24346,6 +24373,7 @@
         saveCustomSuppliers();
       }
 
+      const shouldReturnToSuggestion = listSupplierModalReturnToSuggestion;
       setActiveSupplier(supplierName, true);
       isSupplierMenuOpen = false;
       closeAddSupplierModal();
@@ -24353,7 +24381,11 @@
       el.catalogResults.classList.remove("hide");
       if (completePendingAddAfterSupplier(supplierName)) return;
       showToast(`Supplier aktif: ${supplierName}`);
-      render();
+      if (shouldReturnToSuggestion) {
+        restoreSuggestionAfterSupplierModal();
+      } else {
+        render();
+      }
     }
 
 
@@ -25257,10 +25289,16 @@
         btn.className = "supplier-picker-btn" + (cleanText(supplier).toLowerCase() === cleanText(active).toLowerCase() ? " active" : "");
         btn.textContent = supplier === active ? `✓ ${supplier}` : supplier;
         btn.addEventListener("click", () => {
+          const shouldReturnToSuggestion = listSupplierModalReturnToSuggestion;
           setActiveSupplier(supplier, true);
           closeListSupplierModal();
           if (completePendingAddAfterSupplier(supplier)) return;
-          render();
+          if (shouldReturnToSuggestion) {
+            listSupplierModalReturnToSuggestion = true;
+            restoreSuggestionAfterSupplierModal();
+          } else {
+            render();
+          }
           showToast(`Supplier aktif: ${supplier}`);
         });
         el.listSupplierPicker.appendChild(btn);
@@ -25271,24 +25309,30 @@
       customBtn.className = "supplier-picker-btn custom";
       customBtn.textContent = "+ Tambah supplier baru";
       customBtn.addEventListener("click", () => {
-        closeListSupplierModal();
+        const shouldReturnToSuggestion = listSupplierModalReturnToSuggestion;
+        closeListSupplierModal({ keepSuggestionReturn: shouldReturnToSuggestion });
+        listSupplierModalReturnToSuggestion = shouldReturnToSuggestion;
         openAddSupplierModal();
       });
       el.listSupplierPicker.appendChild(customBtn);
     }
 
-    function openListSupplierModal() {
+    function openListSupplierModal(options = {}) {
       if (!el.listSupplierModal) return;
-      closeSuggestionsCurtainUp();
+      const fromSuggestion = Boolean(options.fromSuggestion);
+      listSupplierModalReturnToSuggestion = fromSuggestion && isSuggestionCurrentlyActive();
+      if (!listSupplierModalReturnToSuggestion) closeSuggestionsCurtainUp();
       isSupplierMenuOpen = false;
       isSupplierEditMode = false;
       renderListSupplierPicker();
       el.listSupplierModal.classList.add("show");
     }
 
-    function closeListSupplierModal() {
+    function closeListSupplierModal(options = {}) {
       if (!el.listSupplierModal) return;
+      const shouldRestore = listSupplierModalReturnToSuggestion && !options.keepSuggestionReturn;
       el.listSupplierModal.classList.remove("show");
+      if (shouldRestore) restoreSuggestionAfterSupplierModal();
     }
 
     function getListHeadingText() {
@@ -25909,15 +25953,7 @@
     });
 
     el.suggestionChangeSupplierBtn.addEventListener("click", () => {
-      closeSuggestionsCurtainUp(() => {
-        if (currentPage === "added") openHomePage();
-        isSupplierMenuOpen = true;
-        isSupplierEditMode = false;
-        renderSupplierDropdown();
-        el.supplierDropdown.classList.add("show");
-        el.catalogResults.classList.add("hide");
-        renderSelectedSupplier();
-      });
+      openListSupplierModal({ fromSuggestion: true });
     });
 
     el.menuBackBtn.addEventListener("click", () => {
