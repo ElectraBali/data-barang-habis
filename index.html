@@ -25285,10 +25285,11 @@
     function generateMessage() {
       if (items.length === 0) return "Belum ada barang menipis / habis.";
 
+      const supplierDivider = "----------------------";
       const grouped = groupBySupplier(items);
       const sections = getMessageSupplierOrder(grouped).map(supplier => {
-        const lines = grouped[supplier].map(item => `- ${item.name} (${formatQtyText(item.qty)})`);
-        return `Supplier ${supplier}\n\n${lines.join("\n")}`;
+        const lines = grouped[supplier].map(item => `* ${item.name} (${formatQtyText(item.qty)})`);
+        return `Supplier ${supplier}\n${supplierDivider}\n${lines.join("\n")}`;
       });
 
       return `Catatan barang menipis / habis\n\n${sections.join("\n\n")}`;
