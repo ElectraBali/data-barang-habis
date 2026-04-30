@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Catat Barang Supplier BTU</title>
+  <title>Elektra Bali</title>
 
   <style>
     :root {
@@ -1503,7 +1503,7 @@
     <header id="appHeader" class="header">
       <div class="header-top">
         <div class="title">
-          <h1 id="pageTitle">Catat Barang Supplier BTU</h1>
+          <h1 id="pageTitle">Elektra Bali</h1>
           <p id="pageSubtitle">Pilih supplier lalu tambahkan barang ke list.</p>
         </div>
 
@@ -1586,7 +1586,7 @@
 
         <section id="listSection">
           <div class="section-head">
-            <h2 id="listHeading">Catat Barang Supplier BTU</h2>
+            <h2 id="listHeading">Elektra Bali</h2>
             <span id="totalQty">Total qty: 0</span>
           </div>
           <div id="itemList" class="item-list"></div>
@@ -24137,7 +24137,7 @@
       el.searchWarmup.classList.remove("show");
       el.searchStatus.classList.remove("show");
 
-      el.pageTitle.textContent = "Catat Barang Supplier BTU";
+      el.pageTitle.textContent = getHeaderTitleText();
       el.viewAddedLabel.textContent = "📦 Lihat semua List";
       el.searchInput.placeholder = "Cari semua barang...";
       el.searchInput.value = "";
@@ -24200,7 +24200,7 @@
       el.headerActions.classList.remove("product-menu-mode");
       el.topResetBtn.classList.remove("show");
 
-      el.pageTitle.textContent = "Catat Barang Supplier BTU";
+      el.pageTitle.textContent = getHeaderTitleText();
       el.searchInput.placeholder = "Cari semua barang...";
       el.viewAddedLabel.textContent = "📦 Lihat semua List";
       el.searchInput.value = cleanText(state && state.searchValue);
@@ -24272,7 +24272,7 @@
       el.headerActions.classList.remove("product-menu-mode");
       el.topResetBtn.classList.remove("show");
 
-      el.pageTitle.textContent = "Catat Barang Supplier BTU";
+      el.pageTitle.textContent = getHeaderTitleText();
       el.pageSubtitle.textContent = `Supplier aktif: ${getCurrentSupplier()}`;
       el.searchInput.placeholder = "Cari semua barang...";
       el.viewAddedLabel.textContent = "📦 Lihat semua List";
@@ -25405,11 +25405,14 @@
       if (shouldRestore) restoreSuggestionAfterSupplierModal();
     }
 
+    function getHeaderTitleText() {
+      const supplierName = cleanText(supplierContextFilter || getCurrentSupplier());
+      return supplierName ? `Catat barang ${supplierName}` : "Elektra Bali";
+    }
+
     function getListHeadingText() {
       const supplierName = cleanText(supplierContextFilter || getCurrentSupplier());
-      return supplierName
-        ? `Catat Barang Supplier ${supplierName}`
-        : "Catat Barang Supplier BTU";
+      return supplierName ? `Catat Barang Habis (${supplierName})` : "Catatan Barang Habis";
     }
 
     function renderSummary() {
@@ -25432,7 +25435,7 @@
       el.headerActions.classList.toggle("product-menu-mode", isInsideProductMenu);
       el.viewAddedLabel.textContent = currentPage === "home" ? "📦 Lihat semua List" : "← Kembali";
       if (currentPage === "home") {
-        el.pageTitle.textContent = "Catat Barang Supplier BTU";
+        el.pageTitle.textContent = getHeaderTitleText();
         el.pageSubtitle.textContent = getCurrentSupplier()
           ? `Supplier aktif: ${getCurrentSupplier()}`
           : "Pilih supplier lalu tambahkan barang ke list.";
@@ -25440,7 +25443,7 @@
       if (el.listHeading) el.listHeading.textContent = getListHeadingText();
       if (currentPage === "added") {
         const activeSupplierTitle = cleanText(supplierContextFilter || getCurrentSupplier());
-        el.pageTitle.textContent = getListHeadingText();
+        el.pageTitle.textContent = getHeaderTitleText();
         el.pageSubtitle.textContent = activeSupplierTitle
           ? `Catatan aktif untuk supplier: ${activeSupplierTitle}`
           : "List barang otomatis digrup per supplier.";
