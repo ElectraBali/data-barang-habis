@@ -1412,6 +1412,59 @@
       line-height: 1.45;
       font-family: Arial, Helvetica, sans-serif;
     }
+    .continue-list-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .continue-list-modal-actions .btn {
+      min-height: 36px;
+      padding: 9px 11px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .wa-choice-list {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .wa-choice-btn {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      color: var(--text);
+      border-radius: 16px;
+      padding: 13px 14px;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .wa-choice-btn strong { display: block; font-size: 14px; font-weight: 900; margin-bottom: 4px; }
+    .wa-choice-btn span { display: block; color: var(--muted); font-size: 12px; font-weight: 800; }
+    .wa-choice-btn .wa-choice-icon {
+      flex: 0 0 auto;
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+    }
+    .wa-choice-btn:hover { border-color: var(--primary); background: #ffffff; box-shadow: 0 0 0 4px var(--primary-soft); }
+    body.dark-mode .wa-choice-btn { background: rgba(255,255,255,0.07); color: var(--text); border-color: rgba(196,164,255,0.18); }
+    body.dark-mode .wa-choice-btn:hover { background: rgba(255,255,255,0.09); border-color: rgba(196,164,255,0.38); box-shadow: 0 0 0 4px rgba(124,58,237,0.18); }
+
 
     .search-overlay {
       position: fixed;
@@ -1606,12 +1659,12 @@
 
     .home-plus-search-btn {
       width: 100%;
-      min-height: 260px;
+      min-height: 130px;
       border: 1.5px dashed #cbd5e1;
       background: #f8fafc;
       color: #334155;
-      border-radius: 24px;
-      font-size: 42px;
+      border-radius: 22px;
+      font-size: 38px;
       font-weight: 900;
       cursor: pointer;
       display: none;
@@ -1629,7 +1682,7 @@
     }
 
     .home-plus-search-symbol {
-      font-size: 56px;
+      font-size: 42px;
       line-height: 1;
       font-weight: 900;
     }
@@ -1860,10 +1913,34 @@
       <h3>Lanjutkan dari list lama</h3>
       <p>Paste list yang sudah ada sebelumnya. Setelah disimpan, teks ini akan jadi urutan paling atas lalu list baru lanjut di bawahnya.</p>
       <textarea id="continueListInput" class="edit-field continue-list-field" placeholder="Paste list lama di sini..." autocomplete="off" spellcheck="false"></textarea>
-      <div class="modal-actions" style="grid-template-columns:1fr 1fr 1fr;">
+      <div class="modal-actions continue-list-modal-actions">
         <button id="cancelContinueListBtn" class="btn btn-soft" type="button">Batal</button>
         <button id="clearContinueListBtn" class="btn btn-danger" type="button">Hapus Lama</button>
         <button id="saveContinueListBtn" class="btn btn-primary" type="button">Pakai List Ini</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="waTargetModal" class="modal-backdrop">
+    <div class="modal">
+      <h3>Kirim list ke WhatsApp</h3>
+      <p>Pilih nomor tujuan, atau pilih grup manual setelah WhatsApp terbuka.</p>
+      <div class="wa-choice-list">
+        <button id="sendWaSeptiBtn" class="wa-choice-btn" type="button">
+          <span><strong>Septi</strong><span>+62 859-0429-4798</span></span>
+          <span class="wa-choice-icon">WA</span>
+        </button>
+        <button id="sendWaElectraBtn" class="wa-choice-btn" type="button">
+          <span><strong>Electra</strong><span>+62 817-5777-488</span></span>
+          <span class="wa-choice-icon">WA</span>
+        </button>
+        <button id="sendWaGroupBtn" class="wa-choice-btn" type="button">
+          <span><strong>Kirim ke Grup</strong><span>Pilih grup manual di WhatsApp</span></span>
+          <span class="wa-choice-icon">📢</span>
+        </button>
+      </div>
+      <div class="modal-actions" style="grid-template-columns:1fr;">
+        <button id="cancelWaTargetBtn" class="btn btn-soft" type="button">Batal</button>
       </div>
     </div>
   </div>
@@ -1920,7 +1997,8 @@
     const PREVIEW_DRAFT_STORAGE_KEY = "barang_habis_preview_manual_draft_v1";
     const CONTINUE_LIST_STORAGE_KEY = "barang_habis_preview_continue_list_v1";
     const SUPPLIER_RENAME_STORAGE_KEY = "barang_habis_supplier_rename_map_v1";
-    const WA_NUMBER = "628175777488";
+    const WA_TARGETS = { septi: "6285904294798", electra: "628175777488" };
+    const WA_NUMBER = WA_TARGETS.electra;
 
     const SUPPLIERS = [
       "CNC",
@@ -23736,6 +23814,11 @@
       cancelContinueListBtn: $("cancelContinueListBtn"),
       clearContinueListBtn: $("clearContinueListBtn"),
       saveContinueListBtn: $("saveContinueListBtn"),
+      waTargetModal: $("waTargetModal"),
+      sendWaSeptiBtn: $("sendWaSeptiBtn"),
+      sendWaElectraBtn: $("sendWaElectraBtn"),
+      sendWaGroupBtn: $("sendWaGroupBtn"),
+      cancelWaTargetBtn: $("cancelWaTargetBtn"),
       addItemModal: $("addItemModal"),
       addItemNameInput: $("addItemNameInput"),
       addItemCategoryInput: $("addItemCategoryInput"),
@@ -26426,16 +26509,53 @@
       }
     }
 
-    function sendToWhatsApp() {
+    function getValidShareTextForWa() {
       const textValue = getShareText();
       if (!cleanText(textValue) || textValue === "Belum ada barang menipis / habis.") {
         showToast("Belum ada teks untuk dikirim");
-        return;
+        return "";
       }
-
-      const text = encodeURIComponent(textValue);
-      window.open(`https://wa.me/${WA_NUMBER}?text=${text}`, "_blank");
+      return textValue;
     }
+
+    function openWaTargetModal() {
+      const textValue = getValidShareTextForWa();
+      if (!textValue || !el.waTargetModal) return;
+      el.waTargetModal.classList.remove("closing");
+      el.waTargetModal.classList.add("show");
+    }
+
+    function closeWaTargetModal() {
+      if (!el.waTargetModal) return;
+      el.waTargetModal.classList.remove("show");
+      el.waTargetModal.classList.add("closing");
+      window.setTimeout(() => {
+        if (!el.waTargetModal) return;
+        el.waTargetModal.classList.remove("closing");
+      }, 260);
+    }
+
+    function sendToWhatsAppNumber(number) {
+      const textValue = getValidShareTextForWa();
+      if (!textValue) return;
+      const cleanNumber = String(number || WA_NUMBER).replace(/\D/g, "");
+      const text = encodeURIComponent(textValue);
+      closeWaTargetModal();
+      window.open(`https://wa.me/${cleanNumber}?text=${text}`, "_blank");
+    }
+
+    function sendToWhatsAppGroup() {
+      const textValue = getValidShareTextForWa();
+      if (!textValue) return;
+      const text = encodeURIComponent(textValue);
+      closeWaTargetModal();
+      window.open(`https://wa.me/?text=${text}`, "_blank");
+    }
+
+    function sendToWhatsApp() {
+      openWaTargetModal();
+    }
+
 
     function setTab(tab, shouldRender = true) {
       activeTab = tab === "preview" ? "preview" : "list";
@@ -26686,6 +26806,10 @@
 
     el.copyBtn.addEventListener("click", copyList);
     el.waBtn.addEventListener("click", sendToWhatsApp);
+    if (el.cancelWaTargetBtn) el.cancelWaTargetBtn.addEventListener("click", closeWaTargetModal);
+    if (el.sendWaSeptiBtn) el.sendWaSeptiBtn.addEventListener("click", () => sendToWhatsAppNumber(WA_TARGETS.septi));
+    if (el.sendWaElectraBtn) el.sendWaElectraBtn.addEventListener("click", () => sendToWhatsAppNumber(WA_TARGETS.electra));
+    if (el.sendWaGroupBtn) el.sendWaGroupBtn.addEventListener("click", sendToWhatsAppGroup);
     el.previewText.addEventListener("input", handlePreviewManualInput);
     el.previewText.addEventListener("paste", () => {
       window.setTimeout(handlePreviewManualInput, 0);
@@ -26745,6 +26869,12 @@
     if (el.continueListModal) {
       el.continueListModal.addEventListener("click", event => {
         if (event.target === el.continueListModal) closeContinueListModal();
+      });
+    }
+
+    if (el.waTargetModal) {
+      el.waTargetModal.addEventListener("click", event => {
+        if (event.target === el.waTargetModal) closeWaTargetModal();
       });
     }
 
