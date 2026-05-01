@@ -778,12 +778,21 @@
 
     .header-actions.list-mode #viewAddedBtn { margin-right: auto; }
 
+    .header-actions.home-mode {
+      justify-content: flex-start;
+    }
+
+    .header-actions.home-mode #viewAddedBtn {
+      margin-left: auto;
+    }
+
     .header-actions.product-menu-mode #viewAddedBtn {
       margin-left: auto;
       margin-right: 0;
     }
 
     .view-added-btn,
+    .open-product-menu-btn,
     .menu-back-btn,
     .top-change-supplier-btn,
     .top-add-supplier-btn,
@@ -806,6 +815,9 @@
 
     .menu-back-btn { display: none; }
     .menu-back-btn.show { display: inline-flex; }
+
+    .open-product-menu-btn { display: none; }
+    .open-product-menu-btn.show { display: inline-flex; }
 
     .top-change-supplier-btn {
       display: none;
@@ -2110,7 +2122,7 @@
     body.theme-gray .catalog-item:hover, body.theme-gray .suggestion-btn:hover, body.theme-gray .product-menu-card:hover, body.theme-gray .wa-choice-btn:hover, body.theme-gray .home-plus-search-btn:hover, body.theme-gray .manual-add-card:hover, body.theme-gray .category-btn:hover, body.theme-gray .quick-btn:hover { background:#374151 !important; border-color:#6b7280 !important; }
     body.theme-gray .supplier-title, body.theme-gray .summary-box, body.theme-gray .supplier-chip, body.theme-gray .product-menu-icon, body.theme-gray .product-menu-count, body.theme-gray .suggestion-action, body.theme-gray .catalog-add, body.theme-gray .suggestion-action-btn, body.theme-gray .catalog-add-btn, body.theme-gray .top-add-item-btn, body.theme-gray .theme-choice-btn.active, body.theme-gray .quick-btn.active, body.theme-gray .category-btn.active, body.theme-gray .supplier-picker-btn.active, body.theme-gray .supplier-picker-btn.custom { background:#374151 !important; color:#f3f4f6 !important; border-color:#6b7280 !important; box-shadow:0 0 0 3px rgba(107,114,128,.20) !important; }
     body.theme-gray .tab-btn.active, body.theme-gray .btn-primary, body.theme-gray .supplier-edit-mode-btn.active, body.theme-gray .supplier-picker-edit-mode-btn.active { background:linear-gradient(135deg,#4b5563,#6b7280) !important; color:#f9fafb !important; border-color:transparent !important; }
-    body.theme-gray .btn-soft, body.theme-gray .clear-search, body.theme-gray .menu-search-clear, body.theme-gray .preview-small-btn, body.theme-gray .wa-add-number-btn, body.theme-gray .empty-add-list-btn, body.theme-gray .view-added-btn, body.theme-gray .menu-back-btn, body.theme-gray .top-change-supplier-btn, body.theme-gray .top-add-supplier-btn, body.theme-gray .top-reset-btn, body.theme-gray .suggestion-mini-btn, body.theme-gray .theme-toggle-btn { background:#374151 !important; color:#f3f4f6 !important; border-color:rgba(156,163,175,.42) !important; box-shadow:0 10px 24px rgba(0,0,0,.20) !important; }
+    body.theme-gray .btn-soft, body.theme-gray .clear-search, body.theme-gray .menu-search-clear, body.theme-gray .preview-small-btn, body.theme-gray .wa-add-number-btn, body.theme-gray .empty-add-list-btn, body.theme-gray .view-added-btn, body.theme-gray .open-product-menu-btn, body.theme-gray .menu-back-btn, body.theme-gray .top-change-supplier-btn, body.theme-gray .top-add-supplier-btn, body.theme-gray .top-reset-btn, body.theme-gray .suggestion-mini-btn, body.theme-gray .theme-toggle-btn { background:#374151 !important; color:#f3f4f6 !important; border-color:rgba(156,163,175,.42) !important; box-shadow:0 10px 24px rgba(0,0,0,.20) !important; }
     body.theme-gray .supplier-title span, body.theme-gray .catalog-category, body.theme-gray .item-meta, body.theme-gray .small-info, body.theme-gray .quick-title, body.theme-gray .product-menu-desc, body.theme-gray .suggestion-category, body.theme-gray .theme-choice-btn span, body.theme-gray .wa-choice-btn span, body.theme-gray .modal p, body.theme-gray .preview-edit-note { color:var(--muted) !important; }
     body.theme-gray .skeleton { background:#374151 !important; }
     body.theme-gray .skeleton::after { background:linear-gradient(90deg,transparent,rgba(209,213,219,.16),transparent) !important; }
@@ -2282,6 +2294,68 @@
 
 
 
+
+
+    /* Tombol + di halaman Catatan Barang Habis mengikuti style tombol + halaman awal.
+       Tombol + halaman depan tidak diubah. */
+    #addedPage .empty-add-list-btn {
+      width: 58px;
+      height: 58px;
+      border: 1.5px dashed #cbd5e1 !important;
+      background: #f8fafc !important;
+      color: #334155 !important;
+      border-radius: 20px !important;
+      font-size: 34px;
+      font-weight: 900;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      line-height: 1;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05) !important;
+    }
+
+    #addedPage .empty-add-list-btn:hover {
+      transform: translateY(-1px);
+      background: #ffffff !important;
+      border-color: var(--primary) !important;
+    }
+
+    #addedPage .supplier-add-btn {
+      width: 28px;
+      height: 28px;
+      border: 1.5px dashed #cbd5e1 !important;
+      background: #f8fafc !important;
+      color: #334155 !important;
+      border-radius: 10px !important;
+      font-size: 20px !important;
+      font-weight: 900;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05) !important;
+    }
+
+    #addedPage .supplier-add-btn:hover {
+      transform: translateY(-1px);
+      background: #ffffff !important;
+      border-color: var(--primary) !important;
+    }
+
+    body.dark-mode #addedPage .empty-add-list-btn,
+    body.dark-mode #addedPage .supplier-add-btn {
+      background: rgba(255, 255, 255, 0.07) !important;
+      color: var(--text) !important;
+      border-color: rgba(148, 211, 232, 0.22) !important;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18) !important;
+    }
+
+    body.theme-gray #addedPage .empty-add-list-btn,
+    body.theme-gray #addedPage .supplier-add-btn {
+      background: #273142 !important;
+      color: var(--text) !important;
+      border-color: rgba(156, 163, 175, 0.34) !important;
+      box-shadow: 0 12px 28px rgba(0,0,0,.22) !important;
+    }
+
     /* Supplier inline menu di halaman utama dimatikan.
        Pemilihan/ganti supplier sekarang hanya lewat modal supplier. */
     #supplierDropdown { display: none !important; }
@@ -2349,6 +2423,8 @@
           <span id="menuBackCount">0 item</span>
         </button>
 
+        <button id="openProductMenuBtn" class="open-product-menu-btn" type="button">☰ Menu Barang</button>
+
         <button id="viewAddedBtn" class="view-added-btn" type="button">
           <strong id="viewAddedLabel">📦 Lihat semua List</strong>
           <span id="viewAddedCount">0 item</span>
@@ -2376,7 +2452,7 @@
               </span>
             </button>
             <div id="homePlusDescription" class="home-plus-description">
-              Dipakai untuk mencatat barang habis, memilih supplier, mengatur qty, lalu membuat teks list yang siap disalin atau dikirim ke WhatsApp.
+              Program ini dipakai untuk mencatat barang habis, memilih supplier, mengatur qty, lalu membuat teks list yang siap disalin atau dikirim ke WhatsApp.
             </div>
             <div class="quick-head" id="quickHead">
               <p id="quickMenuTitle" class="quick-title">Menu barang</p>
@@ -24341,6 +24417,7 @@
       pageSubtitle: $("pageSubtitle"),
       headerActions: $("headerActions"),
       menuBackBtn: $("menuBackBtn"),
+      openProductMenuBtn: $("openProductMenuBtn"),
       viewAddedBtn: $("viewAddedBtn"),
       viewAddedLabel: $("viewAddedLabel"),
       viewAddedCount: $("viewAddedCount"),
@@ -24466,6 +24543,7 @@
     let isSupplierEditMode = false;
     let supplierContextFilter = "";
     let selectedProductMenu = "";
+    let isProductMenuVisible = false;
     let isMenuSearchFocused = false;
     let menuSearchDraft = "";
     let menuSearchQuery = "";
@@ -25187,16 +25265,28 @@
     }
 
     function shouldShowInitialPlusOnly() {
-      const canShowEntryOnly = currentPage === "home" && !selectedProductMenu && !isSupplierMenuOpen && !cleanText(searchQuery) && !cleanText(el.searchInput.value);
-      return canShowEntryOnly && forceInitialPlusForThisSession;
+      /* Tombol + halaman depan dikembalikan seperti sebelumnya:
+         tetap tampil di halaman utama selama menu barang belum dibuka,
+         belum masuk kategori, dan tidak sedang mencari. */
+      return currentPage === "home"
+        && !selectedProductMenu
+        && !isSupplierMenuOpen
+        && !isProductMenuVisible
+        && !cleanText(searchQuery)
+        && !cleanText(el.searchInput.value);
     }
 
     function updateHomeEntryMode() {
       const plusOnly = shouldShowInitialPlusOnly();
+      const hasSearch = Boolean(cleanText(searchQuery) || cleanText(el.searchInput.value));
+      const shouldShowMenuArea = currentPage === "home" && !plusOnly && (isProductMenuVisible || Boolean(selectedProductMenu) || hasSearch || isSupplierMenuOpen);
+
       if (el.homePlusSearchBtn) el.homePlusSearchBtn.classList.toggle("show", plusOnly);
-      if (el.quickHead) el.quickHead.style.display = plusOnly ? "none" : "flex";
-      if (el.supplierDropdown) el.supplierDropdown.style.display = plusOnly ? "none" : "";
-      if (el.catalogResults) el.catalogResults.style.display = plusOnly ? "none" : "";
+      if (el.quickHead) el.quickHead.style.display = shouldShowMenuArea ? "flex" : "none";
+      if (el.supplierDropdown) el.supplierDropdown.style.display = shouldShowMenuArea ? "" : "none";
+      if (el.catalogResults) el.catalogResults.style.display = shouldShowMenuArea ? "" : "none";
+      if (el.openProductMenuBtn) el.openProductMenuBtn.classList.toggle("show", currentPage === "home");
+      if (el.headerActions) el.headerActions.classList.toggle("home-mode", currentPage === "home");
     }
 
     function openInitialSearchSuggestions(options = {}) {
@@ -25289,6 +25379,7 @@
 
       el.catalogResults.querySelectorAll(".product-menu-card[data-menu-id]").forEach(button => {
         button.addEventListener("click", () => {
+          isProductMenuVisible = true;
           selectedProductMenu = button.dataset.menuId || "";
           clearTimeout(menuSearchTimer);
           clearTimeout(menuSearchLoadingTimer);
@@ -25621,7 +25712,8 @@
         searchInputValue: cleanText(el.searchInput.value),
         selectedSupplierValue: getCurrentSupplier(),
         scrollY: window.scrollY || 0,
-        shouldRestoreMenu: currentPage === "home" && Boolean(selectedProductMenu)
+        shouldRestoreMenu: currentPage === "home" && (Boolean(selectedProductMenu) || Boolean(isProductMenuVisible)),
+        wasProductMenuVisible: Boolean(isProductMenuVisible)
       };
     }
 
@@ -25629,7 +25721,7 @@
       const state = savedHomeMenuState;
       savedHomeMenuState = null;
 
-      if (!state || !state.shouldRestoreMenu || !state.selectedProductMenuValue) {
+      if (!state || !state.shouldRestoreMenu) {
         openHomePage(Boolean(savedHomeSuggestionState));
         return;
       }
@@ -25637,6 +25729,7 @@
       currentPage = "home";
       supplierContextFilter = "";
       selectedProductMenu = cleanText(state.selectedProductMenuValue);
+      isProductMenuVisible = Boolean(state.wasProductMenuVisible) || Boolean(selectedProductMenu);
       selectedSupplier = cleanText(selectedSupplier || state.selectedSupplierValue);
       isSupplierMenuOpen = false;
       isSearching = false;
@@ -25704,6 +25797,7 @@
       currentPage = "home";
       supplierContextFilter = "";
       selectedProductMenu = "";
+      isProductMenuVisible = false;
       menuSearchDraft = "";
       menuSearchQuery = "";
       isSupplierMenuOpen = false;
@@ -26506,7 +26600,8 @@
       }
 
       if (!cleanText(searchQuery) && !selectedProductMenu) {
-        renderProductMenuCards();
+        if (isProductMenuVisible) renderProductMenuCards();
+        else el.catalogResults.innerHTML = "";
         return;
       }
 
@@ -27734,12 +27829,29 @@
       showToast("Semua list berhasil direset");
     }
 
+
+    if (el.openProductMenuBtn) el.openProductMenuBtn.addEventListener("click", () => {
+      if (currentPage !== "home") openHomePage(false);
+      forceInitialPlusForThisSession = false;
+      isProductMenuVisible = true;
+      selectedProductMenu = "";
+      isSupplierMenuOpen = false;
+      searchQuery = "";
+      menuSearchDraft = "";
+      menuSearchQuery = "";
+      if (el.searchInput) el.searchInput.value = "";
+      if (el.clearSearchBtn) el.clearSearchBtn.style.display = "none";
+      closeSuggestionsCurtainUp();
+      render();
+    });
+
     if (el.homePlusSearchBtn) el.homePlusSearchBtn.addEventListener("click", () => openInitialSearchSuggestions({ keepPage: true }));
 
     el.quickMenuTitle.addEventListener("click", () => {
       if (isSupplierMenuOpen || !selectedProductMenu) return;
 
       selectedProductMenu = "";
+      isProductMenuVisible = true;
       clearTimeout(menuSearchTimer);
       clearTimeout(menuSearchLoadingTimer);
       isMenuSearchFocused = false;
