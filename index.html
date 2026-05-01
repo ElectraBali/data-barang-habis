@@ -1947,6 +1947,43 @@
       font-weight: 900;
     }
 
+    .home-plus-description {
+      display: none;
+      margin: -2px 2px 2px;
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .home-plus-description strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .home-plus-search-btn.show + .home-plus-description { display: block; }
+
+    body.dark-mode .home-plus-description {
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--muted);
+      border-color: rgba(148, 211, 232, 0.18);
+    }
+
+    body.theme-gray .home-plus-description {
+      background:#273142 !important;
+      color:var(--muted) !important;
+      border-color:rgba(156,163,175,.34) !important;
+      box-shadow:0 12px 28px rgba(0,0,0,.16) !important;
+    }
+
     .home-plus-search-btn.show { display: flex; }
 
     .home-plus-search-btn:hover { transform: translateY(-1px); }
@@ -2298,6 +2335,10 @@
                 <span class="home-plus-search-label">Tambah Barang</span>
               </span>
             </button>
+            <div id="homePlusDescription" class="home-plus-description">
+              <strong>Tentang web ini</strong>
+              Web ini dipakai untuk mencatat barang habis, memilih supplier, mengatur qty, lalu membuat teks list yang siap disalin atau dikirim ke WhatsApp.
+            </div>
             <div class="quick-head" id="quickHead">
               <p id="quickMenuTitle" class="quick-title">Menu barang</p>
               <div class="supplier-control">
@@ -24278,6 +24319,7 @@
       quickSupplierBtn: $("quickSupplierBtn"),
       quickHead: $("quickHead"),
       homePlusSearchBtn: $("homePlusSearchBtn"),
+      homePlusDescription: $("homePlusDescription"),
       quickMenuTitle: $("quickMenuTitle"),
       supplierDropdown: $("supplierDropdown"),
       selectedSupplierChip: $("selectedSupplierChip"),
@@ -24902,12 +24944,15 @@
         // Setelah user memilih supplier untuk barang yang mau ditambahkan,
         // langsung arahkan ke halaman list barang. Jangan buka / fokus search lagi.
         currentPage = "added";
-        currentTab = "list";
+        activeTab = "list";
         supplierContextFilter = supplier;
         selectedProductMenu = "";
         searchQuery = "";
-        if (el.searchInput) el.searchInput.value = "";
-        closeSuggestionsCurtainUp();
+        if (el.searchInput) {
+          el.searchInput.value = "";
+          el.searchInput.blur();
+        }
+        forceCloseSuggestionLayer();
         el.searchBox.classList.remove("hidden");
         el.homePage.style.display = "none";
         el.addedPage.style.display = "block";
