@@ -2203,6 +2203,24 @@
       border-color: #9ca3af !important;
     }
 
+
+
+    /* Supplier inline menu di halaman utama dimatikan.
+       Pemilihan/ganti supplier sekarang hanya lewat modal supplier. */
+    #supplierDropdown { display: none !important; }
+
+    /* Supplier dipilih hanya saat user klik tambah item ke catatan */
+    #quickSupplierBtn,
+    #selectedSupplierChip,
+    #supplierDropdown,
+    #listChangeSupplierBtn {
+      display: none !important;
+    }
+
+    #quickHead .supplier-control {
+      display: none !important;
+    }
+
   </style>
 </head>
 
@@ -2214,7 +2232,7 @@
       <div class="header-top">
         <div class="title">
           <h1 id="pageTitle">Elektra Bali</h1>
-          <p id="pageSubtitle">Pilih supplier lalu tambahkan barang ke list.</p>
+          <p id="pageSubtitle">Cari barang lalu klik tambah item.</p>
         </div>
 
         <div class="header-right-tools">
@@ -24375,6 +24393,7 @@
     let savedHomeSuggestionState = null;
     let savedHomeMenuState = null;
     let listSupplierModalReturnToSuggestion = false;
+    let listSupplierModalFocusSearchOnPick = false;
     let isPointerInsideSearchLayer = false;
 
     const SEARCH_DELAY = 650;
@@ -24762,6 +24781,25 @@
       setTimeout(() => el.searchInput.focus(), 80);
     }
 
+    function focusSearchAfterSupplierPick() {
+      // Setelah supplier dipilih/ganti lewat modal, tetap di halaman saat ini
+      // lalu langsung arahkan user ke field pencarian.
+      closeSuggestionsCurtainUp();
+      isSupplierMenuOpen = false;
+      if (el.supplierDropdown) el.supplierDropdown.classList.remove("show");
+      if (el.catalogResults) el.catalogResults.classList.remove("hide");
+      if (el.searchBox) el.searchBox.classList.remove("hidden");
+      if (el.searchInput) {
+        el.searchInput.value = "";
+        searchQuery = "";
+        keepSuggestionsAfterClear = false;
+        currentSuggestionItems = [];
+        lastSuggestionSignature = "";
+        if (el.clearSearchBtn) el.clearSearchBtn.style.display = "none";
+        setTimeout(() => el.searchInput.focus(), 120);
+      }
+    }
+
     function closeSearchSuggestionLayer() {
       closeSuggestionsCurtainUp();
     }
@@ -24841,7 +24879,14 @@
       const cleanName = cleanText(name);
       const parsedQty = parseAddQty(qty, 1);
       if (!cleanName || parsedQty === null) return;
-      pendingAddItem = { name: cleanName, qty: parsedQty };
+      pendingAddItem = {
+        name: cleanName,
+        qty: parsedQty,
+        returnPage: currentPage,
+        returnSupplierContext: supplierContextFilter,
+        returnProductMenu: selectedProductMenu,
+        returnSearchValue: cleanText(el.searchInput && el.searchInput.value)
+      };
     }
 
     function completePendingAddAfterSupplier(supplierName) {
@@ -24852,10 +24897,29 @@
       pendingAddItem = null;
       setActiveSupplier(supplier, true);
 
-      const success = addItem(pending.name, pending.qty);
+      const success = addItem(pending.name, pending.qty, { skipSupplierPicker: true });
       if (success) {
-        openAddedPage(supplier);
-        showToast(`Barang otomatis masuk ke ${supplier}`);
+        // Setelah user memilih supplier untuk barang yang mau ditambahkan,
+        // langsung arahkan ke halaman list barang. Jangan buka / fokus search lagi.
+        currentPage = "added";
+        currentTab = "list";
+        supplierContextFilter = supplier;
+        selectedProductMenu = "";
+        searchQuery = "";
+        if (el.searchInput) el.searchInput.value = "";
+        closeSuggestionsCurtainUp();
+        el.searchBox.classList.remove("hidden");
+        el.homePage.style.display = "none";
+        el.addedPage.style.display = "block";
+        el.listSection.style.display = "block";
+        el.previewSection.style.display = "none";
+        if (el.tabList) el.tabList.classList.add("active");
+        if (el.tabPreview) el.tabPreview.classList.remove("active");
+        renderSummary();
+        renderCatalog();
+        renderList();
+        updateHeader();
+        showToast(`Barang masuk ke ${supplier}`);
       }
       return success;
     }
@@ -25050,7 +25114,9 @@
         el.addedPage.style.display = "block";
         el.searchBox.classList.remove("hidden");
         el.headerActions.classList.add("list-mode");
-        el.listChangeSupplierBtn.classList.add("show");
+        // Tombol + di halaman list hanya memicu search, bukan pilihan supplier.
+        el.listChangeSupplierBtn.classList.remove("show");
+        el.listChangeSupplierBtn.style.display = "none";
         el.topResetBtn.classList.add("show");
         el.viewAddedLabel.textContent = "← Kembali";
         renderSummary();
@@ -25663,19 +25729,44 @@
       return qty;
     }
 
-    function addItem(selectedName, qtyToAdd = 1) {
+    function addItem(selectedName, qtyToAdd = 1, options = {}) {
       const requestedName = cleanText(selectedName || searchQuery);
       const parsedQty = parseAddQty(qtyToAdd, 1);
 
       if (parsedQty === null) { showToast("Qty tidak valid"); return false; }
+      if (!requestedName) { showToast("Cari atau pilih barang dulu"); el.searchInput.focus(); return false; }
+
+      /*
+        Supplier tidak ditampilkan di awal.
+        Saat user klik tombol tambah item, baru munculkan modal pilih supplier.
+        completePendingAddAfterSupplier() memanggil addItem lagi dengan skipSupplierPicker=true.
+      */
+      if (!options.skipSupplierPicker) {
+        setPendingAddItem(requestedName, parsedQty);
+        isSupplierMenuOpen = false;
+        isSupplierEditMode = false;
+        if (el.supplierDropdown) el.supplierDropdown.classList.remove("show");
+        if (el.catalogResults) el.catalogResults.classList.remove("hide");
+        renderListSupplierPicker();
+        openListSupplierModal({
+          fromSuggestion: el.searchSuggestions.classList.contains("show"),
+          focusSearchAfterPick: false
+        });
+        showToast("Pilih supplier untuk barang ini");
+        return false;
+      }
 
       const activeSupplierForAdd = getCurrentSupplier() || cleanText(supplierContextFilter);
       if (!activeSupplierForAdd) {
-        if (requestedName) setPendingAddItem(requestedName, parsedQty);
-        goToSupplierPicker("Pilih supplier dulu, barang akan otomatis masuk setelah supplier dipilih");
+        setPendingAddItem(requestedName, parsedQty);
+        renderListSupplierPicker();
+        openListSupplierModal({
+          fromSuggestion: el.searchSuggestions.classList.contains("show"),
+          focusSearchAfterPick: false
+        });
+        showToast("Pilih supplier untuk barang ini");
         return false;
       }
-      if (!requestedName) { showToast("Cari atau pilih barang dulu"); el.searchInput.focus(); return false; }
       let masterItem = findMasterItem(requestedName);
       if (!masterItem) { const firstMatch = getFilteredCatalog()[0]; if (firstMatch) masterItem = firstMatch; }
       if (!masterItem) { showToast("Barang tidak ada di katalog"); el.searchInput.focus(); return false; }
@@ -25772,6 +25863,7 @@
       }
 
       const shouldReturnToSuggestion = listSupplierModalReturnToSuggestion;
+      const shouldFocusSearch = listSupplierModalFocusSearchOnPick;
       setActiveSupplier(supplierName, true);
       isSupplierMenuOpen = false;
       closeAddSupplierModal();
@@ -25783,6 +25875,7 @@
         restoreSuggestionAfterSupplierModal();
       } else {
         render();
+        if (shouldFocusSearch) focusSearchAfterSupplierPick();
       }
     }
 
@@ -25836,21 +25929,13 @@
 
       closeAddItemModal();
 
-      const activeSupplierForNewItem = getCurrentSupplier() || cleanText(supplierContextFilter);
-      if (!activeSupplierForNewItem) {
-        setPendingAddItem(name, 0);
-        goToSupplierPicker("Pilih supplier dulu, barang baru akan otomatis masuk ke supplier tersebut");
-        return;
-      }
-
       const success = addItem(name, 0);
       if (success) {
-        openAddedPage(activeSupplierForNewItem);
-        showToast(`Barang baru masuk ke ${activeSupplierForNewItem}`);
+        const activeSupplierForNewItem = getCurrentSupplier() || cleanText(supplierContextFilter);
+        if (activeSupplierForNewItem) openAddedPage(activeSupplierForNewItem);
         return;
       }
 
-      showToast("Barang baru berhasil disimpan");
       renderSummary();
       renderCatalog();
       renderSuggestions();
@@ -26095,14 +26180,12 @@
       el.quickSupplierBtn.classList.toggle("active", Boolean(supplierMenuOpen));
 
       if (el.formMainTitle) {
-        el.formMainTitle.textContent = supplierMenuOpen ? "Pilih Supplier" : "Pilih Barang Habis";
+        el.formMainTitle.textContent = "Pilih Barang Habis";
       }
 
       if (el.quickMenuTitle) {
         const activeMenu = getMenuConfig(selectedProductMenu);
-        el.quickMenuTitle.textContent = supplierMenuOpen
-          ? "Menu supplier"
-          : (selectedProductMenu ? `Menu ${activeMenu?.title || "Barang"}` : "Menu barang");
+        el.quickMenuTitle.textContent = selectedProductMenu ? `Menu ${activeMenu?.title || "Barang"}` : "Menu barang";
         el.quickMenuTitle.classList.toggle("menu-back-title", Boolean(!supplierMenuOpen && selectedProductMenu));
         el.quickMenuTitle.title = selectedProductMenu ? "Klik untuk kembali ke menu awal" : "";
       }
@@ -26249,11 +26332,6 @@
           event.preventDefault(); event.stopPropagation();
           const qty = parseAddQty(qtyInput.value, 0);
           if (qty === null) { showToast("Qty tidak valid"); qtyInput.focus(); return; }
-          if (!getCurrentSupplier() && !cleanText(supplierContextFilter)) {
-            setPendingAddItem(item.name, qty);
-            goToSupplierPicker("Pilih supplier dulu, barang akan otomatis masuk setelah supplier dipilih");
-            return;
-          }
           closeSuggestionsCurtainUp();
           const success = addItem(item.name, qty);
           if (success && selectedProductMenu) { isMenuSearchFocused = true; isMenuCatalogLoading = false; renderMenuCatalogBodyOnly(); }
@@ -26469,11 +26547,6 @@
           event.preventDefault(); event.stopPropagation();
           const qty = parseAddQty(qtyInput.value, 0);
           if (qty === null) { showToast("Qty tidak valid"); qtyInput.focus(); return; }
-          if (!getCurrentSupplier() && !cleanText(supplierContextFilter)) {
-            setPendingAddItem(item.name, qty);
-            goToSupplierPicker("Pilih supplier dulu, barang akan otomatis masuk setelah supplier dipilih");
-            return;
-          }
           closeSuggestionsCurtainUp();
           const success = addItem(item.name, qty);
           if (success && selectedProductMenu) { isMenuSearchFocused = true; isMenuCatalogLoading = false; if (!renderMenuCatalogBodyOnly()) renderCatalog(); }
@@ -26813,7 +26886,7 @@
       renderCatalog();
 
       if (message) showToast(message);
-      openListSupplierModal();
+      openListSupplierModal({ focusSearchAfterPick: true });
     }
 
     function updateListChangeSupplierButton() {
@@ -26824,8 +26897,8 @@
       el.listChangeSupplierBtn.title = hasSupplier ? "Ganti supplier aktif untuk tambah catatan berikutnya" : "Pilih supplier dulu";
       el.listChangeSupplierBtn.setAttribute("aria-label", hasSupplier ? "Ganti supplier" : "Pilih supplier");
 
-      el.listChangeSupplierBtn.classList.toggle("show", currentPage === "added");
-      el.listChangeSupplierBtn.style.display = currentPage === "added" ? "inline-flex" : "none";
+      el.listChangeSupplierBtn.classList.remove("show");
+      el.listChangeSupplierBtn.style.display = "none";
       if (el.listAddSupplierBtn) {
         el.listAddSupplierBtn.classList.toggle("show", currentPage === "added");
         el.listAddSupplierBtn.style.display = currentPage === "added" ? "inline-flex" : "none";
@@ -26852,6 +26925,7 @@
           }
 
           const shouldReturnToSuggestion = listSupplierModalReturnToSuggestion;
+          const shouldFocusSearch = listSupplierModalFocusSearchOnPick;
           setActiveSupplier(supplier, true);
           isSupplierMenuOpen = false;
           isSupplierEditMode = false;
@@ -26862,6 +26936,7 @@
             restoreSuggestionAfterSupplierModal();
           } else {
             render();
+            if (shouldFocusSearch) focusSearchAfterSupplierPick();
           }
           showToast(`Supplier aktif: ${supplier}`);
         });
@@ -26921,6 +26996,7 @@
       // Dipanggil dari tombol ganti supplier di suggestion: modal harus muncul
       // tanpa menutup suggestion, lalu setelah pilih supplier balik ke suggestion tadi.
       listSupplierModalReturnToSuggestion = fromSuggestion;
+      listSupplierModalFocusSearchOnPick = options.focusSearchAfterPick !== false && !fromSuggestion;
       if (!fromSuggestion) closeSuggestionsCurtainUp();
 
       isSupplierMenuOpen = false;
@@ -26972,7 +27048,7 @@
         el.pageTitle.textContent = getHeaderTitleText();
         el.pageSubtitle.textContent = getCurrentSupplier()
           ? `Supplier aktif: ${getCurrentSupplier()}`
-          : "Pilih supplier lalu tambahkan barang ke list.";
+          : "Cari barang lalu klik tambah item.";
       }
       if (el.listHeading) el.listHeading.textContent = getListHeadingText();
       if (currentPage === "added") {
@@ -27123,14 +27199,6 @@
           const pageBeforeAdd = currentPage;
           const supplierBeforeAdd = supplierContextFilter;
 
-          if (!getCurrentSupplier() && !supplierContextFilter) {
-            closeSuggestionsCurtainUp(() => {
-              addItem(selectedItemName, qty);
-              renderSummary();
-            });
-            return;
-          }
-
           const success = addItem(selectedItemName, qty);
           if (!success) return;
 
@@ -27187,30 +27255,9 @@
     }
 
     function openSupplierPickerFromListSearch() {
-      if (currentPage !== "added") return false;
-      if (getCurrentSupplier() || cleanText(supplierContextFilter)) return false;
-
-      clearTimeout(searchTimer);
-      clearTimeout(suggestionTimer);
-      clearTimeout(suggestionLoadingTimer);
-
-      searchQuery = "";
-      selectedProductMenu = "";
-      isSearching = false;
-      isSuggestionLoading = false;
-      lastSuggestionSignature = "";
-      currentSuggestionItems = [];
-
-      openHomePage();
-      isSupplierMenuOpen = true;
-      renderSupplierDropdown();
-      el.supplierDropdown.classList.add("show");
-      el.catalogResults.classList.add("hide");
-      el.searchInput.value = "";
-      el.clearSearchBtn.style.display = "none";
-      renderSelectedSupplier();
-      showToast("Pilih supplier dulu");
-      return true;
+      // Jangan munculkan modal supplier hanya karena user membuka/fokus field search.
+      // Supplier benar-benar dipilih hanya saat user klik tombol tambah pada salah satu barang.
+      return false;
     }
 
     function handleSearchInput() {
@@ -27595,10 +27642,12 @@
     el.searchInput.addEventListener("blur", hideSuggestionsBecauseSearchLostFocus);
 
     el.searchInput.addEventListener("focus", () => {
+      // Search boleh dibuka di halaman mana pun tanpa memaksa pilih supplier.
       openSupplierPickerFromListSearch();
     });
 
     el.searchInput.addEventListener("click", () => {
+      // Klik field search tidak membuka modal supplier.
       openSupplierPickerFromListSearch();
     });
 
@@ -27647,11 +27696,11 @@
     if (el.topAddItemBtn) el.topAddItemBtn.addEventListener("click", () => openAddItemModal(menuSearchDraft || menuSearchQuery || searchQuery));
 
     el.quickSupplierBtn.addEventListener("click", () => {
-      openListSupplierModal();
+      openListSupplierModal({ focusSearchAfterPick: true });
     });
 
     el.selectedSupplierChip.addEventListener("click", () => {
-      openListSupplierModal();
+      openListSupplierModal({ focusSearchAfterPick: true });
     });
 
     function openListFromSuggestionButton(event) {
@@ -27733,7 +27782,7 @@
 
     el.listChangeSupplierBtn.addEventListener("click", () => {
       if (currentPage === "added") {
-        openListSupplierModal();
+        openListSupplierModal({ focusSearchAfterPick: true });
         return;
       }
       goToSupplierPicker(getCurrentSupplier() ? "Pilih supplier pengganti" : "Pilih supplier dulu");
@@ -27936,6 +27985,7 @@
     window.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "hidden") keepItemsPersistent();
     });
-  </script>
+    /* v11: supplier modal only opens from addItem(), never from +/search focus. */
+</script>
 </body>
 </html>
