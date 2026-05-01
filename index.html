@@ -1184,11 +1184,12 @@
     }
 
     .preview-editor-tools {
-      display: grid;
-      grid-template-columns: 1fr auto;
+      display: flex;
+      justify-content: space-between;
       gap: 10px;
       align-items: center;
       margin-bottom: 10px;
+      flex-wrap: wrap;
     }
 
     .preview-edit-note {
@@ -1294,9 +1295,9 @@
       background: rgba(15, 23, 42, 0.52);
       z-index: 1000;
       display: none;
-      align-items: flex-end;
+      align-items: center;
       justify-content: center;
-      padding: 14px;
+      padding: 18px;
       opacity: 0;
       backdrop-filter: blur(0);
       -webkit-backdrop-filter: blur(0);
@@ -1337,13 +1338,13 @@
     @keyframes modalBackdropIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes modalBackdropOut { from { opacity: 1; } to { opacity: 0; } }
     @keyframes modalSheetIn {
-      0% { opacity: 0; transform: translateY(34px) scale(0.96); }
-      65% { opacity: 1; transform: translateY(-4px) scale(1.01); }
+      0% { opacity: 0; transform: translateY(10px) scale(0.94); }
+      65% { opacity: 1; transform: translateY(0) scale(1.01); }
       100% { opacity: 1; transform: translateY(0) scale(1); }
     }
     @keyframes modalSheetOut {
       from { opacity: 1; transform: translateY(0) scale(1); }
-      to { opacity: 0; transform: translateY(24px) scale(0.97); }
+      to { opacity: 0; transform: translateY(10px) scale(0.96); }
     }
 
     .modal h3 { margin: 0 0 8px; font-size: 18px; }
@@ -1371,6 +1372,21 @@
       border-color: var(--primary);
       background: white;
       box-shadow: 0 0 0 4px var(--primary-soft);
+    }
+
+    .continue-list-main-btn {
+      width: fit-content;
+      min-height: 38px;
+      padding-left: 14px;
+      padding-right: 14px;
+      flex: 0 0 auto;
+    }
+
+    .continue-list-field {
+      min-height: 260px;
+      resize: vertical;
+      line-height: 1.45;
+      font-family: Arial, Helvetica, sans-serif;
     }
 
     .search-overlay {
@@ -1709,9 +1725,8 @@
         </section>
 
         <section id="previewSection" style="display:none;">
-          <div class="summary-box" id="summaryText">Belum ada barang habis.</div>
           <div class="preview-editor-tools">
-            <div id="previewEditNote" class="preview-edit-note">Preview otomatis dari daftar barang. Bisa diedit manual, paste, atau ketik langsung.</div>
+            <button id="continueListBtn" class="preview-small-btn primary continue-list-main-btn" type="button">➕ Lanjutkan List</button>
             <div class="preview-edit-actions">
               <button id="refreshPreviewBtn" class="preview-small-btn primary" type="button">↻ Pakai Otomatis</button>
               <button id="clearPreviewBtn" class="preview-small-btn" type="button">Kosongkan</button>
@@ -1764,6 +1779,18 @@
     </div>
   </div>
 
+  <div id="continueListModal" class="modal-backdrop">
+    <div class="modal">
+      <h3>Lanjutkan dari list lama</h3>
+      <p>Paste list yang sudah ada sebelumnya. Setelah disimpan, teks ini akan jadi urutan paling atas lalu list baru lanjut di bawahnya.</p>
+      <textarea id="continueListInput" class="edit-field continue-list-field" placeholder="Paste list lama di sini..." autocomplete="off" spellcheck="false"></textarea>
+      <div class="modal-actions" style="grid-template-columns:1fr 1fr 1fr;">
+        <button id="cancelContinueListBtn" class="btn btn-soft" type="button">Batal</button>
+        <button id="clearContinueListBtn" class="btn btn-danger" type="button">Hapus Lama</button>
+        <button id="saveContinueListBtn" class="btn btn-primary" type="button">Pakai List Ini</button>
+      </div>
+    </div>
+  </div>
 
 
   <div id="addItemModal" class="modal-backdrop">
@@ -1797,6 +1824,7 @@
     const CUSTOM_ITEM_STORAGE_KEY = "barang_habis_custom_items_v1";
     const THEME_STORAGE_KEY = "barang_habis_theme_mode_v1";
     const PREVIEW_DRAFT_STORAGE_KEY = "barang_habis_preview_manual_draft_v1";
+    const CONTINUE_LIST_STORAGE_KEY = "barang_habis_preview_continue_list_v1";
     const SUPPLIER_RENAME_STORAGE_KEY = "barang_habis_supplier_rename_map_v1";
     const WA_NUMBER = "628175777488";
 
@@ -23592,6 +23620,7 @@
       previewSection: $("previewSection"),
       previewText: $("previewText"),
       previewEditNote: $("previewEditNote"),
+      continueListBtn: $("continueListBtn"),
       refreshPreviewBtn: $("refreshPreviewBtn"),
       clearPreviewBtn: $("clearPreviewBtn"),
       summaryText: $("summaryText"),
@@ -23606,6 +23635,11 @@
       listSupplierModal: $("listSupplierModal"),
       listSupplierPicker: $("listSupplierPicker"),
       closeListSupplierBtn: $("closeListSupplierBtn"),
+      continueListModal: $("continueListModal"),
+      continueListInput: $("continueListInput"),
+      cancelContinueListBtn: $("cancelContinueListBtn"),
+      clearContinueListBtn: $("clearContinueListBtn"),
+      saveContinueListBtn: $("saveContinueListBtn"),
       addItemModal: $("addItemModal"),
       addItemNameInput: $("addItemNameInput"),
       addItemCategoryInput: $("addItemCategoryInput"),
@@ -23619,6 +23653,7 @@
 
     let items = loadItems();
     let manualPreviewText = localStorage.getItem(PREVIEW_DRAFT_STORAGE_KEY) || "";
+    let continuedListText = localStorage.getItem(CONTINUE_LIST_STORAGE_KEY) || "";
     let isPreviewManuallyEdited = Boolean(cleanText(manualPreviewText));
     let customSuppliers = loadCustomSuppliers();
     let supplierRenameMap = loadSupplierRenameMap();
@@ -25434,7 +25469,7 @@
     }
 
     function generateMessage() {
-      if (items.length === 0) return "Belum ada barang menipis / habis.";
+      if (items.length === 0) return "";
 
       const supplierDivider = "----------------------";
       const grouped = groupBySupplier(items);
@@ -25446,19 +25481,46 @@
       return `Catatan barang menipis / habis\n\n${sections.join("\n\n")}`;
     }
 
+    function normalizeContinueListText(text) {
+      return safeString(text)
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .replace(/[ \t]+$/gm, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+    }
+
+    function stripMessageHeading(text) {
+      const normalized = normalizeContinueListText(text);
+      return normalized.replace(/^Catatan barang menipis\s*\/\s*habis\s*\n+/i, "").trim();
+    }
+
+    function generateAutoPreviewMessage() {
+      const oldList = normalizeContinueListText(continuedListText);
+      const autoList = generateMessage();
+
+      // Lanjutkan List hanya jadi pembuka/prefix list lama.
+      // Barang dari web tetap berasal dari array `items`.
+      if (!oldList) return autoList;
+      if (!autoList) return oldList;
+
+      const nextSections = stripMessageHeading(autoList);
+      return `${oldList}\n\n${nextSections}`.trim();
+    }
+
     function getPreviewTextValue() {
       return safeString(el.previewText ? el.previewText.value : "").trim();
     }
 
     function getShareText() {
       const previewValue = getPreviewTextValue();
-      return previewValue || generateMessage();
+      return previewValue || generateAutoPreviewMessage();
     }
 
     function syncPreviewText(options = {}) {
       if (!el.previewText) return;
 
-      const autoText = generateMessage();
+      const autoText = generateAutoPreviewMessage();
       const shouldForceAuto = Boolean(options.forceAuto);
 
       if (shouldForceAuto) {
@@ -25475,9 +25537,7 @@
       el.previewText.classList.toggle("manual-edited", isPreviewManuallyEdited);
 
       if (el.previewEditNote) {
-        el.previewEditNote.textContent = isPreviewManuallyEdited
-          ? "Preview sedang diedit manual. Tombol Salin/WA akan memakai teks manual ini."
-          : "Preview otomatis dari daftar barang. Bisa diedit manual, paste, atau ketik langsung.";
+        el.previewEditNote.textContent = "";
       }
     }
 
@@ -25487,13 +25547,25 @@
       localStorage.setItem(PREVIEW_DRAFT_STORAGE_KEY, manualPreviewText);
       el.previewText.classList.add("manual-edited");
       if (el.previewEditNote) {
-        el.previewEditNote.textContent = "Preview sedang diedit manual. Tombol Salin/WA akan memakai teks manual ini.";
+        el.previewEditNote.textContent = "Preview Text. Tombol Salin/WA akan memakai teks manual ini.";
       }
     }
 
     function resetPreviewToAuto() {
-      syncPreviewText({ forceAuto: true });
-      showToast("Preview kembali otomatis");
+      // Pakai Otomatis = hapus data dari Lanjutkan List,
+      // lalu tampilkan hanya produk yang ditambahkan dari web.
+      continuedListText = "";
+      manualPreviewText = "";
+      isPreviewManuallyEdited = false;
+      localStorage.removeItem(CONTINUE_LIST_STORAGE_KEY);
+      localStorage.removeItem(PREVIEW_DRAFT_STORAGE_KEY);
+      if (el.continueListInput) el.continueListInput.value = "";
+      if (el.previewText) {
+        el.previewText.value = generateMessage();
+        el.previewText.classList.remove("manual-edited");
+      }
+      if (el.previewEditNote) el.previewEditNote.textContent = "";
+      showToast("List lama dihapus, kembali ke list web");
     }
 
     function clearPreviewText() {
@@ -25504,6 +25576,62 @@
       if (el.previewText) el.previewText.classList.add("manual-edited");
       if (el.previewEditNote) el.previewEditNote.textContent = "Preview dikosongkan. Ketik atau paste teks manual di sini.";
       showToast("Preview dikosongkan");
+    }
+
+    function showContinueListModalElement() {
+      if (!el.continueListModal) return;
+      el.continueListModal.classList.remove("closing");
+      el.continueListModal.classList.add("show");
+    }
+
+    function hideContinueListModalElement() {
+      if (!el.continueListModal) return;
+      el.continueListModal.classList.remove("show");
+      el.continueListModal.classList.add("closing");
+      window.setTimeout(() => {
+        if (!el.continueListModal) return;
+        el.continueListModal.classList.remove("closing");
+      }, 260);
+    }
+
+    function openContinueListModal() {
+      if (!el.continueListModal || !el.continueListInput) return;
+      el.continueListInput.value = "";
+      showContinueListModalElement();
+      window.setTimeout(() => el.continueListInput.focus(), 120);
+    }
+
+    function closeContinueListModal() {
+      hideContinueListModalElement();
+    }
+
+    function saveContinueList() {
+      const text = normalizeContinueListText(el.continueListInput ? el.continueListInput.value : "");
+      if (!text) {
+        showToast("Paste list lama dulu");
+        return;
+      }
+
+      continuedListText = text;
+      localStorage.setItem(CONTINUE_LIST_STORAGE_KEY, continuedListText);
+      manualPreviewText = "";
+      isPreviewManuallyEdited = false;
+      localStorage.removeItem(PREVIEW_DRAFT_STORAGE_KEY);
+      closeContinueListModal();
+      syncPreviewText({ forceAuto: false });
+      showToast("List lama ditaruh paling atas");
+    }
+
+    function clearContinueList() {
+      continuedListText = "";
+      localStorage.removeItem(CONTINUE_LIST_STORAGE_KEY);
+      manualPreviewText = "";
+      isPreviewManuallyEdited = false;
+      localStorage.removeItem(PREVIEW_DRAFT_STORAGE_KEY);
+      if (el.continueListInput) el.continueListInput.value = "";
+      closeContinueListModal();
+      syncPreviewText({ forceAuto: false });
+      showToast("List lama dihapus");
     }
 
     function goToSupplierPicker(message) {
@@ -25699,9 +25827,10 @@
           : "List barang otomatis digrup per supplier.";
       }
       el.totalQty.textContent = "Total qty: " + qtyTotal;
-      el.summaryText.textContent = items.length === 0
-        ? "Belum ada barang habis."
-        : `${items.length} jenis barang habis dari ${supplierTotal} supplier dengan total quantity ${qtyTotal}.`;
+      if (el.summaryText) {
+        el.summaryText.textContent = "";
+        el.summaryText.style.display = "none";
+      }
 
       syncPreviewText();
       el.clearSearchBtn.style.display = cleanText(el.searchInput.value) ? "block" : "none";
@@ -26139,8 +26268,10 @@
       items = [];
       saveItems();
       manualPreviewText = "";
+      continuedListText = "";
       isPreviewManuallyEdited = false;
       localStorage.removeItem(PREVIEW_DRAFT_STORAGE_KEY);
+      localStorage.removeItem(CONTINUE_LIST_STORAGE_KEY);
       supplierContextFilter = "";
       closeResetModal();
       render();
@@ -26348,8 +26479,12 @@
     el.previewText.addEventListener("paste", () => {
       window.setTimeout(handlePreviewManualInput, 0);
     });
+    if (el.continueListBtn) el.continueListBtn.addEventListener("click", openContinueListModal);
     el.refreshPreviewBtn.addEventListener("click", resetPreviewToAuto);
     el.clearPreviewBtn.addEventListener("click", clearPreviewText);
+    if (el.cancelContinueListBtn) el.cancelContinueListBtn.addEventListener("click", closeContinueListModal);
+    if (el.saveContinueListBtn) el.saveContinueListBtn.addEventListener("click", saveContinueList);
+    if (el.clearContinueListBtn) el.clearContinueListBtn.addEventListener("click", clearContinueList);
     el.tabList.addEventListener("click", () => setTab("list"));
     el.tabPreview.addEventListener("click", () => setTab("preview"));
     el.cancelResetBtn.addEventListener("click", closeResetModal);
@@ -26396,6 +26531,12 @@
       if (event.target === el.addSupplierModal) closeAddSupplierModal();
     });
 
+    if (el.continueListModal) {
+      el.continueListModal.addEventListener("click", event => {
+        if (event.target === el.continueListModal) closeContinueListModal();
+      });
+    }
+
     if (el.addItemModal) {
       el.addItemModal.addEventListener("click", event => {
         if (event.target === el.addItemModal) closeAddItemModal();
@@ -26430,6 +26571,41 @@
     applyThemeMode(getSavedThemeMode());
     renderSupplierDropdown();
     openHomePage();
+
+    // Fallback agar tombol Lanjutkan List dan Batal tetap jalan walaupun browser memakai cache lama.
+    document.addEventListener("click", event => {
+      const continueBtn = event.target.closest ? event.target.closest("#continueListBtn") : null;
+      const cancelContinueBtn = event.target.closest ? event.target.closest("#cancelContinueListBtn") : null;
+      const refreshAutoBtn = event.target.closest ? event.target.closest("#refreshPreviewBtn") : null;
+
+      if (refreshAutoBtn) {
+        event.preventDefault();
+        resetPreviewToAuto();
+      }
+
+      if (continueBtn) {
+        event.preventDefault();
+        const modal = document.getElementById("continueListModal");
+        const input = document.getElementById("continueListInput");
+        if (input) input.value = "";
+        if (modal) {
+          modal.classList.remove("closing");
+          modal.classList.add("show");
+          window.setTimeout(() => input && input.focus(), 120);
+        }
+      }
+
+      if (cancelContinueBtn) {
+        event.preventDefault();
+        const modal = document.getElementById("continueListModal");
+        if (modal) {
+          modal.classList.remove("show");
+          modal.classList.add("closing");
+          window.setTimeout(() => modal.classList.remove("closing"), 260);
+        }
+      }
+    });
+
   </script>
 </body>
 </html>
