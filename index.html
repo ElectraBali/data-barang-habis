@@ -1606,11 +1606,11 @@
 
     .home-plus-search-btn {
       width: 100%;
-      min-height: 132px;
-      border: 2px dashed var(--primary);
-      background: var(--primary-soft);
-      color: var(--primary-dark);
-      border-radius: 22px;
+      min-height: 170px;
+      border: 1.5px dashed #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      border-radius: 24px;
       font-size: 42px;
       font-weight: 900;
       cursor: pointer;
@@ -1618,7 +1618,8 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
     }
 
     .home-plus-search-inner {
@@ -1644,9 +1645,9 @@
     .home-plus-search-btn:hover { transform: translateY(-1px); }
 
     body.dark-mode .home-plus-search-btn {
-      background: rgba(124, 58, 237, 0.18);
-      color: #ddd6fe;
-      border-color: rgba(196, 164, 255, 0.36);
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--text);
+      border-color: rgba(196, 164, 255, 0.22);
     }
 
     @media (max-width: 420px) {
@@ -1895,6 +1896,22 @@
 
   <script>
     const STORAGE_KEY = "barang_habis_pakai_toko_v15_qty0_supplier_context";
+    const PERSISTENT_ITEM_KEYS = [
+      STORAGE_KEY,
+      "barang_habis_persistent_items_v2",
+      "barang_habis_persistent_items_v1",
+      "barang_habis_last_saved_backup_v1",
+      "barang_habis_pakai_toko_v11_search_loading_keep_home",
+      "barang_habis_pakai_toko_v9_fix_supplier_context",
+      "barang_habis_pakai_toko_v8_supplier_focus",
+      "barang_habis_pakai_toko_v7_edit_supplier",
+      "barang_habis_pakai_toko_v6_no_category",
+      "barang_habis_pakai_toko_v5_qty_manual",
+      "barang_habis_pakai_toko_v4_supplier_menu",
+      "barang_habis_pakai_toko_v3_supplier",
+      "barang_habis_pakai_toko_v2",
+      "barang_habis_pakai_toko_v1"
+    ];
     const SUPPLIER_STORAGE_KEY = "barang_habis_custom_suppliers_v1";
     const CUSTOM_ITEM_STORAGE_KEY = "barang_habis_custom_items_v1";
     const THEME_STORAGE_KEY = "barang_habis_theme_mode_v1";
@@ -23729,6 +23746,7 @@
     };
 
     let items = loadItems();
+    if (items.length > 0) saveItems();
     let manualPreviewText = localStorage.getItem(PREVIEW_DRAFT_STORAGE_KEY) || "";
     let continuedListText = localStorage.getItem(CONTINUE_LIST_STORAGE_KEY) || "";
     let isPreviewManuallyEdited = Boolean(cleanText(manualPreviewText));
@@ -23831,30 +23849,43 @@
       };
     }
 
-    function loadItems() {
+    function readStoredItemsFrom(storage, key) {
       try {
-        const saved =
-          localStorage.getItem(STORAGE_KEY) ||
-          localStorage.getItem("barang_habis_pakai_toko_v11_search_loading_keep_home") ||
-          localStorage.getItem("barang_habis_pakai_toko_v9_fix_supplier_context") ||
-          localStorage.getItem("barang_habis_pakai_toko_v8_supplier_focus") ||
-          localStorage.getItem("barang_habis_pakai_toko_v7_edit_supplier") ||
-          localStorage.getItem("barang_habis_pakai_toko_v6_no_category") ||
-          localStorage.getItem("barang_habis_pakai_toko_v5_qty_manual") ||
-          localStorage.getItem("barang_habis_pakai_toko_v4_supplier_menu") ||
-          localStorage.getItem("barang_habis_pakai_toko_v3_supplier") ||
-          localStorage.getItem("barang_habis_pakai_toko_v2") ||
-          localStorage.getItem("barang_habis_pakai_toko_v1") ||
-          localStorage.getItem("barang_habis_last_saved_backup_v1");
-
-        const parsed = saved ? JSON.parse(saved) : [];
+        if (!storage) return [];
+        const raw = storage.getItem(key);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
         return Array.isArray(parsed)
           ? parsed.map(normalizeStoredItem).filter(item => item.name)
           : [];
       } catch (error) {
-        console.warn("Gagal membaca localStorage:", error);
+        console.warn("Gagal membaca data list dari", key, error);
         return [];
       }
+    }
+
+    function loadItems() {
+      const candidates = [];
+
+      PERSISTENT_ITEM_KEYS.forEach(key => {
+        candidates.push(readStoredItemsFrom(localStorage, key));
+        candidates.push(readStoredItemsFrom(sessionStorage, key));
+      });
+
+      try {
+        const windowNameData = window.name ? JSON.parse(window.name) : null;
+        if (windowNameData && Array.isArray(windowNameData.barangHabisItems)) {
+          candidates.push(windowNameData.barangHabisItems.map(normalizeStoredItem).filter(item => item.name));
+        }
+      } catch (error) {
+        // window.name mungkin dipakai halaman lain, abaikan kalau bukan JSON aplikasi ini.
+      }
+
+      const best = candidates
+        .filter(candidate => Array.isArray(candidate) && candidate.length > 0)
+        .sort((a, b) => b.length - a.length)[0];
+
+      return best || [];
     }
 
     function loadCustomSuppliers() {
@@ -23932,15 +23963,43 @@
 
 
     function saveItems() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-      localStorage.setItem("barang_habis_last_saved_backup_v1", JSON.stringify(items));
+      const safeItems = Array.isArray(items) ? items.map(normalizeStoredItem).filter(item => item.name) : [];
+      const payload = JSON.stringify(safeItems);
+
+      try {
+        localStorage.setItem(STORAGE_KEY, payload);
+        sessionStorage.setItem(STORAGE_KEY, payload);
+
+        if (safeItems.length > 0) {
+          PERSISTENT_ITEM_KEYS.forEach(key => {
+            localStorage.setItem(key, payload);
+            sessionStorage.setItem(key, payload);
+          });
+        }
+
+        window.name = JSON.stringify({ barangHabisItems: safeItems });
+      } catch (error) {
+        console.warn("Gagal menyimpan list:", error);
+      }
+    }
+
+    function clearSavedItems() {
+      try {
+        PERSISTENT_ITEM_KEYS.forEach(key => {
+          localStorage.removeItem(key);
+          sessionStorage.removeItem(key);
+        });
+        window.name = "";
+      } catch (error) {
+        console.warn("Gagal menghapus backup list:", error);
+      }
     }
 
     function keepItemsPersistent() {
       // Jaga-jaga kalau halaman tidak sengaja refresh/back/close.
-      // Data list tetap disimpan di browser dan akan dibaca lagi saat web dibuka.
+      // Kalau list kosong, jangan menimpa backup lama kecuali user menekan Reset.
       try {
-        if (Array.isArray(items)) saveItems();
+        if (Array.isArray(items) && items.length > 0) saveItems();
       } catch (error) {
         console.warn("Gagal menyimpan backup list:", error);
       }
@@ -26394,7 +26453,7 @@
 
     function resetAll() {
       items = [];
-      saveItems();
+      clearSavedItems();
       manualPreviewText = "";
       continuedListText = "";
       isPreviewManuallyEdited = false;
