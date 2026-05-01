@@ -24944,19 +24944,185 @@
       return items.some(item => cleanText(item.name).toLowerCase() === cleanName);
     }
 
+
+    /* =====================================================
+       SMART SEARCH / FUZZY SUGGESTION
+       Contoh: "b120pc" tetap menemukan "B120P-PC".
+       Berlaku untuk MASTER_ITEMS + barang custom.
+       ===================================================== */
+    function normalizeSearchText(value) {
+      return safeString(value)
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/&/g, " and ")
+        .replace(/[._/\\\-+(),:;[\]{}]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function compactSearchText(value) {
+      return normalizeSearchText(value).replace(/[^a-z0-9]/g, "");
+    }
+
+    function getSearchTokens(value) {
+      return normalizeSearchText(value).split(" ").filter(Boolean);
+    }
+
+    function isSubsequenceSearch(needle, haystack) {
+      if (!needle) return true;
+      if (!haystack) return false;
+
+      let i = 0;
+      for (let j = 0; j < haystack.length && i < needle.length; j += 1) {
+        if (needle[i] === haystack[j]) i += 1;
+      }
+      return i === needle.length;
+    }
+
+    function levenshteinDistanceLimited(a, b, maxDistance = 3) {
+      a = compactSearchText(a);
+      b = compactSearchText(b);
+
+      if (a === b) return 0;
+      if (!a) return b.length;
+      if (!b) return a.length;
+      if (Math.abs(a.length - b.length) > maxDistance) return maxDistance + 1;
+
+      let previous = Array.from({ length: b.length + 1 }, (_, index) => index);
+
+      for (let i = 1; i <= a.length; i += 1) {
+        const current = [i];
+        let rowMin = current[0];
+
+        for (let j = 1; j <= b.length; j += 1) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+          const value = Math.min(
+            previous[j] + 1,
+            current[j - 1] + 1,
+            previous[j - 1] + cost
+          );
+
+          current[j] = value;
+          if (value < rowMin) rowMin = value;
+        }
+
+        if (rowMin > maxDistance) return maxDistance + 1;
+        previous = current;
+      }
+
+      return previous[b.length];
+    }
+
+    function getSmartSearchScore(item, keyword) {
+      const rawKeyword = cleanText(keyword);
+      const query = normalizeSearchText(rawKeyword);
+      const compactQuery = compactSearchText(rawKeyword);
+      if (!query || !compactQuery) return -1;
+
+      const itemName = cleanText(item && item.name);
+      const itemCategory = cleanText(item && item.category);
+      const nameNorm = normalizeSearchText(itemName);
+      const categoryNorm = normalizeSearchText(itemCategory);
+      const nameCompact = compactSearchText(itemName);
+      const categoryCompact = compactSearchText(itemCategory);
+      const haystackNorm = `${nameNorm} ${categoryNorm}`.trim();
+      const haystackCompact = `${nameCompact}${categoryCompact}`;
+      const queryTokens = getSearchTokens(rawKeyword);
+      const nameTokens = getSearchTokens(itemName);
+      const allTokens = getSearchTokens(`${itemName} ${itemCategory}`);
+
+      let score = -1;
+
+      // Prioritas tertinggi: sama persis / diawali / mengandung.
+      if (nameNorm === query) score = Math.max(score, 1000);
+      if (nameCompact === compactQuery) score = Math.max(score, 980);
+      if (nameNorm.startsWith(query)) score = Math.max(score, 930);
+      if (nameCompact.startsWith(compactQuery)) score = Math.max(score, 910);
+      if (nameNorm.includes(query)) score = Math.max(score, 850);
+      if (nameCompact.includes(compactQuery)) score = Math.max(score, 830);
+
+      // Cocok per kata: "adaptor 12v" tetap kuat.
+      const allTokenMatch = queryTokens.length > 0 && queryTokens.every(token => {
+        const tokenCompact = compactSearchText(token);
+        return allTokens.some(itemToken => {
+          const itemTokenCompact = compactSearchText(itemToken);
+          return (
+            itemToken.includes(token) ||
+            itemTokenCompact.includes(tokenCompact) ||
+            tokenCompact.includes(itemTokenCompact)
+          );
+        });
+      });
+      if (allTokenMatch) score = Math.max(score, 780);
+
+      // Cocok tanpa pemisah/tanda baca: "b120pc" vs "b120p-pc".
+      if (isSubsequenceSearch(compactQuery, nameCompact)) {
+        const gapPenalty = Math.max(0, nameCompact.length - compactQuery.length);
+        score = Math.max(score, 700 - gapPenalty);
+      }
+
+      // Typo ringan untuk kode barang pendek/sedang.
+      const maxTypoDistance = compactQuery.length <= 5 ? 1 : compactQuery.length <= 10 ? 2 : 3;
+      const wholeDistance = levenshteinDistanceLimited(compactQuery, nameCompact, maxTypoDistance);
+      if (wholeDistance <= maxTypoDistance) {
+        score = Math.max(score, 660 - wholeDistance * 55);
+      }
+
+      // Typo ringan dibanding token masing-masing, misalnya salah 1 huruf di "robot", "hikvision", dll.
+      nameTokens.forEach(token => {
+        const tokenCompact = compactSearchText(token);
+        if (!tokenCompact) return;
+
+        if (tokenCompact.startsWith(compactQuery) || compactQuery.startsWith(tokenCompact)) {
+          score = Math.max(score, 620 - Math.abs(tokenCompact.length - compactQuery.length));
+        }
+
+        const tokenMaxDistance = compactQuery.length <= 5 ? 1 : 2;
+        const tokenDistance = levenshteinDistanceLimited(compactQuery, tokenCompact, tokenMaxDistance);
+        if (tokenDistance <= tokenMaxDistance) {
+          score = Math.max(score, 590 - tokenDistance * 45);
+        }
+      });
+
+      // Kategori tetap ikut dicari, tapi ranking di bawah nama barang.
+      if (categoryNorm.includes(query) || categoryCompact.includes(compactQuery)) {
+        score = Math.max(score, 430);
+      }
+
+      return score;
+    }
+
+    function getSmartSearchItems(sourceItems, keyword, limit = 100) {
+      const query = cleanText(keyword);
+      if (!query) return [];
+
+      return sourceItems
+        .map((item, index) => ({
+          item,
+          index,
+          score: getSmartSearchScore(item, query)
+        }))
+        .filter(result => result.score >= 0)
+        .sort((a, b) => {
+          if (b.score !== a.score) return b.score - a.score;
+          return cleanText(a.item.name).localeCompare(cleanText(b.item.name), "id", { numeric: true, sensitivity: "base" });
+        })
+        .slice(0, limit)
+        .map(result => result.item);
+    }
+
+
     function getFilteredCatalog() {
       if (currentPage !== "home") return [];
 
       const isInsideProductMenu = Boolean(selectedProductMenu);
       const source = isInsideProductMenu ? getProductMenuItems(selectedProductMenu) : getAllCatalogItems();
-      const keyword = cleanText(isInsideProductMenu ? menuSearchQuery : searchQuery).toLowerCase();
+      const keyword = cleanText(isInsideProductMenu ? menuSearchQuery : searchQuery);
       const limit = isInsideProductMenu ? 100 : 50;
 
       if (keyword) {
-        return source.filter(item =>
-          item.name.toLowerCase().includes(keyword) ||
-          item.category.toLowerCase().includes(keyword)
-        ).slice(0, limit);
+        return getSmartSearchItems(source, keyword, limit);
       }
 
       if (isInsideProductMenu) {
@@ -26543,17 +26709,12 @@
     }
 
     function getSuggestionItems(keyword) {
-      const rawKeyword = cleanText(keyword).toLowerCase();
+      const rawKeyword = cleanText(keyword);
       if (!rawKeyword) return [];
 
-      // Field search paling atas selalu GLOBAL: cari semua produk,
-      // walaupun sedang berada di menu DVR / HTB / KABEL / menu lainnya.
-      return getAllCatalogItems()
-        .filter(item =>
-          item.name.toLowerCase().includes(rawKeyword) ||
-          item.category.toLowerCase().includes(rawKeyword)
-        )
-        .slice(0, 100);
+      // Field search paling atas selalu GLOBAL dan sudah smart/fuzzy:
+      // contoh "b120pc" tetap bisa menemukan "B120P-PC".
+      return getSmartSearchItems(getAllCatalogItems(), rawKeyword, 100);
     }
 
     function getSuggestionSignature(suggestions) {
@@ -26565,13 +26726,11 @@
     }
 
     function isSearchCoveredByCurrentSuggestions(keyword) {
-      const cleanKeyword = cleanText(keyword).toLowerCase();
+      const cleanKeyword = cleanText(keyword);
       if (!cleanKeyword || currentSuggestionItems.length === 0) return false;
 
-      return currentSuggestionItems.some(item =>
-        item.name.toLowerCase().includes(cleanKeyword) ||
-        item.category.toLowerCase().includes(cleanKeyword)
-      );
+      // Dipakai untuk menghindari loading ulang kalau hasil yang tampil masih relevan.
+      return currentSuggestionItems.some(item => getSmartSearchScore(item, cleanKeyword) >= 0);
     }
 
     function getSuggestionSupplierContext() {
