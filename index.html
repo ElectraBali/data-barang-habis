@@ -24,14 +24,14 @@
 
 
     body.dark-mode {
-      --bg: #070314;
-      --card: #110827;
-      --text: #f8f7ff;
-      --muted: #b7a7d9;
-      --line: rgba(196, 164, 255, 0.18);
-      --primary: #7c3aed;
-      --primary-dark: #c4b5fd;
-      --primary-soft: rgba(124, 58, 237, 0.22);
+      --bg: #04121c;
+      --card: #071a24;
+      --text: #f3fbff;
+      --muted: #9fb8c7;
+      --line: rgba(148, 211, 232, 0.18);
+      --primary: #0891b2;
+      --primary-dark: #a5f3fc;
+      --primary-soft: rgba(8, 145, 178, 0.20);
       --danger: #fb7185;
       --danger-soft: rgba(244, 63, 94, 0.16);
       --shadow: 0 18px 45px rgba(0, 0, 0, 0.38);
@@ -39,22 +39,22 @@
 
     body.dark-mode {
       background:
-        radial-gradient(circle at 70% 0%, rgba(124, 58, 237, 0.32), transparent 34%),
-        radial-gradient(circle at 10% 25%, rgba(88, 28, 135, 0.30), transparent 30%),
-        #070314;
+        radial-gradient(circle at 70% 0%, rgba(8, 145, 178, 0.28), transparent 34%),
+        radial-gradient(circle at 10% 25%, rgba(5, 150, 105, 0.20), transparent 30%),
+        #04121c;
     }
 
     body.dark-mode .app {
       background:
-        radial-gradient(circle at 75% 0%, rgba(124, 58, 237, 0.26), transparent 36%),
-        linear-gradient(180deg, #09031a 0%, #070314 100%);
+        radial-gradient(circle at 75% 0%, rgba(8, 145, 178, 0.24), transparent 36%),
+        linear-gradient(180deg, #061824 0%, #04121c 100%);
     }
 
     body.dark-mode .header {
       background:
-        radial-gradient(circle at 75% 0%, rgba(168, 85, 247, 0.30), transparent 36%),
-        linear-gradient(135deg, #05020d 0%, #12042b 48%, #1d0b45 100%);
-      border-bottom: 1px solid rgba(196, 164, 255, 0.16);
+        radial-gradient(circle at 75% 0%, rgba(20, 184, 166, 0.22), transparent 36%),
+        linear-gradient(135deg, #03111d 0%, #083344 48%, #064e3b 100%);
+      border-bottom: 1px solid rgba(148, 211, 232, 0.16);
       box-shadow: 0 20px 55px rgba(0, 0, 0, 0.48);
     }
 
@@ -67,9 +67,9 @@
     body.dark-mode .empty,
     body.dark-mode .preview-text,
     body.dark-mode .bottom-bar {
-      background: rgba(17, 8, 39, 0.92);
+      background: rgba(7, 26, 36, 0.92);
       color: var(--text);
-      border-color: rgba(196, 164, 255, 0.18);
+      border-color: rgba(148, 211, 232, 0.18);
       box-shadow: 0 14px 34px rgba(0, 0, 0, 0.30);
     }
 
@@ -81,20 +81,20 @@
     body.dark-mode .qty-input {
       background: rgba(255, 255, 255, 0.08);
       color: var(--text);
-      border-color: rgba(196, 164, 255, 0.18);
+      border-color: rgba(148, 211, 232, 0.18);
     }
 
     body.dark-mode .search-box input::placeholder,
     body.dark-mode .menu-search-input::placeholder,
     body.dark-mode .edit-field::placeholder {
-      color: rgba(231, 222, 255, 0.62);
+      color: rgba(219, 245, 255, 0.62);
     }
 
     body.dark-mode .catalog-item:hover,
     body.dark-mode .suggestion-btn:hover,
     body.dark-mode .product-menu-card:hover {
-      background: rgba(124, 58, 237, 0.20);
-      border-color: rgba(196, 164, 255, 0.38);
+      background: rgba(8, 145, 178, 0.18);
+      border-color: rgba(125, 211, 252, 0.34);
     }
 
     body.dark-mode .product-menu-card,
@@ -104,12 +104,12 @@
     body.dark-mode .qty-control {
       background: rgba(255, 255, 255, 0.07);
       color: var(--text);
-      border-color: rgba(196, 164, 255, 0.18);
+      border-color: rgba(148, 211, 232, 0.18);
     }
 
     body.dark-mode .tab-btn.active,
     body.dark-mode .btn-primary {
-      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      background: linear-gradient(135deg, #0891b2, #059669);
       color: white;
       border-color: transparent;
     }
@@ -119,15 +119,15 @@
     body.dark-mode .menu-search-clear {
       background: rgba(255, 255, 255, 0.10);
       color: var(--text);
-      border-color: rgba(196, 164, 255, 0.18);
+      border-color: rgba(148, 211, 232, 0.18);
     }
 
     body.dark-mode .supplier-title,
     body.dark-mode .summary-box,
     body.dark-mode .supplier-chip {
-      background: rgba(124, 58, 237, 0.16);
-      color: #ddd6fe;
-      border-color: rgba(196, 164, 255, 0.25);
+      background: rgba(8, 145, 178, 0.15);
+      color: #cffafe;
+      border-color: rgba(125, 211, 252, 0.24);
     }
 
     body.dark-mode .supplier-title span,
@@ -142,7 +142,7 @@
 
     body.dark-mode .bottom-bar {
       backdrop-filter: blur(18px);
-      background: rgba(7, 3, 20, 0.82);
+      background: rgba(4, 18, 28, 0.84);
     }
 
     .theme-toggle-btn {
@@ -165,10 +165,91 @@
     .theme-toggle-btn:hover { transform: translateY(-1px); background: rgba(255, 255, 255, 0.22); }
 
     body.dark-mode .theme-toggle-btn {
-      background: linear-gradient(135deg, rgba(124, 58, 237, 0.95), rgba(168, 85, 247, 0.85));
-      border-color: rgba(216, 180, 254, 0.42);
-      box-shadow: 0 0 26px rgba(124, 58, 237, 0.42);
+      background: linear-gradient(135deg, rgba(8, 145, 178, 0.95), rgba(5, 150, 105, 0.86));
+      border-color: rgba(165, 243, 252, 0.40);
+      box-shadow: 0 0 26px rgba(8, 145, 178, 0.34);
     }
+
+    body.dark-mode.theme-ocean {
+      --primary: #0284c7;
+      --primary-dark: #bae6fd;
+      --primary-soft: rgba(14, 165, 233, 0.20);
+      --line: rgba(186, 230, 253, 0.18);
+      --muted: #a7c7df;
+    }
+
+    body.dark-mode.theme-ocean,
+    body.dark-mode.theme-ocean .app {
+      background:
+        radial-gradient(circle at 72% 0%, rgba(14, 165, 233, 0.28), transparent 34%),
+        radial-gradient(circle at 8% 22%, rgba(37, 99, 235, 0.22), transparent 30%),
+        #03111f;
+    }
+
+    body.dark-mode.theme-ocean .header {
+      background: linear-gradient(135deg, #02111f 0%, #082f49 52%, #075985 100%);
+    }
+
+    body.dark-mode.theme-emerald {
+      --primary: #059669;
+      --primary-dark: #bbf7d0;
+      --primary-soft: rgba(16, 185, 129, 0.20);
+      --line: rgba(187, 247, 208, 0.18);
+      --muted: #abcbbd;
+    }
+
+    body.dark-mode.theme-emerald,
+    body.dark-mode.theme-emerald .app {
+      background:
+        radial-gradient(circle at 72% 0%, rgba(16, 185, 129, 0.24), transparent 34%),
+        radial-gradient(circle at 8% 22%, rgba(5, 150, 105, 0.20), transparent 30%),
+        #03140f;
+    }
+
+    body.dark-mode.theme-emerald .header {
+      background: linear-gradient(135deg, #02130e 0%, #064e3b 52%, #047857 100%);
+    }
+
+    .theme-choice-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    .theme-choice-btn {
+      min-height: 72px;
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      color: var(--text);
+      border-radius: 16px;
+      padding: 12px;
+      cursor: pointer;
+      text-align: left;
+      font-weight: 900;
+      display: grid;
+      gap: 4px;
+    }
+
+    .theme-choice-btn span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .theme-choice-btn.active {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      box-shadow: 0 0 0 4px var(--primary-soft);
+    }
+
+    body.dark-mode .theme-choice-btn {
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--text);
+      border-color: rgba(148, 211, 232, 0.18);
+    }
+
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     body {
@@ -553,19 +634,19 @@
     body.dark-mode .suggestion-loading,
     body.dark-mode .catalog-skeleton {
       background: rgba(255, 255, 255, 0.06);
-      border-color: rgba(196, 164, 255, 0.18);
+      border-color: rgba(148, 211, 232, 0.18);
       box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
     }
 
     body.dark-mode .skeleton {
-      background: rgba(196, 164, 255, 0.14);
+      background: rgba(125, 211, 252, 0.12);
     }
 
     body.dark-mode .skeleton::after {
       background: linear-gradient(
         90deg,
         transparent,
-        rgba(216, 180, 254, 0.22),
+        rgba(125, 211, 252, 0.18),
         transparent
       );
     }
@@ -723,9 +804,9 @@
     .top-add-item-btn:hover { transform: translateY(-1px); }
 
     body.dark-mode .top-add-item-btn {
-      background: rgba(124, 58, 237, 0.18);
-      color: #ddd6fe;
-      border-color: rgba(196, 164, 255, 0.34);
+      background: rgba(8, 145, 178, 0.18);
+      color: #cffafe;
+      border-color: rgba(125, 211, 252, 0.30);
     }
 
     .quick-btn {
@@ -1076,7 +1157,7 @@
       padding: 0;
     }
 
-    .supplier-add-btn { background: var(--primary); font-size: 21px; }
+    .supplier-add-btn { background: #334155; font-size: 21px; }
     .supplier-edit-btn { background: #0f172a; }
 
     .item {
@@ -1260,7 +1341,7 @@
     body.dark-mode .preview-small-btn {
       background: rgba(255, 255, 255, 0.07);
       color: var(--text);
-      border-color: rgba(196, 164, 255, 0.18);
+      border-color: rgba(148, 211, 232, 0.18);
     }
 
     body.dark-mode .preview-small-btn.primary,
@@ -1268,13 +1349,13 @@
     body.dark-mode .preview-editor-tools #refreshPreviewBtn {
       background: rgba(255, 255, 255, 0.07);
       color: var(--text);
-      border-color: rgba(196, 164, 255, 0.18);
+      border-color: rgba(148, 211, 232, 0.18);
     }
 
     body.dark-mode .preview-text.manual-edited {
       background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(196, 164, 255, 0.38);
-      box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.18);
+      border-color: rgba(125, 211, 252, 0.34);
+      box-shadow: 0 0 0 4px rgba(8, 145, 178, 0.18);
     }
 
     .bottom-bar {
@@ -1477,8 +1558,8 @@
       font-size: 11px;
       font-weight: 900;
       cursor: pointer;
-      margin: 0 0 12px;
-      display: inline-flex;
+      margin: 0 0 12px auto;
+      display: flex;
       align-items: center;
       justify-content: center;
       gap: 5px;
@@ -1491,9 +1572,9 @@
     .empty-add-list-btn {
       width: 58px;
       height: 58px;
-      border: 1.5px dashed var(--primary);
-      background: var(--primary-soft);
-      color: var(--primary-dark);
+      border: 1.5px dashed #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
       border-radius: 20px;
       font-size: 34px;
       font-weight: 900;
@@ -1519,13 +1600,13 @@
     body.dark-mode .wa-add-number-btn {
       background: rgba(255, 255, 255, 0.07);
       color: var(--text);
-      border-color: rgba(196, 164, 255, 0.18);
+      border-color: rgba(148, 211, 232, 0.18);
     }
 
     body.dark-mode .empty-add-list-btn {
-      background: rgba(124, 58, 237, 0.18);
-      color: #ddd6fe;
-      border-color: rgba(196, 164, 255, 0.34);
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--text);
+      border-color: rgba(148, 211, 232, 0.22);
     }
 
     #addWaNumberModal { z-index: 1100; }
@@ -1580,8 +1661,8 @@
 
     body.dark-mode .supplier-menu-edit-btn {
       background: rgba(255, 255, 255, 0.07);
-      color: #ddd6fe;
-      border-color: rgba(196, 164, 255, 0.18);
+      color: #cffafe;
+      border-color: rgba(148, 211, 232, 0.18);
     }
 
     .supplier-menu-action-row {
@@ -1604,7 +1685,7 @@
     }
 
     body.dark-mode .supplier-edit-mode-btn.active {
-      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      background: linear-gradient(135deg, #0891b2, #059669);
       color: white;
       border-color: transparent;
     }
@@ -1664,14 +1745,14 @@
     body.dark-mode .supplier-picker-btn {
       background: rgba(255, 255, 255, 0.07);
       color: var(--text);
-      border-color: rgba(196, 164, 255, 0.18);
+      border-color: rgba(148, 211, 232, 0.18);
     }
 
     body.dark-mode .supplier-picker-btn.active,
     body.dark-mode .supplier-picker-btn.custom {
-      background: rgba(124, 58, 237, 0.18);
-      color: #ddd6fe;
-      border-color: rgba(196, 164, 255, 0.34);
+      background: rgba(8, 145, 178, 0.18);
+      color: #cffafe;
+      border-color: rgba(125, 211, 252, 0.30);
     }
 
     .supplier-picker-row {
@@ -1711,12 +1792,12 @@
 
     body.dark-mode .supplier-picker-edit-btn {
       background: rgba(255, 255, 255, 0.07);
-      color: #ddd6fe;
-      border-color: rgba(196, 164, 255, 0.18);
+      color: #cffafe;
+      border-color: rgba(148, 211, 232, 0.18);
     }
 
     body.dark-mode .supplier-picker-edit-mode-btn.active {
-      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      background: linear-gradient(135deg, #0891b2, #059669);
       color: white;
       border-color: transparent;
     }
@@ -1765,7 +1846,7 @@
     body.dark-mode .home-plus-search-btn {
       background: rgba(255, 255, 255, 0.07);
       color: var(--text);
-      border-color: rgba(196, 164, 255, 0.22);
+      border-color: rgba(148, 211, 232, 0.22);
     }
 
     @media (max-width: 420px) {
@@ -1938,6 +2019,22 @@
   </div>
 
   <div id="toast" class="toast">Berhasil</div>
+
+  <div id="themeModal" class="modal-backdrop">
+    <div class="modal">
+      <h3>Pilih tema</h3>
+      <p>Pilih tampilan aplikasi. Tema akan otomatis tersimpan.</p>
+      <div class="theme-choice-list">
+        <button class="theme-choice-btn" type="button" data-theme="light">☀️ Terang<span>Mode putih bersih</span></button>
+        <button class="theme-choice-btn" type="button" data-theme="dark">🌙 Gelap Biru Hijau<span>Dark mode utama</span></button>
+        <button class="theme-choice-btn" type="button" data-theme="ocean">🌊 Gelap Biru<span>Nuansa biru malam</span></button>
+        <button class="theme-choice-btn" type="button" data-theme="emerald">🌿 Gelap Hijau<span>Nuansa hijau gelap</span></button>
+      </div>
+      <div class="modal-actions" style="grid-template-columns:1fr;">
+        <button id="closeThemeModalBtn" class="btn btn-soft" type="button">Tutup</button>
+      </div>
+    </div>
+  </div>
 
   <div id="confirmModal" class="modal-backdrop">
     <div class="modal">
@@ -23864,6 +23961,8 @@
       totalItems: $("totalItems"),
       totalBadge: $("totalBadge"),
       themeToggleBtn: $("themeToggleBtn"),
+      themeModal: $("themeModal"),
+      closeThemeModalBtn: $("closeThemeModalBtn"),
       suggestionTopActions: $("suggestionTopActions"),
       suggestionViewListBtn: $("suggestionViewListBtn"),
       suggestionChangeSupplierBtn: $("suggestionChangeSupplierBtn"),
@@ -24199,24 +24298,49 @@
     }
 
 
+    function getThemeLabel(mode) {
+      if (mode === "dark") return "Gelap Biru Hijau";
+      if (mode === "ocean") return "Gelap Biru";
+      if (mode === "emerald") return "Gelap Hijau";
+      return "Terang";
+    }
+
     function applyThemeMode(mode) {
-      const isDark = mode === "dark";
-      document.body.classList.toggle("dark-mode", isDark);
-      el.themeToggleBtn.textContent = isDark ? "☀️" : "🌙";
-      el.themeToggleBtn.title = isDark ? "Matikan dark mode" : "Aktifkan dark mode";
-      el.themeToggleBtn.setAttribute("aria-label", isDark ? "Matikan dark mode" : "Aktifkan dark mode");
+      const finalMode = ["light", "dark", "ocean", "emerald"].includes(mode) ? mode : "light";
+      document.body.classList.remove("dark-mode", "theme-ocean", "theme-emerald");
+      if (finalMode !== "light") document.body.classList.add("dark-mode");
+      if (finalMode === "ocean") document.body.classList.add("theme-ocean");
+      if (finalMode === "emerald") document.body.classList.add("theme-emerald");
+      if (el.themeToggleBtn) {
+        el.themeToggleBtn.textContent = "🎨";
+        el.themeToggleBtn.title = "Pilih tema";
+        el.themeToggleBtn.setAttribute("aria-label", "Pilih tema");
+      }
+      document.querySelectorAll(".theme-choice-btn[data-theme]").forEach(button => {
+        button.classList.toggle("active", button.dataset.theme === finalMode);
+      });
     }
 
     function getSavedThemeMode() {
       const savedMode = localStorage.getItem(THEME_STORAGE_KEY);
-      return savedMode === "dark" ? "dark" : "light";
+      return ["light", "dark", "ocean", "emerald"].includes(savedMode) ? savedMode : "light";
     }
 
-    function toggleThemeMode() {
-      const nextMode = document.body.classList.contains("dark-mode") ? "light" : "dark";
-      localStorage.setItem(THEME_STORAGE_KEY, nextMode);
-      applyThemeMode(nextMode);
-      showToast(nextMode === "dark" ? "Dark mode aktif" : "Light mode aktif");
+    function openThemeModal() {
+      applyThemeMode(getSavedThemeMode());
+      openSmoothModal(el.themeModal);
+    }
+
+    function closeThemeModal() {
+      closeSmoothModal(el.themeModal);
+    }
+
+    function chooseThemeMode(mode) {
+      const finalMode = ["light", "dark", "ocean", "emerald"].includes(mode) ? mode : "light";
+      localStorage.setItem(THEME_STORAGE_KEY, finalMode);
+      applyThemeMode(finalMode);
+      closeThemeModal();
+      showToast(`Tema ${getThemeLabel(finalMode)} aktif`);
     }
 
     function showSearchOverlay() {
@@ -26981,7 +27105,11 @@
       });
     }
 
-    el.themeToggleBtn.addEventListener("click", toggleThemeMode);
+    el.themeToggleBtn.addEventListener("click", openThemeModal);
+    if (el.closeThemeModalBtn) el.closeThemeModalBtn.addEventListener("click", closeThemeModal);
+    document.querySelectorAll(".theme-choice-btn[data-theme]").forEach(button => {
+      button.addEventListener("click", () => chooseThemeMode(button.dataset.theme || "light"));
+    });
 
     el.copyBtn.addEventListener("click", copyList);
     el.waBtn.addEventListener("click", sendToWhatsApp);
