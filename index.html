@@ -2518,7 +2518,7 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "barang_habis_pakai_toko_v15_qty0_supplier_context";
+    const STORAGE_KEY = "barang_habis_pakai_toko_v16_supplier_route_focus_fix";
     const PERSISTENT_ITEM_KEYS = [
       STORAGE_KEY,
       "barang_habis_persistent_items_v2",
@@ -24438,6 +24438,7 @@
     let listSupplierModalFocusSearchOnPick = false;
     let isPointerInsideSearchLayer = false;
     let suppressSearchAutoOpenUntil = 0;
+    let blockSearchFieldActivationUntil = 0;
 
     const SEARCH_DELAY = 650;
     const SUGGESTION_DELAY = 650;
@@ -24825,8 +24826,10 @@
     }
 
     function focusSearchAfterSupplierPick() {
-      // Setelah supplier dipilih/ganti lewat modal, tetap di halaman saat ini
-      // lalu langsung arahkan user ke field pencarian.
+      // Alur ganti supplier manual: setelah user pilih supplier dari modal,
+      // field search sengaja difokuskan supaya keyboard HP muncul.
+      blockSearchFieldActivationUntil = 0;
+      suppressSearchAutoOpenUntil = 0;
       closeSuggestionsCurtainUp();
       isSupplierMenuOpen = false;
       if (el.supplierDropdown) el.supplierDropdown.classList.remove("show");
@@ -24875,6 +24878,14 @@
 
     function isSearchAutoOpenSuppressed() {
       return Date.now() < suppressSearchAutoOpenUntil;
+    }
+
+    function blockSearchFieldActivation(duration = 1800) {
+      blockSearchFieldActivationUntil = Date.now() + duration;
+    }
+
+    function isSearchFieldActivationBlocked() {
+      return Date.now() < blockSearchFieldActivationUntil;
     }
 
     function closeSearchWithoutFocus() {
@@ -24970,7 +24981,8 @@
       if (success) {
         // Setelah user memilih supplier untuk barang yang mau ditambahkan pertama kali,
         // langsung arahkan ke halaman list barang. Jangan buka / fokus search lagi.
-        suppressSearchAutoOpen(1600);
+        suppressSearchAutoOpen(2200);
+        blockSearchFieldActivation(2200);
         currentPage = "added";
         activeTab = "list";
         supplierContextFilter = supplier;
@@ -27722,9 +27734,9 @@
     el.searchInput.addEventListener("blur", hideSuggestionsBecauseSearchLostFocus);
 
     el.searchInput.addEventListener("focus", event => {
-      // Setelah pertama kali pilih supplier dari tombol +, jangan biarkan browser
-      // mengembalikan fokus otomatis ke field search saat masuk halaman list.
-      if (isSearchAutoOpenSuppressed() && currentPage === "added") {
+      // Setelah alur tambah barang pertama kali memilih supplier, halaman hanya
+      // diarahkan ke Catatan Barang Habis. Jangan aktifkan focus/click search otomatis.
+      if ((isSearchAutoOpenSuppressed() || isSearchFieldActivationBlocked()) && currentPage === "added") {
         event.preventDefault();
         closeSearchWithoutFocus();
         return;
@@ -27735,7 +27747,7 @@
     });
 
     el.searchInput.addEventListener("click", event => {
-      if (isSearchAutoOpenSuppressed() && currentPage === "added") {
+      if ((isSearchAutoOpenSuppressed() || isSearchFieldActivationBlocked()) && currentPage === "added") {
         event.preventDefault();
         closeSearchWithoutFocus();
         return;
