@@ -2209,11 +2209,11 @@
        Pemilihan/ganti supplier sekarang hanya lewat modal supplier. */
     #supplierDropdown { display: none !important; }
 
-    /* Supplier dipilih hanya saat user klik tambah item ke catatan */
+    /* Supplier dipilih hanya saat user klik tambah item ke catatan.
+       Tombol ganti supplier di halaman list tetap ditampilkan. */
     #quickSupplierBtn,
     #selectedSupplierChip,
-    #supplierDropdown,
-    #listChangeSupplierBtn {
+    #supplierDropdown {
       display: none !important;
     }
 
@@ -24918,6 +24918,7 @@
         renderSummary();
         renderCatalog();
         renderList();
+        updateListChangeSupplierButton();
         updateHeader();
         showToast(`Barang masuk ke ${supplier}`);
       }
@@ -25075,8 +25076,8 @@
       const keepPage = options.keepPage !== false;
       const pageBeforeOpen = currentPage;
       const supplierForContext = cleanText(options.supplier || "");
-
-      markHomePlusUsedForSession();
+      // Tombol + halaman depan tetap terlihat setelah diklik.
+      // Status plus sudah dipakai hanya ditandai saat barang benar-benar ditambahkan.
 
       if (!keepPage && currentPage !== "home") {
         openHomePage();
@@ -25114,9 +25115,7 @@
         el.addedPage.style.display = "block";
         el.searchBox.classList.remove("hidden");
         el.headerActions.classList.add("list-mode");
-        // Tombol + di halaman list hanya memicu search, bukan pilihan supplier.
-        el.listChangeSupplierBtn.classList.remove("show");
-        el.listChangeSupplierBtn.style.display = "none";
+        // Tombol ganti supplier di halaman list tetap muncul.
         el.topResetBtn.classList.add("show");
         el.viewAddedLabel.textContent = "← Kembali";
         renderSummary();
@@ -25735,13 +25734,15 @@
 
       if (parsedQty === null) { showToast("Qty tidak valid"); return false; }
       if (!requestedName) { showToast("Cari atau pilih barang dulu"); el.searchInput.focus(); return false; }
-
       /*
         Supplier tidak ditampilkan di awal.
-        Saat user klik tombol tambah item, baru munculkan modal pilih supplier.
+        Saat user klik tambah barang:
+        - kalau belum ada supplier aktif, baru munculkan modal pilih supplier.
+        - kalau supplier sudah dipilih manual/sebelumnya, langsung pakai supplier aktif tanpa modal.
         completePendingAddAfterSupplier() memanggil addItem lagi dengan skipSupplierPicker=true.
       */
-      if (!options.skipSupplierPicker) {
+      const activeSupplierForAdd = getCurrentSupplier() || cleanText(supplierContextFilter);
+      if (!options.skipSupplierPicker && !activeSupplierForAdd) {
         setPendingAddItem(requestedName, parsedQty);
         isSupplierMenuOpen = false;
         isSupplierEditMode = false;
@@ -25756,7 +25757,6 @@
         return false;
       }
 
-      const activeSupplierForAdd = getCurrentSupplier() || cleanText(supplierContextFilter);
       if (!activeSupplierForAdd) {
         setPendingAddItem(requestedName, parsedQty);
         renderListSupplierPicker();
@@ -26897,8 +26897,9 @@
       el.listChangeSupplierBtn.title = hasSupplier ? "Ganti supplier aktif untuk tambah catatan berikutnya" : "Pilih supplier dulu";
       el.listChangeSupplierBtn.setAttribute("aria-label", hasSupplier ? "Ganti supplier" : "Pilih supplier");
 
-      el.listChangeSupplierBtn.classList.remove("show");
-      el.listChangeSupplierBtn.style.display = "none";
+      const shouldShow = currentPage === "added";
+      el.listChangeSupplierBtn.classList.toggle("show", shouldShow);
+      el.listChangeSupplierBtn.style.display = shouldShow ? "inline-flex" : "none";
       if (el.listAddSupplierBtn) {
         el.listAddSupplierBtn.classList.toggle("show", currentPage === "added");
         el.listAddSupplierBtn.style.display = currentPage === "added" ? "inline-flex" : "none";
@@ -27251,6 +27252,7 @@
       renderSelectedSupplier();
       renderCatalog();
       renderList();
+      updateListChangeSupplierButton();
       renderSuggestions();
     }
 
