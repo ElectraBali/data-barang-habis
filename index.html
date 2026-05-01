@@ -2092,6 +2092,104 @@
       box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28) !important;
     }
 
+
+    /* =====================================================
+       CATATAN BARANG HABIS - STYLE KONSISTEN DENGAN PREVIEW TEXT
+       Berlaku untuk semua tema. Kartu barang, supplier, dan qty +/-
+       dibuat memakai warna field preview sebelum diklik.
+       ===================================================== */
+    #addedPage #listSection .supplier-title,
+    #addedPage #listSection .item,
+    #addedPage #listSection .qty-control {
+      background: #f8fafc !important;
+      color: var(--text) !important;
+      border: 1px solid var(--line) !important;
+      box-shadow: none !important;
+    }
+
+    #addedPage #listSection .supplier-title { border-radius: 16px !important; }
+    #addedPage #listSection .item { border-radius: 18px !important; }
+
+    #addedPage #listSection .qty-control {
+      background: #f8fafc !important;
+      border-radius: 999px !important;
+      overflow: hidden !important;
+    }
+
+    #addedPage #listSection .qty-btn,
+    #addedPage #listSection .qty-input {
+      background: transparent !important;
+      color: var(--text) !important;
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+
+    #addedPage #listSection .qty-input:focus,
+    #addedPage #listSection .qty-control:focus-within {
+      background: #ffffff !important;
+      border-color: var(--primary) !important;
+      box-shadow: 0 0 0 4px var(--primary-soft) !important;
+    }
+
+    #addedPage #listSection .item:hover,
+    #addedPage #listSection .supplier-title:hover { border-color: var(--primary) !important; }
+
+    #addedPage #listSection .supplier-title strong,
+    #addedPage #listSection .supplier-title-name,
+    #addedPage #listSection .item-name { color: var(--text) !important; }
+
+    #addedPage #listSection .supplier-title span,
+    #addedPage #listSection .item-meta { color: var(--muted) !important; }
+
+    body.dark-mode #addedPage #listSection .supplier-title,
+    body.dark-mode #addedPage #listSection .item,
+    body.dark-mode #addedPage #listSection .qty-control,
+    body.dark-mode.theme-ocean #addedPage #listSection .supplier-title,
+    body.dark-mode.theme-ocean #addedPage #listSection .item,
+    body.dark-mode.theme-ocean #addedPage #listSection .qty-control,
+    body.dark-mode.theme-emerald #addedPage #listSection .supplier-title,
+    body.dark-mode.theme-emerald #addedPage #listSection .item,
+    body.dark-mode.theme-emerald #addedPage #listSection .qty-control {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: var(--text) !important;
+      border-color: rgba(148, 211, 232, 0.18) !important;
+      box-shadow: none !important;
+    }
+
+    body.dark-mode #addedPage #listSection .qty-input:focus,
+    body.dark-mode #addedPage #listSection .qty-control:focus-within,
+    body.dark-mode.theme-ocean #addedPage #listSection .qty-input:focus,
+    body.dark-mode.theme-ocean #addedPage #listSection .qty-control:focus-within,
+    body.dark-mode.theme-emerald #addedPage #listSection .qty-input:focus,
+    body.dark-mode.theme-emerald #addedPage #listSection .qty-control:focus-within {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border-color: rgba(125, 211, 252, 0.34) !important;
+      box-shadow: 0 0 0 4px rgba(8, 145, 178, 0.18) !important;
+    }
+
+    body.theme-gray #addedPage #listSection .supplier-title,
+    body.theme-gray #addedPage #listSection .item,
+    body.theme-gray #addedPage #listSection .qty-control {
+      background: #1f2937 !important;
+      color: var(--text) !important;
+      border-color: rgba(156, 163, 175, 0.40) !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-gray #addedPage #listSection .qty-btn,
+    body.theme-gray #addedPage #listSection .qty-input {
+      background: transparent !important;
+      color: var(--text) !important;
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-gray #addedPage #listSection .qty-input:focus,
+    body.theme-gray #addedPage #listSection .qty-control:focus-within {
+      background: #111827 !important;
+      border-color: #9ca3af !important;
+      box-shadow: 0 0 0 4px rgba(107, 114, 128, 0.28) !important;
+    }
   </style>
 </head>
 
@@ -24265,9 +24363,9 @@
     let savedHomeMenuState = null;
     let listSupplierModalReturnToSuggestion = false;
 
-    const SEARCH_DELAY = 2000;
-    const SUGGESTION_DELAY = 990;
-    const LOADING_DELAY_BEFORE_SHOW = 400;
+    const SEARCH_DELAY = 650;
+    const SUGGESTION_DELAY = 650;
+    const LOADING_DELAY_BEFORE_SHOW = 350;
 
     function openSmoothModal(modalEl) {
       if (!modalEl) return;
@@ -27042,6 +27140,7 @@
 
     function handleSearchInput() {
       const value = cleanText(el.searchInput.value);
+
       if (value && keepSuggestionsAfterClear) {
         keepSuggestionsAfterClear = false;
         lastSuggestionSignature = "";
@@ -27049,9 +27148,9 @@
         closeSuggestionsCurtainUp();
       }
 
-      // Jangan paksa pilih supplier saat mulai mengetik di halaman daftar.
-      // Supplier baru diminta saat tombol + Tambah ditekan, supaya barang yang dipilih bisa disimpan sebagai pending.
-
+      // Jangan hitung fuzzy search saat user masih mengetik.
+      // Katalog barang besar, jadi pencarian baru dieksekusi setelah input diam sebentar (debounce).
+      clearTimeout(searchTimer);
       clearTimeout(suggestionTimer);
       clearTimeout(suggestionLoadingTimer);
 
@@ -27065,6 +27164,7 @@
         isSearching = false;
         isSuggestionLoading = false;
         el.searchWarmup.classList.remove("show");
+        el.searchStatus.classList.remove("show");
 
         if (el.searchSuggestions.classList.contains("show") && currentSuggestionItems.length > 0) {
           keepSuggestionsAfterClear = true;
@@ -27083,65 +27183,41 @@
         return;
       }
 
-      // Field search paling atas selalu global semua produk.
-      // Search khusus menu pakai field bawah (.menu-search-input).
+      // Simpan teks yang sedang diketik, tapi jangan render hasil dulu.
+      // renderSuggestions() baru dipanggil oleh timer di bawah.
       searchQuery = value;
-
-      const nextSuggestions = getSuggestionItems(value);
-      const nextSignature = getSuggestionSignature(nextSuggestions);
-      const suggestionIsAlreadyVisible =
-        el.searchSuggestions.classList.contains("show") &&
-        nextSuggestions.length > 0 &&
-        isSearchCoveredByCurrentSuggestions(value);
-
-      if (suggestionIsAlreadyVisible) {
-        isSuggestionLoading = false;
-        el.searchWarmup.classList.remove("show");
-        renderSuggestions();
-        renderSummary();
-        return;
-      }
-
-      if (nextSignature === lastSuggestionSignature && el.searchSuggestions.classList.contains("show")) {
-        isSuggestionLoading = false;
-        el.searchWarmup.classList.remove("show");
-        renderSuggestions();
-        renderSummary();
-        return;
-      }
-
+      isSearching = false;
       isSuggestionLoading = false;
-      el.searchWarmup.classList.remove("show");
       renderSummary();
+      updateSearchOverlay();
 
       suggestionLoadingTimer = setTimeout(() => {
         const latestValue = cleanText(el.searchInput.value);
         if (!latestValue) return;
-
-        const latestSuggestions = getSuggestionItems(latestValue);
-        const latestSignature = getSuggestionSignature(latestSuggestions);
-        const latestAlreadyVisible =
-          latestSuggestions.length > 0 &&
-          isSearchCoveredByCurrentSuggestions(latestValue) &&
-          el.searchSuggestions.classList.contains("show");
-
-        if (latestAlreadyVisible || latestSignature === lastSuggestionSignature) {
-          isSuggestionLoading = false;
-          renderSuggestions();
-          renderSummary();
-          return;
-        }
-
         isSuggestionLoading = true;
         renderSuggestionSkeleton();
         renderSummary();
       }, LOADING_DELAY_BEFORE_SHOW);
 
       suggestionTimer = setTimeout(() => {
+        const latestValue = cleanText(el.searchInput.value);
         clearTimeout(suggestionLoadingTimer);
+
+        if (!latestValue) {
+          searchQuery = "";
+          isSuggestionLoading = false;
+          lastSuggestionSignature = "";
+          currentSuggestionItems = [];
+          closeSuggestionsCurtainUp();
+          renderSummary();
+          return;
+        }
+
+        searchQuery = latestValue;
         isSuggestionLoading = false;
         renderSuggestions();
         renderSummary();
+        updateSearchOverlay();
       }, SUGGESTION_DELAY);
     }
 
