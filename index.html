@@ -819,6 +819,28 @@
     .open-product-menu-btn { display: none; }
     .open-product-menu-btn.show { display: inline-flex; }
 
+
+    /* Tombol + di Catatan Barang Habis dibuat polos seperti tombol tambah halaman awal */
+    #addedPage .supplier-add-btn {
+      width: 34px;
+      height: 34px;
+      border: 1.5px dashed #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      border-radius: 14px;
+      font-size: 22px;
+      font-weight: 900;
+      box-shadow: none;
+    }
+
+    body.dark-mode #addedPage .supplier-add-btn,
+    body.theme-gray #addedPage .supplier-add-btn {
+      background: rgba(255, 255, 255, 0.07) !important;
+      color: var(--text) !important;
+      border-color: rgba(148, 211, 232, 0.22) !important;
+      box-shadow: none !important;
+    }
+
     .top-change-supplier-btn {
       display: none;
       background: rgba(255, 255, 255, 0.16);
@@ -25285,7 +25307,13 @@
       if (el.quickHead) el.quickHead.style.display = shouldShowMenuArea ? "flex" : "none";
       if (el.supplierDropdown) el.supplierDropdown.style.display = shouldShowMenuArea ? "" : "none";
       if (el.catalogResults) el.catalogResults.style.display = shouldShowMenuArea ? "" : "none";
-      if (el.openProductMenuBtn) el.openProductMenuBtn.classList.toggle("show", currentPage === "home");
+      if (el.openProductMenuBtn) {
+        const isInsideCategoryMenu = currentPage === "home" && Boolean(selectedProductMenu);
+        const isMenuOpen = currentPage === "home" && isProductMenuVisible && !isInsideCategoryMenu;
+        el.openProductMenuBtn.classList.toggle("show", currentPage === "home" && !isInsideCategoryMenu);
+        el.openProductMenuBtn.textContent = isMenuOpen ? "← Kembali" : "☰ Menu Barang";
+        el.openProductMenuBtn.setAttribute("aria-label", isMenuOpen ? "Kembali ke tambah barang" : "Buka menu barang");
+      }
       if (el.headerActions) el.headerActions.classList.toggle("home-mode", currentPage === "home");
     }
 
@@ -27830,7 +27858,7 @@
     }
 
 
-    if (el.openProductMenuBtn) el.openProductMenuBtn.addEventListener("click", () => {
+    function showProductMenuFromHome() {
       if (currentPage !== "home") openHomePage(false);
       forceInitialPlusForThisSession = false;
       isProductMenuVisible = true;
@@ -27839,10 +27867,32 @@
       searchQuery = "";
       menuSearchDraft = "";
       menuSearchQuery = "";
+      isMenuCatalogLoading = false;
       if (el.searchInput) el.searchInput.value = "";
       if (el.clearSearchBtn) el.clearSearchBtn.style.display = "none";
       closeSuggestionsCurtainUp();
       render();
+    }
+
+    function showHomePlusFromProductMenu() {
+      if (currentPage !== "home") openHomePage(false);
+      isProductMenuVisible = false;
+      selectedProductMenu = "";
+      isSupplierMenuOpen = false;
+      searchQuery = "";
+      menuSearchDraft = "";
+      menuSearchQuery = "";
+      isMenuCatalogLoading = false;
+      if (el.searchInput) el.searchInput.value = "";
+      if (el.clearSearchBtn) el.clearSearchBtn.style.display = "none";
+      closeSuggestionsCurtainUp();
+      render();
+    }
+
+    if (el.openProductMenuBtn) el.openProductMenuBtn.addEventListener("click", () => {
+      const isShowingMenu = currentPage === "home" && (isProductMenuVisible || Boolean(selectedProductMenu));
+      if (isShowingMenu) showHomePlusFromProductMenu();
+      else showProductMenuFromHome();
     });
 
     if (el.homePlusSearchBtn) el.homePlusSearchBtn.addEventListener("click", () => openInitialSearchSuggestions({ keepPage: true }));
