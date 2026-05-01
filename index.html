@@ -2095,51 +2095,10 @@
 
     /* =====================================================
        CATATAN BARANG HABIS - STYLE KONSISTEN DENGAN PREVIEW TEXT
-       Berlaku untuk semua tema. Kartu barang, supplier, dan qty +/-
-       dibuat memakai warna field preview sebelum diklik.
+       Khusus tema terang dibiarkan seperti style sebelumnya.
+       Tema gray/dark/ocean/emerald tetap dibuat memakai warna field
+       preview text sebelum diklik.
        ===================================================== */
-    #addedPage #listSection .supplier-title,
-    #addedPage #listSection .item,
-    #addedPage #listSection .qty-control {
-      background: #f8fafc !important;
-      color: var(--text) !important;
-      border: 1px solid var(--line) !important;
-      box-shadow: none !important;
-    }
-
-    #addedPage #listSection .supplier-title { border-radius: 16px !important; }
-    #addedPage #listSection .item { border-radius: 18px !important; }
-
-    #addedPage #listSection .qty-control {
-      background: #f8fafc !important;
-      border-radius: 999px !important;
-      overflow: hidden !important;
-    }
-
-    #addedPage #listSection .qty-btn,
-    #addedPage #listSection .qty-input {
-      background: transparent !important;
-      color: var(--text) !important;
-      border: 0 !important;
-      box-shadow: none !important;
-    }
-
-    #addedPage #listSection .qty-input:focus,
-    #addedPage #listSection .qty-control:focus-within {
-      background: #ffffff !important;
-      border-color: var(--primary) !important;
-      box-shadow: 0 0 0 4px var(--primary-soft) !important;
-    }
-
-    #addedPage #listSection .item:hover,
-    #addedPage #listSection .supplier-title:hover { border-color: var(--primary) !important; }
-
-    #addedPage #listSection .supplier-title strong,
-    #addedPage #listSection .supplier-title-name,
-    #addedPage #listSection .item-name { color: var(--text) !important; }
-
-    #addedPage #listSection .supplier-title span,
-    #addedPage #listSection .item-meta { color: var(--muted) !important; }
 
     body.dark-mode #addedPage #listSection .supplier-title,
     body.dark-mode #addedPage #listSection .item,
@@ -2152,7 +2111,38 @@
     body.dark-mode.theme-emerald #addedPage #listSection .qty-control {
       background: rgba(255, 255, 255, 0.08) !important;
       color: var(--text) !important;
-      border-color: rgba(148, 211, 232, 0.18) !important;
+      border: 1px solid rgba(148, 211, 232, 0.18) !important;
+      box-shadow: none !important;
+    }
+
+    body.dark-mode #addedPage #listSection .supplier-title,
+    body.dark-mode.theme-ocean #addedPage #listSection .supplier-title,
+    body.dark-mode.theme-emerald #addedPage #listSection .supplier-title {
+      border-radius: 16px !important;
+    }
+
+    body.dark-mode #addedPage #listSection .item,
+    body.dark-mode.theme-ocean #addedPage #listSection .item,
+    body.dark-mode.theme-emerald #addedPage #listSection .item {
+      border-radius: 18px !important;
+    }
+
+    body.dark-mode #addedPage #listSection .qty-control,
+    body.dark-mode.theme-ocean #addedPage #listSection .qty-control,
+    body.dark-mode.theme-emerald #addedPage #listSection .qty-control {
+      border-radius: 999px !important;
+      overflow: hidden !important;
+    }
+
+    body.dark-mode #addedPage #listSection .qty-btn,
+    body.dark-mode #addedPage #listSection .qty-input,
+    body.dark-mode.theme-ocean #addedPage #listSection .qty-btn,
+    body.dark-mode.theme-ocean #addedPage #listSection .qty-input,
+    body.dark-mode.theme-emerald #addedPage #listSection .qty-btn,
+    body.dark-mode.theme-emerald #addedPage #listSection .qty-input {
+      background: transparent !important;
+      color: var(--text) !important;
+      border: 0 !important;
       box-shadow: none !important;
     }
 
@@ -2167,13 +2157,30 @@
       box-shadow: 0 0 0 4px rgba(8, 145, 178, 0.18) !important;
     }
 
+    body.dark-mode #addedPage #listSection .item:hover,
+    body.dark-mode #addedPage #listSection .supplier-title:hover,
+    body.dark-mode.theme-ocean #addedPage #listSection .item:hover,
+    body.dark-mode.theme-ocean #addedPage #listSection .supplier-title:hover,
+    body.dark-mode.theme-emerald #addedPage #listSection .item:hover,
+    body.dark-mode.theme-emerald #addedPage #listSection .supplier-title:hover {
+      border-color: rgba(125, 211, 252, 0.34) !important;
+    }
+
     body.theme-gray #addedPage #listSection .supplier-title,
     body.theme-gray #addedPage #listSection .item,
     body.theme-gray #addedPage #listSection .qty-control {
       background: #1f2937 !important;
       color: var(--text) !important;
-      border-color: rgba(156, 163, 175, 0.40) !important;
+      border: 1px solid rgba(156, 163, 175, 0.40) !important;
       box-shadow: none !important;
+    }
+
+    body.theme-gray #addedPage #listSection .supplier-title { border-radius: 16px !important; }
+    body.theme-gray #addedPage #listSection .item { border-radius: 18px !important; }
+
+    body.theme-gray #addedPage #listSection .qty-control {
+      border-radius: 999px !important;
+      overflow: hidden !important;
     }
 
     body.theme-gray #addedPage #listSection .qty-btn,
@@ -2190,6 +2197,12 @@
       border-color: #9ca3af !important;
       box-shadow: 0 0 0 4px rgba(107, 114, 128, 0.28) !important;
     }
+
+    body.theme-gray #addedPage #listSection .item:hover,
+    body.theme-gray #addedPage #listSection .supplier-title:hover {
+      border-color: #9ca3af !important;
+    }
+
   </style>
 </head>
 
