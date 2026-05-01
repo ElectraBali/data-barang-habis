@@ -21,6 +21,114 @@
       --radius: 18px;
     }
 
+    body.theme-gray {
+      --bg: #e5e7eb;
+      --card: #f8fafc;
+      --text: #111827;
+      --muted: #6b7280;
+      --line: #cbd5e1;
+      --primary: #4b5563;
+      --primary-dark: #1f2937;
+      --primary-soft: #e2e8f0;
+      --danger: #dc2626;
+      --danger-soft: #fee2e2;
+      --shadow: 0 14px 32px rgba(31, 41, 55, 0.12);
+    }
+
+    body.theme-gray {
+      background:
+        radial-gradient(circle at 72% 0%, rgba(107, 114, 128, 0.22), transparent 34%),
+        radial-gradient(circle at 10% 24%, rgba(148, 163, 184, 0.26), transparent 30%),
+        #e5e7eb;
+    }
+
+    body.theme-gray .app {
+      background:
+        radial-gradient(circle at 76% 0%, rgba(148, 163, 184, 0.24), transparent 34%),
+        linear-gradient(180deg, #f1f5f9 0%, #e5e7eb 100%);
+    }
+
+    body.theme-gray .header {
+      background:
+        radial-gradient(circle at 74% 0%, rgba(255, 255, 255, 0.22), transparent 36%),
+        linear-gradient(135deg, #374151 0%, #64748b 52%, #94a3b8 100%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.34);
+      box-shadow: 0 18px 42px rgba(31, 41, 55, 0.20);
+    }
+
+    body.theme-gray .card,
+    body.theme-gray .modal,
+    body.theme-gray .item,
+    body.theme-gray .catalog-item,
+    body.theme-gray .suggestion-btn,
+    body.theme-gray .search-suggestions,
+    body.theme-gray .empty,
+    body.theme-gray .preview-text,
+    body.theme-gray .bottom-bar {
+      background: rgba(248, 250, 252, 0.96);
+      color: var(--text);
+      border-color: rgba(148, 163, 184, 0.42);
+      box-shadow: 0 12px 28px rgba(31, 41, 55, 0.10);
+    }
+
+    body.theme-gray .search-box input,
+    body.theme-gray .edit-field,
+    body.theme-gray .menu-search-input,
+    body.theme-gray .suggestion-qty-input,
+    body.theme-gray .catalog-qty-input,
+    body.theme-gray .qty-input {
+      background: #f8fafc;
+      color: var(--text);
+      border-color: rgba(148, 163, 184, 0.52);
+    }
+
+    body.theme-gray .catalog-item:hover,
+    body.theme-gray .suggestion-btn:hover,
+    body.theme-gray .product-menu-card:hover {
+      background: #e2e8f0;
+      border-color: #94a3b8;
+    }
+
+    body.theme-gray .product-menu-card,
+    body.theme-gray .category-btn,
+    body.theme-gray .quick-btn,
+    body.theme-gray .tab-btn,
+    body.theme-gray .qty-control {
+      background: #f1f5f9;
+      color: var(--text);
+      border-color: rgba(148, 163, 184, 0.48);
+    }
+
+    body.theme-gray .tab-btn.active,
+    body.theme-gray .btn-primary {
+      background: linear-gradient(135deg, #374151, #64748b);
+      color: white;
+      border-color: transparent;
+    }
+
+    body.theme-gray .btn-soft,
+    body.theme-gray .clear-search,
+    body.theme-gray .menu-search-clear {
+      background: #e2e8f0;
+      color: #1f2937;
+      border-color: rgba(148, 163, 184, 0.52);
+    }
+
+    body.theme-gray .supplier-title,
+    body.theme-gray .summary-box,
+    body.theme-gray .supplier-chip {
+      background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+      color: #1f2937;
+      border-color: #cbd5e1;
+    }
+
+    body.theme-gray .theme-toggle-btn {
+      background: linear-gradient(135deg, rgba(55, 65, 81, 0.94), rgba(100, 116, 139, 0.88));
+      border-color: rgba(255, 255, 255, 0.46);
+      box-shadow: 0 0 24px rgba(75, 85, 99, 0.24);
+    }
+
+
 
 
     body.dark-mode {
@@ -1896,10 +2004,98 @@
       }
       .bottom-bar { bottom: 24px; border-radius: 0 0 30px 30px; }
     }
+
+    /* =====================================================
+       FULL GRAY OVERRIDE - NO WHITE BACKGROUND
+       ===================================================== */
+    body.theme-gray {
+      --bg: #1f2937;
+      --card: #273142;
+      --text: #e5e7eb;
+      --muted: #a3aab5;
+      --line: #4b5563;
+      --primary: #6b7280;
+      --primary-dark: #f3f4f6;
+      --primary-soft: #374151;
+      --danger: #fb7185;
+      --danger-soft: rgba(251, 113, 133, 0.16);
+      --shadow: 0 18px 45px rgba(0, 0, 0, 0.34);
+      background: #1f2937 !important;
+      color: var(--text) !important;
+    }
+    body.theme-gray .app { background: linear-gradient(180deg, #252f3f 0%, #1f2937 100%) !important; color: var(--text) !important; }
+    body.theme-gray .header { background: linear-gradient(135deg, #111827 0%, #374151 55%, #4b5563 100%) !important; border-bottom: 1px solid rgba(156, 163, 175, 0.34) !important; box-shadow: 0 18px 42px rgba(0,0,0,.42) !important; color:#f3f4f6 !important; }
+    body.theme-gray .card, body.theme-gray .modal, body.theme-gray .item, body.theme-gray .catalog-item, body.theme-gray .suggestion-btn, body.theme-gray .search-suggestions, body.theme-gray .empty, body.theme-gray .preview-text, body.theme-gray .bottom-bar, body.theme-gray .product-menu-card, body.theme-gray .category-btn, body.theme-gray .quick-btn, body.theme-gray .tab-btn, body.theme-gray .qty-control, body.theme-gray .theme-choice-btn, body.theme-gray .wa-choice-btn, body.theme-gray .supplier-picker-btn, body.theme-gray .supplier-menu-edit-btn, body.theme-gray .supplier-picker-edit-btn, body.theme-gray .home-plus-search-btn, body.theme-gray .manual-add-card, body.theme-gray .catalog-skeleton, body.theme-gray .suggestion-loading { background:#273142 !important; color:var(--text) !important; border-color:rgba(156,163,175,.34) !important; box-shadow:0 12px 28px rgba(0,0,0,.22) !important; }
+    body.theme-gray .bottom-bar { background:rgba(17,24,39,.94) !important; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
+    body.theme-gray input, body.theme-gray textarea, body.theme-gray .search-box input, body.theme-gray .edit-field, body.theme-gray .menu-search-input, body.theme-gray .suggestion-qty-input, body.theme-gray .catalog-qty-input, body.theme-gray .qty-input, body.theme-gray .continue-list-field { background:#1f2937 !important; color:var(--text) !important; border-color:rgba(156,163,175,.40) !important; box-shadow:none !important; }
+    body.theme-gray input::placeholder, body.theme-gray textarea::placeholder, body.theme-gray .search-box input::placeholder, body.theme-gray .menu-search-input::placeholder, body.theme-gray .edit-field::placeholder { color:rgba(209,213,219,.62) !important; }
+    body.theme-gray input:focus, body.theme-gray textarea:focus, body.theme-gray .edit-field:focus, body.theme-gray .menu-search-input:focus, body.theme-gray .suggestion-qty-input:focus, body.theme-gray .catalog-qty-input:focus, body.theme-gray .qty-input:focus { background:#111827 !important; border-color:#9ca3af !important; box-shadow:0 0 0 4px rgba(107,114,128,.28) !important; }
+    body.theme-gray .catalog-item:hover, body.theme-gray .suggestion-btn:hover, body.theme-gray .product-menu-card:hover, body.theme-gray .wa-choice-btn:hover, body.theme-gray .home-plus-search-btn:hover, body.theme-gray .manual-add-card:hover, body.theme-gray .category-btn:hover, body.theme-gray .quick-btn:hover { background:#374151 !important; border-color:#6b7280 !important; }
+    body.theme-gray .supplier-title, body.theme-gray .summary-box, body.theme-gray .supplier-chip, body.theme-gray .product-menu-icon, body.theme-gray .product-menu-count, body.theme-gray .suggestion-action, body.theme-gray .catalog-add, body.theme-gray .suggestion-action-btn, body.theme-gray .catalog-add-btn, body.theme-gray .top-add-item-btn, body.theme-gray .theme-choice-btn.active, body.theme-gray .quick-btn.active, body.theme-gray .category-btn.active, body.theme-gray .supplier-picker-btn.active, body.theme-gray .supplier-picker-btn.custom { background:#374151 !important; color:#f3f4f6 !important; border-color:#6b7280 !important; box-shadow:0 0 0 3px rgba(107,114,128,.20) !important; }
+    body.theme-gray .tab-btn.active, body.theme-gray .btn-primary, body.theme-gray .supplier-edit-mode-btn.active, body.theme-gray .supplier-picker-edit-mode-btn.active { background:linear-gradient(135deg,#4b5563,#6b7280) !important; color:#f9fafb !important; border-color:transparent !important; }
+    body.theme-gray .btn-soft, body.theme-gray .clear-search, body.theme-gray .menu-search-clear, body.theme-gray .preview-small-btn, body.theme-gray .wa-add-number-btn, body.theme-gray .empty-add-list-btn, body.theme-gray .view-added-btn, body.theme-gray .menu-back-btn, body.theme-gray .top-change-supplier-btn, body.theme-gray .top-add-supplier-btn, body.theme-gray .top-reset-btn, body.theme-gray .suggestion-mini-btn, body.theme-gray .theme-toggle-btn { background:#374151 !important; color:#f3f4f6 !important; border-color:rgba(156,163,175,.42) !important; box-shadow:0 10px 24px rgba(0,0,0,.20) !important; }
+    body.theme-gray .supplier-title span, body.theme-gray .catalog-category, body.theme-gray .item-meta, body.theme-gray .small-info, body.theme-gray .quick-title, body.theme-gray .product-menu-desc, body.theme-gray .suggestion-category, body.theme-gray .theme-choice-btn span, body.theme-gray .wa-choice-btn span, body.theme-gray .modal p, body.theme-gray .preview-edit-note { color:var(--muted) !important; }
+    body.theme-gray .skeleton { background:#374151 !important; }
+    body.theme-gray .skeleton::after { background:linear-gradient(90deg,transparent,rgba(209,213,219,.16),transparent) !important; }
+    body.theme-gray .search-overlay { background:rgba(17,24,39,.70) !important; }
+    body.theme-gray .toast { background:#111827 !important; color:#f3f4f6 !important; border:1px solid #374151 !important; }
+
+    /* Qty field daftar barang: samakan warna input angka dengan tombol + dan - */
+    body.theme-gray .item .qty-control {
+      background:#374151 !important;
+      border-color:#6b7280 !important;
+      box-shadow:0 8px 18px rgba(0,0,0,.18) !important;
+    }
+
+    body.theme-gray .item .qty-btn,
+    body.theme-gray .item .qty-input {
+      background:#374151 !important;
+      color:#f3f4f6 !important;
+      border:0 !important;
+      box-shadow:none !important;
+    }
+
+    body.theme-gray .item .qty-input:focus {
+      background:#374151 !important;
+      color:#ffffff !important;
+      box-shadow:inset 0 0 0 1px rgba(209,213,219,.28) !important;
+    }
+
+
+    /* =====================================================
+       Qty field daftar barang: berlaku untuk SEMUA TEMA
+       Angka qty dibuat satu warna dengan tombol + dan -
+       ===================================================== */
+    .item .qty-control {
+      background: var(--primary-soft) !important;
+      border-color: var(--primary) !important;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.10) !important;
+    }
+
+    .item .qty-btn,
+    .item .qty-input {
+      background: transparent !important;
+      color: var(--primary-dark) !important;
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+
+    .item .qty-input:focus {
+      background: transparent !important;
+      color: var(--primary-dark) !important;
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 55%, transparent) !important;
+    }
+
+    body.dark-mode .item .qty-control,
+    body.dark-mode.theme-ocean .item .qty-control,
+    body.dark-mode.theme-emerald .item .qty-control {
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28) !important;
+    }
+
   </style>
 </head>
 
-<body>
+<body class="theme-gray">
   <div id="searchOverlay" class="search-overlay"></div>
 
   <div class="app">
@@ -2026,6 +2222,7 @@
       <p>Pilih tampilan aplikasi. Tema akan otomatis tersimpan.</p>
       <div class="theme-choice-list">
         <button class="theme-choice-btn" type="button" data-theme="light">☀️ Terang<span>Mode putih bersih</span></button>
+        <button class="theme-choice-btn" type="button" data-theme="gray">⚙️ Abu Full<span>Full abu tanpa background putih</span></button>
         <button class="theme-choice-btn" type="button" data-theme="dark">🌙 Gelap Biru Hijau<span>Dark mode utama</span></button>
         <button class="theme-choice-btn" type="button" data-theme="ocean">🌊 Gelap Biru<span>Nuansa biru malam</span></button>
         <button class="theme-choice-btn" type="button" data-theme="emerald">🌿 Gelap Hijau<span>Nuansa hijau gelap</span></button>
@@ -24299,6 +24496,7 @@
 
 
     function getThemeLabel(mode) {
+      if (mode === "gray") return "Abu";
       if (mode === "dark") return "Gelap Biru Hijau";
       if (mode === "ocean") return "Gelap Biru";
       if (mode === "emerald") return "Gelap Hijau";
@@ -24306,9 +24504,10 @@
     }
 
     function applyThemeMode(mode) {
-      const finalMode = ["light", "dark", "ocean", "emerald"].includes(mode) ? mode : "light";
-      document.body.classList.remove("dark-mode", "theme-ocean", "theme-emerald");
-      if (finalMode !== "light") document.body.classList.add("dark-mode");
+      const finalMode = ["light", "gray", "dark", "ocean", "emerald"].includes(mode) ? mode : "light";
+      document.body.classList.remove("dark-mode", "theme-gray", "theme-ocean", "theme-emerald");
+      if (["dark", "ocean", "emerald"].includes(finalMode)) document.body.classList.add("dark-mode");
+      if (finalMode === "gray") document.body.classList.add("theme-gray");
       if (finalMode === "ocean") document.body.classList.add("theme-ocean");
       if (finalMode === "emerald") document.body.classList.add("theme-emerald");
       if (el.themeToggleBtn) {
@@ -24323,7 +24522,7 @@
 
     function getSavedThemeMode() {
       const savedMode = localStorage.getItem(THEME_STORAGE_KEY);
-      return ["light", "dark", "ocean", "emerald"].includes(savedMode) ? savedMode : "light";
+      return ["light", "gray", "dark", "ocean", "emerald"].includes(savedMode) ? savedMode : "gray";
     }
 
     function openThemeModal() {
@@ -24336,7 +24535,7 @@
     }
 
     function chooseThemeMode(mode) {
-      const finalMode = ["light", "dark", "ocean", "emerald"].includes(mode) ? mode : "light";
+      const finalMode = ["light", "gray", "dark", "ocean", "emerald"].includes(mode) ? mode : "light";
       localStorage.setItem(THEME_STORAGE_KEY, finalMode);
       applyThemeMode(finalMode);
       closeThemeModal();
