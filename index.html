@@ -1466,6 +1466,68 @@
     body.dark-mode .wa-choice-btn:hover { background: rgba(255,255,255,0.09); border-color: rgba(196,164,255,0.38); box-shadow: 0 0 0 4px rgba(124,58,237,0.18); }
 
 
+    .wa-add-number-btn {
+      width: fit-content;
+      min-height: 32px;
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      color: #334155;
+      border-radius: 10px;
+      padding: 7px 9px;
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+      margin: 0 0 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .wa-add-number-btn:hover { transform: translateY(-1px); background: #ffffff; }
+
+    .empty-add-list-btn {
+      width: 58px;
+      height: 58px;
+      border: 1.5px dashed var(--primary);
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      border-radius: 20px;
+      font-size: 34px;
+      font-weight: 900;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      line-height: 1;
+    }
+
+    .empty-add-list-btn:hover { transform: translateY(-1px); }
+
+    .wa-custom-form-note {
+      margin-top: -6px;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    body.dark-mode .wa-add-number-btn {
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--text);
+      border-color: rgba(196, 164, 255, 0.18);
+    }
+
+    body.dark-mode .empty-add-list-btn {
+      background: rgba(124, 58, 237, 0.18);
+      color: #ddd6fe;
+      border-color: rgba(196, 164, 255, 0.34);
+    }
+
     .search-overlay {
       position: fixed;
       inset: 0;
@@ -1915,7 +1977,6 @@
       <textarea id="continueListInput" class="edit-field continue-list-field" placeholder="Paste list lama di sini..." autocomplete="off" spellcheck="false"></textarea>
       <div class="modal-actions continue-list-modal-actions">
         <button id="cancelContinueListBtn" class="btn btn-soft" type="button">Batal</button>
-        <button id="clearContinueListBtn" class="btn btn-danger" type="button">Hapus Lama</button>
         <button id="saveContinueListBtn" class="btn btn-primary" type="button">Pakai List Ini</button>
       </div>
     </div>
@@ -1926,21 +1987,39 @@
       <h3>Kirim list ke WhatsApp</h3>
       <p>Pilih nomor tujuan, atau pilih grup manual setelah WhatsApp terbuka.</p>
       <div class="wa-choice-list">
-        <button id="sendWaSeptiBtn" class="wa-choice-btn" type="button">
-          <span><strong>Septi</strong><span>+62 859-0429-4798</span></span>
-          <span class="wa-choice-icon">WA</span>
-        </button>
-        <button id="sendWaElectraBtn" class="wa-choice-btn" type="button">
-          <span><strong>Electra</strong><span>+62 817-5777-488</span></span>
-          <span class="wa-choice-icon">WA</span>
-        </button>
         <button id="sendWaGroupBtn" class="wa-choice-btn" type="button">
-          <span><strong>Kirim ke Grup</strong><span>Pilih grup manual di WhatsApp</span></span>
+          <span><strong>Kirim ke Grup</strong></span>
           <span class="wa-choice-icon">📢</span>
         </button>
+        <button id="sendWaElectraBtn" class="wa-choice-btn" type="button">
+          <span><strong>Electra</strong></span>
+          <span class="wa-choice-icon">WA</span>
+        </button>
+        <button id="sendWaSeptiBtn" class="wa-choice-btn" type="button">
+          <span><strong>Septi</strong></span>
+          <span class="wa-choice-icon">WA</span>
+        </button>
+        <div id="waCustomTargetList" class="wa-choice-list" style="margin-bottom:0;"></div>
       </div>
+
+      <button id="openAddWaNumberBtn" class="wa-add-number-btn" type="button">＋ Tambah No Baru</button>
+
       <div class="modal-actions" style="grid-template-columns:1fr;">
         <button id="cancelWaTargetBtn" class="btn btn-soft" type="button">Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="addWaNumberModal" class="modal-backdrop">
+    <div class="modal">
+      <h3>Tambah no tujuan</h3>
+      <p>Isi nama dan nomor WhatsApp tujuan. Setelah disimpan, nama akan muncul di daftar kirim WA.</p>
+      <input id="waCustomNameInput" class="edit-field" type="text" placeholder="Nama tujuan" />
+      <input id="waCustomNumberInput" class="edit-field" type="tel" inputmode="tel" placeholder="Contoh: 081234567890" />
+      <div class="wa-custom-form-note">Nomor boleh diawali 08 atau 62.</div>
+      <div class="modal-actions">
+        <button id="cancelAddWaNumberBtn" class="btn btn-soft" type="button">Batal</button>
+        <button id="saveAddWaNumberBtn" class="btn btn-primary" type="button">Simpan</button>
       </div>
     </div>
   </div>
@@ -1992,6 +2071,7 @@
     const SUPPLIER_STORAGE_KEY = "barang_habis_custom_suppliers_v1";
     const CUSTOM_ITEM_STORAGE_KEY = "barang_habis_custom_items_v1";
     const THEME_STORAGE_KEY = "barang_habis_theme_mode_v1";
+    const WA_CUSTOM_TARGETS_STORAGE_KEY = "barang_habis_wa_custom_targets_v1";
     const HOME_SESSION_KEY = "barang_habis_home_session_alive_v1";
     const HOME_PLUS_USED_SESSION_KEY = "barang_habis_home_plus_used_session_v1";
     const PREVIEW_DRAFT_STORAGE_KEY = "barang_habis_preview_manual_draft_v1";
@@ -23812,12 +23892,18 @@
       continueListModal: $("continueListModal"),
       continueListInput: $("continueListInput"),
       cancelContinueListBtn: $("cancelContinueListBtn"),
-      clearContinueListBtn: $("clearContinueListBtn"),
       saveContinueListBtn: $("saveContinueListBtn"),
       waTargetModal: $("waTargetModal"),
       sendWaSeptiBtn: $("sendWaSeptiBtn"),
       sendWaElectraBtn: $("sendWaElectraBtn"),
       sendWaGroupBtn: $("sendWaGroupBtn"),
+      waCustomTargetList: $("waCustomTargetList"),
+      openAddWaNumberBtn: $("openAddWaNumberBtn"),
+      addWaNumberModal: $("addWaNumberModal"),
+      waCustomNameInput: $("waCustomNameInput"),
+      waCustomNumberInput: $("waCustomNumberInput"),
+      cancelAddWaNumberBtn: $("cancelAddWaNumberBtn"),
+      saveAddWaNumberBtn: $("saveAddWaNumberBtn"),
       cancelWaTargetBtn: $("cancelWaTargetBtn"),
       addItemModal: $("addItemModal"),
       addItemNameInput: $("addItemNameInput"),
@@ -23845,6 +23931,7 @@
     let customSuppliers = loadCustomSuppliers();
     let supplierRenameMap = loadSupplierRenameMap();
     let customItems = loadCustomItems();
+    let waCustomTargets = loadWaCustomTargets();
     let items = loadItems();
     if (items.length > 0) saveItems();
     let manualPreviewText = localStorage.getItem(PREVIEW_DRAFT_STORAGE_KEY) || "";
@@ -24457,18 +24544,19 @@
       searchQuery = "";
       isSearching = false;
       isSuggestionLoading = false;
-      keepSuggestionsAfterClear = true;
-      currentSuggestionItems = getHistoryCatalogItems().slice(0, 30);
-      lastSuggestionSignature = getSuggestionSignature(currentSuggestionItems);
+      keepSuggestionsAfterClear = false;
+      currentSuggestionItems = [];
+      lastSuggestionSignature = "";
       if (el.searchInput) {
         el.searchInput.value = "";
-        el.searchInput.focus();
+        setTimeout(() => el.searchInput.focus(), 60);
       }
       if (el.clearSearchBtn) el.clearSearchBtn.style.display = "none";
+      closeSuggestionsCurtainUp();
       renderSelectedSupplier();
       updateHomeEntryMode();
-      renderSuggestions();
-      showSuggestionsCurtainDown();
+      renderSummary();
+      renderCatalog();
     }
 
     function renderProductMenuCards() {
@@ -25639,10 +25727,13 @@
       if (filteredItems.length === 0) {
         el.itemList.innerHTML = `
           <div class="empty">
+            ${searchQuery ? "" : `<button id="emptyListAddBtn" class="empty-add-list-btn" type="button" aria-label="Tambah barang">＋</button>`}
             <strong>${searchQuery ? "Barang tidak ditemukan" : "Belum ada barang"}</strong>
-            <span>${searchQuery ? "Coba kata kunci lain." : "Tambahkan barang dari halaman awal."}</span>
+            <span>${searchQuery ? "Coba kata kunci lain." : "Klik ikon + untuk tambah barang."}</span>
           </div>
         `;
+        const emptyListAddBtn = document.getElementById("emptyListAddBtn");
+        if (emptyListAddBtn) emptyListAddBtn.addEventListener("click", openInitialSearchSuggestions);
         return;
       }
 
@@ -25883,7 +25974,7 @@
 
     function openContinueListModal() {
       if (!el.continueListModal || !el.continueListInput) return;
-      el.continueListInput.value = "";
+      el.continueListInput.value = continuedListText || "";
       showContinueListModalElement();
       window.setTimeout(() => el.continueListInput.focus(), 120);
     }
@@ -26518,9 +26609,88 @@
       return textValue;
     }
 
+    function normalizeWhatsAppNumber(rawNumber) {
+      let cleanNumber = String(rawNumber || "").replace(/\D/g, "");
+      if (!cleanNumber) return "";
+      if (cleanNumber.startsWith("0")) cleanNumber = "62" + cleanNumber.slice(1);
+      if (!cleanNumber.startsWith("62")) cleanNumber = "62" + cleanNumber;
+      return cleanNumber;
+    }
+
+    function loadWaCustomTargets() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(WA_CUSTOM_TARGETS_STORAGE_KEY) || "[]");
+        if (!Array.isArray(saved)) return [];
+        return saved
+          .map(target => ({
+            name: String(target && target.name ? target.name : "").trim(),
+            number: normalizeWhatsAppNumber(target && target.number ? target.number : "")
+          }))
+          .filter(target => target.name && target.number.length >= 10);
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveWaCustomTargets() {
+      try {
+        localStorage.setItem(WA_CUSTOM_TARGETS_STORAGE_KEY, JSON.stringify(waCustomTargets));
+      } catch (error) {}
+    }
+
+    function renderWaCustomTargets() {
+      if (!el.waCustomTargetList) return;
+      el.waCustomTargetList.innerHTML = "";
+      waCustomTargets.forEach(target => {
+        const button = document.createElement("button");
+        button.className = "wa-choice-btn";
+        button.type = "button";
+        button.innerHTML = `<span><strong>${escapeHtml(target.name)}</strong></span><span class="wa-choice-icon">WA</span>`;
+        button.addEventListener("click", () => sendToWhatsAppNumber(target.number));
+        el.waCustomTargetList.appendChild(button);
+      });
+    }
+
+    function openAddWaNumberModal() {
+      closeWaTargetModal();
+      if (el.waCustomNameInput) el.waCustomNameInput.value = "";
+      if (el.waCustomNumberInput) el.waCustomNumberInput.value = "";
+      openSmoothModal(el.addWaNumberModal);
+      setTimeout(() => { if (el.waCustomNameInput) el.waCustomNameInput.focus(); }, 120);
+    }
+
+    function closeAddWaNumberModal() {
+      closeSmoothModal(el.addWaNumberModal);
+    }
+
+    function saveAddWaNumber() {
+      const name = el.waCustomNameInput ? el.waCustomNameInput.value.trim() : "";
+      const number = normalizeWhatsAppNumber(el.waCustomNumberInput ? el.waCustomNumberInput.value : "");
+      if (!name) {
+        showToast("Isi nama tujuan dulu");
+        if (el.waCustomNameInput) el.waCustomNameInput.focus();
+        return;
+      }
+      if (!number || number.length < 10) {
+        showToast("Nomor tujuan belum lengkap");
+        if (el.waCustomNumberInput) el.waCustomNumberInput.focus();
+        return;
+      }
+      const existingIndex = waCustomTargets.findIndex(target => target.name.toLowerCase() === name.toLowerCase());
+      const newTarget = { name, number };
+      if (existingIndex >= 0) waCustomTargets[existingIndex] = newTarget;
+      else waCustomTargets.push(newTarget);
+      saveWaCustomTargets();
+      renderWaCustomTargets();
+      closeAddWaNumberModal();
+      openWaTargetModal();
+      showToast("Nomor tujuan disimpan");
+    }
+
     function openWaTargetModal() {
       const textValue = getValidShareTextForWa();
       if (!textValue || !el.waTargetModal) return;
+      renderWaCustomTargets();
       el.waTargetModal.classList.remove("closing");
       el.waTargetModal.classList.add("show");
     }
@@ -26807,9 +26977,17 @@
     el.copyBtn.addEventListener("click", copyList);
     el.waBtn.addEventListener("click", sendToWhatsApp);
     if (el.cancelWaTargetBtn) el.cancelWaTargetBtn.addEventListener("click", closeWaTargetModal);
-    if (el.sendWaSeptiBtn) el.sendWaSeptiBtn.addEventListener("click", () => sendToWhatsAppNumber(WA_TARGETS.septi));
-    if (el.sendWaElectraBtn) el.sendWaElectraBtn.addEventListener("click", () => sendToWhatsAppNumber(WA_TARGETS.electra));
     if (el.sendWaGroupBtn) el.sendWaGroupBtn.addEventListener("click", sendToWhatsAppGroup);
+    if (el.sendWaElectraBtn) el.sendWaElectraBtn.addEventListener("click", () => sendToWhatsAppNumber(WA_TARGETS.electra));
+    if (el.sendWaSeptiBtn) el.sendWaSeptiBtn.addEventListener("click", () => sendToWhatsAppNumber(WA_TARGETS.septi));
+    if (el.openAddWaNumberBtn) el.openAddWaNumberBtn.addEventListener("click", openAddWaNumberModal);
+    if (el.cancelAddWaNumberBtn) el.cancelAddWaNumberBtn.addEventListener("click", closeAddWaNumberModal);
+    if (el.saveAddWaNumberBtn) el.saveAddWaNumberBtn.addEventListener("click", saveAddWaNumber);
+    if (el.waCustomNumberInput) {
+      el.waCustomNumberInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") saveAddWaNumber();
+      });
+    }
     el.previewText.addEventListener("input", handlePreviewManualInput);
     el.previewText.addEventListener("paste", () => {
       window.setTimeout(handlePreviewManualInput, 0);
@@ -26819,7 +26997,6 @@
     el.clearPreviewBtn.addEventListener("click", clearPreviewText);
     if (el.cancelContinueListBtn) el.cancelContinueListBtn.addEventListener("click", closeContinueListModal);
     if (el.saveContinueListBtn) el.saveContinueListBtn.addEventListener("click", saveContinueList);
-    if (el.clearContinueListBtn) el.clearContinueListBtn.addEventListener("click", clearContinueList);
     el.tabList.addEventListener("click", () => setTab("list"));
     el.tabPreview.addEventListener("click", () => setTab("preview"));
     el.cancelResetBtn.addEventListener("click", closeResetModal);
@@ -26875,6 +27052,12 @@
     if (el.waTargetModal) {
       el.waTargetModal.addEventListener("click", event => {
         if (event.target === el.waTargetModal) closeWaTargetModal();
+      });
+    }
+
+    if (el.addWaNumberModal) {
+      el.addWaNumberModal.addEventListener("click", event => {
+        if (event.target === el.addWaNumberModal) closeAddWaNumberModal();
       });
     }
 
