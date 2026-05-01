@@ -1528,6 +1528,9 @@
       border-color: rgba(196, 164, 255, 0.34);
     }
 
+    #addWaNumberModal { z-index: 1100; }
+    #addWaNumberModal .modal { z-index: 1101; }
+
     .search-overlay {
       position: fixed;
       inset: 0;
@@ -26645,18 +26648,24 @@
         const button = document.createElement("button");
         button.className = "wa-choice-btn";
         button.type = "button";
-        button.innerHTML = `<span><strong>${escapeHtml(target.name)}</strong></span><span class="wa-choice-icon">WA</span>`;
+        button.innerHTML = `<span><strong>${escapeHTML(target.name)}</strong></span><span class="wa-choice-icon">WA</span>`;
         button.addEventListener("click", () => sendToWhatsAppNumber(target.number));
         el.waCustomTargetList.appendChild(button);
       });
     }
 
-    function openAddWaNumberModal() {
-      closeWaTargetModal();
+    function openAddWaNumberModal(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
+      if (el.waTargetModal) el.waTargetModal.classList.remove("show", "closing");
+
       if (el.waCustomNameInput) el.waCustomNameInput.value = "";
       if (el.waCustomNumberInput) el.waCustomNumberInput.value = "";
       openSmoothModal(el.addWaNumberModal);
-      setTimeout(() => { if (el.waCustomNameInput) el.waCustomNameInput.focus(); }, 120);
+      window.setTimeout(() => { if (el.waCustomNameInput) el.waCustomNameInput.focus(); }, 120);
     }
 
     function closeAddWaNumberModal() {
@@ -26683,8 +26692,8 @@
       saveWaCustomTargets();
       renderWaCustomTargets();
       closeAddWaNumberModal();
-      openWaTargetModal();
       showToast("Nomor tujuan disimpan");
+      window.setTimeout(() => { if (el.waTargetModal) openWaTargetModal(); }, 280);
     }
 
     function openWaTargetModal() {
@@ -26982,10 +26991,20 @@
     if (el.sendWaSeptiBtn) el.sendWaSeptiBtn.addEventListener("click", () => sendToWhatsAppNumber(WA_TARGETS.septi));
     if (el.openAddWaNumberBtn) el.openAddWaNumberBtn.addEventListener("click", openAddWaNumberModal);
     if (el.cancelAddWaNumberBtn) el.cancelAddWaNumberBtn.addEventListener("click", closeAddWaNumberModal);
-    if (el.saveAddWaNumberBtn) el.saveAddWaNumberBtn.addEventListener("click", saveAddWaNumber);
+    if (el.saveAddWaNumberBtn) el.saveAddWaNumberBtn.addEventListener("click", event => {
+      event.preventDefault();
+      saveAddWaNumber();
+    });
+    if (el.waCustomNameInput) {
+      el.waCustomNameInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") { event.preventDefault(); if (el.waCustomNumberInput) el.waCustomNumberInput.focus(); }
+        if (event.key === "Escape") closeAddWaNumberModal();
+      });
+    }
     if (el.waCustomNumberInput) {
       el.waCustomNumberInput.addEventListener("keydown", event => {
-        if (event.key === "Enter") saveAddWaNumber();
+        if (event.key === "Enter") { event.preventDefault(); saveAddWaNumber(); }
+        if (event.key === "Escape") closeAddWaNumberModal();
       });
     }
     el.previewText.addEventListener("input", handlePreviewManualInput);
@@ -27041,6 +27060,12 @@
 
     el.addSupplierModal.addEventListener("click", event => {
       if (event.target === el.addSupplierModal) closeAddSupplierModal();
+    });
+
+
+    document.addEventListener("click", event => {
+      const addNumberButton = event.target && event.target.closest ? event.target.closest("#openAddWaNumberBtn") : null;
+      if (addNumberButton) openAddWaNumberModal(event);
     });
 
     if (el.continueListModal) {
