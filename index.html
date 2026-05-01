@@ -1606,7 +1606,7 @@
 
     .home-plus-search-btn {
       width: 100%;
-      min-height: 170px;
+      min-height: 260px;
       border: 1.5px dashed #cbd5e1;
       background: #f8fafc;
       color: #334155;
@@ -1629,7 +1629,7 @@
     }
 
     .home-plus-search-symbol {
-      font-size: 46px;
+      font-size: 56px;
       line-height: 1;
       font-weight: 900;
     }
@@ -1915,6 +1915,8 @@
     const SUPPLIER_STORAGE_KEY = "barang_habis_custom_suppliers_v1";
     const CUSTOM_ITEM_STORAGE_KEY = "barang_habis_custom_items_v1";
     const THEME_STORAGE_KEY = "barang_habis_theme_mode_v1";
+    const HOME_SESSION_KEY = "barang_habis_home_session_alive_v1";
+    const HOME_PLUS_USED_SESSION_KEY = "barang_habis_home_plus_used_session_v1";
     const PREVIEW_DRAFT_STORAGE_KEY = "barang_habis_preview_manual_draft_v1";
     const CONTINUE_LIST_STORAGE_KEY = "barang_habis_preview_continue_list_v1";
     const SUPPLIER_RENAME_STORAGE_KEY = "barang_habis_supplier_rename_map_v1";
@@ -23745,14 +23747,26 @@
       saveEditSupplierBtn: $("saveEditSupplierBtn")
     };
 
+    const isFreshBrowserSession = sessionStorage.getItem(HOME_SESSION_KEY) !== "1";
+    sessionStorage.setItem(HOME_SESSION_KEY, "1");
+    let forceInitialPlusForThisSession = isFreshBrowserSession && sessionStorage.getItem(HOME_PLUS_USED_SESSION_KEY) !== "1";
+
+    function markHomePlusUsedForSession() {
+      forceInitialPlusForThisSession = false;
+      try { sessionStorage.setItem(HOME_PLUS_USED_SESSION_KEY, "1"); } catch (error) {}
+    }
+
+    // PENTING: data pendukung harus diload dulu sebelum loadItems().
+    // loadItems() memanggil normalizeStoredItem() -> findMasterItem() -> getAllCatalogItems(),
+    // jadi customItems tidak boleh masih dalam kondisi TDZ/uninitialized.
+    let customSuppliers = loadCustomSuppliers();
+    let supplierRenameMap = loadSupplierRenameMap();
+    let customItems = loadCustomItems();
     let items = loadItems();
     if (items.length > 0) saveItems();
     let manualPreviewText = localStorage.getItem(PREVIEW_DRAFT_STORAGE_KEY) || "";
     let continuedListText = localStorage.getItem(CONTINUE_LIST_STORAGE_KEY) || "";
     let isPreviewManuallyEdited = Boolean(cleanText(manualPreviewText));
-    let customSuppliers = loadCustomSuppliers();
-    let supplierRenameMap = loadSupplierRenameMap();
-    let customItems = loadCustomItems();
     let activeTab = "list";
     let currentPage = "home";
     let searchQuery = "";
@@ -24340,7 +24354,8 @@
     }
 
     function shouldShowInitialPlusOnly() {
-      return currentPage === "home" && items.length === 0 && !selectedProductMenu && !isSupplierMenuOpen && !cleanText(searchQuery) && !cleanText(el.searchInput.value);
+      const canShowEntryOnly = currentPage === "home" && !selectedProductMenu && !isSupplierMenuOpen && !cleanText(searchQuery) && !cleanText(el.searchInput.value);
+      return canShowEntryOnly && (items.length === 0 || forceInitialPlusForThisSession);
     }
 
     function updateHomeEntryMode() {
@@ -24352,6 +24367,7 @@
     }
 
     function openInitialSearchSuggestions() {
+      markHomePlusUsedForSession();
       if (currentPage !== "home") openHomePage();
       isSupplierMenuOpen = false;
       selectedProductMenu = "";
@@ -24725,6 +24741,7 @@
         items.unshift({ id: String(Date.now() + Math.random()), name: masterItem.name, category: masterItem.category, supplier, qty: parsedQty, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
         showToast(parsedQty === 0 ? `Barang tercatat tanpa qty ke ${supplier}` : `Barang tercatat ${parsedQty} pcs ke ${supplier}`);
       }
+      markHomePlusUsedForSession();
       saveItems();
       render(); return true;
     }
@@ -26459,6 +26476,8 @@
       isPreviewManuallyEdited = false;
       localStorage.removeItem(PREVIEW_DRAFT_STORAGE_KEY);
       localStorage.removeItem(CONTINUE_LIST_STORAGE_KEY);
+      sessionStorage.removeItem(HOME_PLUS_USED_SESSION_KEY);
+      forceInitialPlusForThisSession = true;
       supplierContextFilter = "";
       closeResetModal();
       render();
@@ -26762,7 +26781,14 @@
     document.body.classList.remove("dark-mode");
     applyThemeMode(getSavedThemeMode());
     renderSupplierDropdown();
-    openHomePage();
+
+    // Saat refresh di sesi yang sama dan masih ada catatan, langsung balik ke halaman daftar barang.
+    // Saat web benar-benar ditutup lalu dibuka lagi, sessionStorage kosong, jadi halaman awal menampilkan tombol + lagi.
+    if (!isFreshBrowserSession && items.length > 0) {
+      openAddedPage();
+    } else {
+      openHomePage();
+    }
 
     // Fallback agar tombol Lanjutkan List dan Batal tetap jalan walaupun browser memakai cache lama.
     document.addEventListener("click", event => {
