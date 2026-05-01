@@ -24375,6 +24375,7 @@
     let savedHomeSuggestionState = null;
     let savedHomeMenuState = null;
     let listSupplierModalReturnToSuggestion = false;
+    let isPointerInsideSearchLayer = false;
 
     const SEARCH_DELAY = 650;
     const SUGGESTION_DELAY = 650;
@@ -24787,6 +24788,36 @@
       if (el.suggestionChangeSupplierBtn) el.suggestionChangeSupplierBtn.style.display = "none";
     }
 
+    function isInsideSearchLayer(target) {
+      if (!target) return false;
+      return Boolean(
+        (el.searchBox && el.searchBox.contains(target)) ||
+        (el.searchSuggestions && el.searchSuggestions.contains(target)) ||
+        (el.suggestionTopActions && el.suggestionTopActions.contains(target))
+      );
+    }
+
+    function hideSuggestionsBecauseSearchLostFocus() {
+      window.setTimeout(() => {
+        if (isPointerInsideSearchLayer) return;
+        if (isInsideSearchLayer(document.activeElement)) return;
+        if (!el.searchSuggestions.classList.contains("show")) return;
+
+        keepSuggestionsAfterClear = false;
+        closeSuggestionsCurtainUp();
+        updateSearchOverlay();
+      }, 90);
+    }
+
+    function handleOutsideSearchLayerPointer(event) {
+      if (!el.searchSuggestions.classList.contains("show")) return;
+      if (isInsideSearchLayer(event.target)) return;
+
+      keepSuggestionsAfterClear = false;
+      closeSuggestionsCurtainUp();
+      updateSearchOverlay();
+    }
+
     function getCurrentSupplier() {
       return cleanText(selectedSupplier);
     }
@@ -24962,7 +24993,7 @@
 
     function shouldShowInitialPlusOnly() {
       const canShowEntryOnly = currentPage === "home" && !selectedProductMenu && !isSupplierMenuOpen && !cleanText(searchQuery) && !cleanText(el.searchInput.value);
-      return canShowEntryOnly && (items.length === 0 || forceInitialPlusForThisSession);
+      return canShowEntryOnly && forceInitialPlusForThisSession;
     }
 
     function updateHomeEntryMode() {
@@ -24973,27 +25004,58 @@
       if (el.catalogResults) el.catalogResults.style.display = plusOnly ? "none" : "";
     }
 
-    function openInitialSearchSuggestions() {
+    function openInitialSearchSuggestions(options = {}) {
+      // Tombol + hanya memicu field search di halaman yang sedang aktif.
+      // Kalau diklik di halaman depan, tetap di halaman depan.
+      // Kalau diklik di halaman daftar/list, tetap di halaman daftar/list.
+      const keepPage = options.keepPage !== false;
+      const pageBeforeOpen = currentPage;
+      const supplierForContext = cleanText(options.supplier || "");
+
       markHomePlusUsedForSession();
-      if (currentPage !== "home") openHomePage();
-      isSupplierMenuOpen = false;
-      selectedProductMenu = "";
+
+      if (!keepPage && currentPage !== "home") {
+        openHomePage();
+      } else {
+        isSupplierMenuOpen = false;
+        if (currentPage === "home") selectedProductMenu = "";
+        if (currentPage === "added" && supplierForContext) {
+          selectedSupplier = supplierForContext;
+          supplierContextFilter = supplierForContext;
+        }
+      }
+
       searchQuery = "";
       isSearching = false;
       isSuggestionLoading = false;
       keepSuggestionsAfterClear = false;
       currentSuggestionItems = [];
       lastSuggestionSignature = "";
+
       if (el.searchInput) {
         el.searchInput.value = "";
         setTimeout(() => el.searchInput.focus(), 60);
       }
       if (el.clearSearchBtn) el.clearSearchBtn.style.display = "none";
+
       closeSuggestionsCurtainUp();
-      renderSelectedSupplier();
-      updateHomeEntryMode();
-      renderSummary();
-      renderCatalog();
+
+      if (pageBeforeOpen === "home" || currentPage === "home") {
+        renderSelectedSupplier();
+        updateHomeEntryMode();
+        renderSummary();
+        renderCatalog();
+      } else {
+        el.homePage.style.display = "none";
+        el.addedPage.style.display = "block";
+        el.searchBox.classList.remove("hidden");
+        el.headerActions.classList.add("list-mode");
+        el.listChangeSupplierBtn.classList.add("show");
+        el.topResetBtn.classList.add("show");
+        el.viewAddedLabel.textContent = "← Kembali";
+        renderSummary();
+        renderList();
+      }
     }
 
     function renderProductMenuCards() {
@@ -26449,7 +26511,7 @@
           </div>
         `;
         const emptyListAddBtn = document.getElementById("emptyListAddBtn");
-        if (emptyListAddBtn) emptyListAddBtn.addEventListener("click", openInitialSearchSuggestions);
+        if (emptyListAddBtn) emptyListAddBtn.addEventListener("click", () => openInitialSearchSuggestions({ keepPage: true }));
         return;
       }
 
@@ -26495,9 +26557,9 @@
 
         titleElement.querySelector(".supplier-add-btn").addEventListener("click", () => {
           selectedSupplier = supplier;
-          openHomePage();
+          supplierContextFilter = supplier;
+          openInitialSearchSuggestions({ keepPage: true, supplier });
           showToast(`Tambah barang ke ${supplier}`);
-          setTimeout(() => el.searchInput.focus(), 100);
         });
 
         groupElement.appendChild(titleElement);
@@ -27438,6 +27500,23 @@
       if (shouldRender) render();
     }
 
+
+    [el.searchSuggestions, el.suggestionTopActions].forEach(layerEl => {
+      if (!layerEl) return;
+      ["pointerdown", "mousedown", "touchstart"].forEach(eventName => {
+        layerEl.addEventListener(eventName, () => {
+          isPointerInsideSearchLayer = true;
+        }, { passive: true });
+      });
+    });
+
+    ["pointerup", "mouseup", "touchend", "touchcancel"].forEach(eventName => {
+      document.addEventListener(eventName, () => {
+        window.setTimeout(() => { isPointerInsideSearchLayer = false; }, 120);
+      }, { passive: true });
+    });
+
+    document.addEventListener("pointerdown", handleOutsideSearchLayerPointer, true);
     function openResetModal() {
       if (items.length === 0) {
         showToast("Data masih kosong");
@@ -27467,7 +27546,7 @@
       showToast("Semua list berhasil direset");
     }
 
-    if (el.homePlusSearchBtn) el.homePlusSearchBtn.addEventListener("click", openInitialSearchSuggestions);
+    if (el.homePlusSearchBtn) el.homePlusSearchBtn.addEventListener("click", () => openInitialSearchSuggestions({ keepPage: true }));
 
     el.quickMenuTitle.addEventListener("click", () => {
       if (isSupplierMenuOpen || !selectedProductMenu) return;
@@ -27513,6 +27592,7 @@
     });
 
     el.searchInput.addEventListener("input", handleSearchInput);
+    el.searchInput.addEventListener("blur", hideSuggestionsBecauseSearchLostFocus);
 
     el.searchInput.addEventListener("focus", () => {
       openSupplierPickerFromListSearch();
