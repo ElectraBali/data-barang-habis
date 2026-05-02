@@ -20,7 +20,14 @@
       --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
       --radius: 18px;
     }
+* {
+  -ms-overflow-style: none; /* IE & Edge */
+  scrollbar-width: none; /* Firefox */
+}
 
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
     body.theme-gray {
       --bg: #e5e7eb;
       --card: #f8fafc;
@@ -2403,6 +2410,36 @@
       display: none !important;
     }
 
+
+
+    /* =====================================================
+       HISTORY & REPEAT ORDER
+       ===================================================== */
+    .history-quick-btn {
+      width: 100%; min-height: 48px; border: 1px solid var(--line);
+      background: linear-gradient(135deg, #ffffff, #f8fafc); color: var(--text);
+      border-radius: 16px; padding: 12px 14px; cursor: pointer; display: none;
+      align-items: center; justify-content: space-between; gap: 10px; text-align: left;
+      font-weight: 900; box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+    }
+    .history-quick-btn.show { display: flex; }
+    .history-quick-btn small { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; font-weight: 800; }
+    .history-quick-icon { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 999px; background: var(--primary-soft); color: var(--primary-dark); display: grid; place-items: center; }
+    .history-list { display: grid; gap: 10px; max-height: 430px; overflow-y: auto; padding: 2px 2px 4px; margin: 10px 0 12px; }
+    .history-card { border: 1px solid var(--line); background: #f8fafc; color: var(--text); border-radius: 16px; padding: 12px; display: grid; gap: 9px; }
+    .history-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .history-card-title { font-size: 14px; font-weight: 900; line-height: 1.25; }
+    .history-card-meta { margin-top: 4px; color: var(--muted); font-size: 12px; font-weight: 800; line-height: 1.35; }
+    .history-card-badge { flex: 0 0 auto; border-radius: 999px; background: var(--primary-soft); color: var(--primary-dark); padding: 6px 8px; font-size: 11px; font-weight: 900; }
+    .history-preview { color: var(--muted); font-size: 12px; line-height: 1.4; max-height: 52px; overflow: hidden; }
+    .history-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .history-small-btn { border: 1px solid var(--line); background: white; color: #334155; border-radius: 12px; padding: 9px 10px; font-size: 12px; font-weight: 900; cursor: pointer; min-height: 36px; }
+    .history-small-btn.primary { background: var(--primary); color: white; border-color: var(--primary); }
+    .history-small-btn.danger { background: var(--danger-soft); color: var(--danger); border-color: transparent; }
+    body.dark-mode .history-quick-btn, body.dark-mode .history-card, body.dark-mode .history-small-btn { background: rgba(255, 255, 255, 0.07); color: var(--text); border-color: rgba(148, 211, 232, 0.18); }
+    body.theme-gray .history-quick-btn, body.theme-gray .history-card, body.theme-gray .history-small-btn { background: #273142 !important; color: var(--text) !important; border-color: rgba(156, 163, 175, 0.34) !important; box-shadow: 0 12px 28px rgba(0,0,0,.22) !important; }
+    body.theme-gray .history-small-btn.primary { background: linear-gradient(135deg,#4b5563,#6b7280) !important; color: #f9fafb !important; border-color: transparent !important; }
+
   </style>
 </head>
 
@@ -2461,6 +2498,8 @@
           <span id="viewAddedCount">0 item</span>
         </button>
 
+        <button id="historyBtn" class="open-product-menu-btn show" type="button">🧾 Riwayat</button>
+
         <button id="listChangeSupplierBtn" class="top-change-supplier-btn" type="button">🏷️ Pilih Supplier</button>
 
         <button id="topResetBtn" class="top-reset-btn" type="button">🗑️ Reset</button>
@@ -2485,6 +2524,13 @@
             <div id="homePlusDescription" class="home-plus-description">
               Program ini dipakai untuk mencatat barang habis, memilih supplier, mengatur qty, lalu membuat teks list yang siap disalin atau dikirim ke WhatsApp.
             </div>
+            <button id="repeatLastBtn" class="history-quick-btn" type="button">
+              <span>
+                <span id="repeatLastTitle">Pakai list terakhir</span>
+                <small id="repeatLastMeta">Riwayat order akan muncul setelah kamu salin/kirim WA.</small>
+              </span>
+              <span class="history-quick-icon">↻</span>
+            </button>
             <div class="quick-head" id="quickHead">
               <p id="quickMenuTitle" class="quick-title">Menu barang</p>
               <div class="supplier-control">
@@ -2556,6 +2602,17 @@
       <div class="modal-actions">
         <button id="cancelResetBtn" class="btn btn-soft" type="button">Batal</button>
         <button id="confirmResetBtn" class="btn btn-danger" type="button">Ya, Reset Semua</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="historyModal" class="modal-backdrop">
+    <div class="modal">
+      <h3>Riwayat order</h3>
+      <p>List otomatis tersimpan saat kamu menekan Salin List atau Kirim WA. Pakai ulang list lama dengan Replace atau Merge.</p>
+      <div id="historyList" class="history-list"></div>
+      <div class="modal-actions" style="grid-template-columns:1fr;">
+        <button id="closeHistoryBtn" class="btn btn-soft" type="button">Tutup</button>
       </div>
     </div>
   </div>
@@ -2685,6 +2742,7 @@
     const CUSTOM_ITEM_STORAGE_KEY = "barang_habis_custom_items_v1";
     const THEME_STORAGE_KEY = "barang_habis_theme_mode_v1";
     const WA_CUSTOM_TARGETS_STORAGE_KEY = "barang_habis_wa_custom_targets_v1";
+    const HISTORY_STORAGE_KEY = "barang_habis_order_history_v1";
     const HOME_SESSION_KEY = "barang_habis_home_session_alive_v1";
     const HOME_PLUS_USED_SESSION_KEY = "barang_habis_home_plus_used_session_v1";
     const PREVIEW_DRAFT_STORAGE_KEY = "barang_habis_preview_manual_draft_v1";
@@ -24453,6 +24511,10 @@
       viewAddedBtn: $("viewAddedBtn"),
       viewAddedLabel: $("viewAddedLabel"),
       viewAddedCount: $("viewAddedCount"),
+      historyBtn: $("historyBtn"),
+      repeatLastBtn: $("repeatLastBtn"),
+      repeatLastTitle: $("repeatLastTitle"),
+      repeatLastMeta: $("repeatLastMeta"),
       listChangeSupplierBtn: $("listChangeSupplierBtn"),
       listAddSupplierBtn: $("listAddSupplierBtn"),
       topResetBtn: $("topResetBtn"),
@@ -24501,6 +24563,9 @@
       confirmModal: $("confirmModal"),
       cancelResetBtn: $("cancelResetBtn"),
       confirmResetBtn: $("confirmResetBtn"),
+      historyModal: $("historyModal"),
+      historyList: $("historyList"),
+      closeHistoryBtn: $("closeHistoryBtn"),
       addSupplierModal: $("addSupplierModal"),
       addSupplierInput: $("addSupplierInput"),
       cancelAddSupplierBtn: $("cancelAddSupplierBtn"),
@@ -24823,6 +24888,259 @@
       el.toast.textContent = cleanText(message) || "Berhasil";
       el.toast.classList.add("show");
       setTimeout(() => el.toast.classList.remove("show"), 1800);
+    }
+
+
+    function loadOrderHistory() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || "[]");
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+          .map(entry => ({
+            id: cleanText(entry && entry.id) || String(Date.now() + Math.random()),
+            createdAt: cleanText(entry && entry.createdAt) || new Date().toISOString(),
+            mode: cleanText(entry && entry.mode) === "bawain" ? "bawain" : "normal",
+            source: cleanText(entry && entry.source) || "List",
+            shareText: safeString(entry && entry.shareText),
+            items: Array.isArray(entry && entry.items)
+              ? entry.items.map(normalizeStoredItem).filter(item => item.name)
+              : []
+          }))
+          .filter(entry => entry.items.length > 0)
+          .slice(0, 40);
+      } catch (error) {
+        console.warn("Gagal membaca riwayat order:", error);
+        return [];
+      }
+    }
+
+    function saveOrderHistory(history) {
+      try {
+        localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify((history || []).slice(0, 40)));
+      } catch (error) {
+        console.warn("Gagal menyimpan riwayat order:", error);
+      }
+    }
+
+    function getHistorySignature(entry) {
+      const itemSignature = (entry.items || [])
+        .map(item => [getItemMode(item), cleanText(item.supplier).toLowerCase(), cleanText(item.name).toLowerCase(), item.qty].join("|"))
+        .sort()
+        .join(";");
+      return `${entry.mode}::${itemSignature}`;
+    }
+
+    function createOrderHistorySnapshot(source = "List") {
+      const activeItems = getActiveItems();
+      if (!activeItems.length) return null;
+      const now = new Date().toISOString();
+      return {
+        id: String(Date.now()),
+        createdAt: now,
+        mode: getCurrentModeName(),
+        source: cleanText(source) || "List",
+        shareText: getShareText(),
+        items: activeItems.map(item => ({
+          id: String(Date.now() + Math.random()),
+          name: item.name,
+          category: item.category,
+          supplier: item.supplier,
+          mode: getItemMode(item),
+          qty: item.qty,
+          createdAt: item.createdAt || now,
+          updatedAt: now
+        }))
+      };
+    }
+
+    function saveCurrentListToHistory(source = "List") {
+      const snapshot = createOrderHistorySnapshot(source);
+      if (!snapshot) return null;
+      const history = loadOrderHistory();
+      const signature = getHistorySignature(snapshot);
+      const latest = history[0];
+      const latestTime = latest ? new Date(latest.createdAt).getTime() : 0;
+      const isRecentDuplicate = latest && getHistorySignature(latest) === signature && (Date.now() - latestTime) < 10 * 60 * 1000;
+      if (isRecentDuplicate) {
+        latest.createdAt = snapshot.createdAt;
+        latest.source = snapshot.source;
+        latest.shareText = snapshot.shareText;
+        saveOrderHistory(history);
+        return latest;
+      }
+      history.unshift(snapshot);
+      saveOrderHistory(history);
+      return snapshot;
+    }
+
+    function formatHistoryDate(dateText) {
+      const date = new Date(dateText);
+      if (Number.isNaN(date.getTime())) return "Tanggal tidak diketahui";
+      const today = new Date();
+      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+      const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+      const diffDays = Math.round((startOfToday - startOfDate) / 86400000);
+      const timeText = date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+      if (diffDays === 0) return `Hari ini, ${timeText}`;
+      if (diffDays === 1) return `Kemarin, ${timeText}`;
+      return date.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) + `, ${timeText}`;
+    }
+
+    function getHistorySupplierSummary(entry) {
+      if (entry.mode === "bawain") return "Bawain Barang";
+      const suppliers = Array.from(new Set((entry.items || []).map(item => getDisplaySupplierName(item.supplier)).filter(Boolean)));
+      if (suppliers.length === 0) return "Tanpa Supplier";
+      if (suppliers.length === 1) return suppliers[0];
+      return `${suppliers[0]} +${suppliers.length - 1} supplier`;
+    }
+
+    function getHistoryPreview(entry) {
+      const lines = (entry.items || []).slice(0, 4).map(item => entry.mode === "bawain" ? `• ${item.name}` : `• ${item.name} (${formatQtyText(item.qty)})`);
+      const remaining = Math.max(0, (entry.items || []).length - lines.length);
+      return lines.join("<br>") + (remaining ? `<br>+${remaining} barang lain` : "");
+    }
+
+    function renderHistoryButtonState() {
+      const history = loadOrderHistory();
+      const latest = history[0];
+      if (el.historyBtn) el.historyBtn.style.display = history.length ? "inline-flex" : "none";
+      if (!el.repeatLastBtn) return;
+      el.repeatLastBtn.classList.toggle("show", Boolean(latest));
+      if (latest) {
+        el.repeatLastTitle.textContent = "↻ Pakai list terakhir";
+        el.repeatLastMeta.textContent = `${formatHistoryDate(latest.createdAt)} • ${getHistorySupplierSummary(latest)} • ${latest.items.length} item`;
+      } else {
+        el.repeatLastMeta.textContent = "Riwayat order akan muncul setelah kamu salin/kirim WA.";
+      }
+    }
+
+    function renderHistoryList() {
+      if (!el.historyList) return;
+      const history = loadOrderHistory();
+      if (!history.length) {
+        el.historyList.innerHTML = `
+          <div class="empty" style="padding:20px;">
+            <strong>Belum ada riwayat</strong>
+            <span>Tekan Salin List atau Kirim WA agar list otomatis tersimpan di sini.</span>
+          </div>
+        `;
+        return;
+      }
+      el.historyList.innerHTML = history.map(entry => `
+        <div class="history-card" data-history-id="${escapeHTML(entry.id)}">
+          <div class="history-card-head">
+            <div>
+              <div class="history-card-title">${escapeHTML(getHistorySupplierSummary(entry))}</div>
+              <div class="history-card-meta">${escapeHTML(formatHistoryDate(entry.createdAt))} • ${escapeHTML(entry.source)} • ${entry.items.length} item</div>
+            </div>
+            <div class="history-card-badge">${entry.mode === "bawain" ? "Bawain" : "Order"}</div>
+          </div>
+          <div class="history-preview">${getHistoryPreview(entry)}</div>
+          <div class="history-actions">
+            <button class="history-small-btn primary" type="button" data-history-action="replace">Pakai ulang</button>
+            <button class="history-small-btn" type="button" data-history-action="merge">Tambah ke list</button>
+            <button class="history-small-btn" type="button" data-history-action="copy">Salin teks</button>
+            <button class="history-small-btn danger" type="button" data-history-action="delete">Hapus</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function openHistoryModal() {
+      renderHistoryList();
+      openSmoothModal(el.historyModal);
+    }
+
+    function closeHistoryModal() {
+      closeSmoothModal(el.historyModal);
+    }
+
+    function findHistoryEntry(id) {
+      return loadOrderHistory().find(entry => entry.id === cleanText(id)) || null;
+    }
+
+    function applyHistoryEntry(entry, mode = "replace") {
+      if (!entry || !entry.items || !entry.items.length) return;
+      const targetMode = entry.mode === "bawain" ? "bawain" : "normal";
+      setBawainMode(targetMode === "bawain", { openList: false });
+      const now = new Date().toISOString();
+      const restoredItems = entry.items.map(item => ({
+        ...normalizeStoredItem(item),
+        id: String(Date.now() + Math.random()),
+        mode: targetMode,
+        supplier: targetMode === "bawain" ? BAWAIN_SUPPLIER_KEY : cleanText(item.supplier || "Tanpa Supplier"),
+        createdAt: now,
+        updatedAt: now
+      }));
+
+      if (mode === "merge") {
+        restoredItems.forEach(restored => {
+          const existing = items.find(item => {
+            if (getItemMode(item) !== targetMode) return false;
+            if (targetMode === "bawain") return cleanText(item.name).toLowerCase() === cleanText(restored.name).toLowerCase();
+            return cleanText(item.name).toLowerCase() === cleanText(restored.name).toLowerCase() && cleanText(item.supplier).toLowerCase() === cleanText(restored.supplier).toLowerCase();
+          });
+          if (existing) {
+            existing.qty = targetMode === "bawain" ? 0 : existing.qty + restored.qty;
+            existing.updatedAt = now;
+          } else {
+            items.unshift(restored);
+          }
+        });
+      } else {
+        items = items.filter(item => getItemMode(item) !== targetMode).concat(restoredItems);
+      }
+
+      selectedSupplier = targetMode === "normal" ? getHistorySupplierSummary(entry).replace(/ \+\d+ supplier$/, "") : "";
+      supplierContextFilter = "";
+      continuedListText = "";
+      manualPreviewText = "";
+      isPreviewManuallyEdited = false;
+      localStorage.removeItem(CONTINUE_LIST_STORAGE_KEY);
+      localStorage.removeItem(PREVIEW_DRAFT_STORAGE_KEY);
+      saveItems();
+      closeHistoryModal();
+      openAddedPage();
+      showToast(mode === "merge" ? "List lama ditambahkan ke list sekarang" : "List lama dipakai ulang");
+    }
+
+    function deleteHistoryEntry(id) {
+      const nextHistory = loadOrderHistory().filter(entry => entry.id !== cleanText(id));
+      saveOrderHistory(nextHistory);
+      renderHistoryList();
+      renderHistoryButtonState();
+      showToast("Riwayat dihapus");
+    }
+
+    async function copyHistoryText(entry) {
+      if (!entry) return;
+      const text = cleanText(entry.shareText) ? entry.shareText : (entry.items || []).map(item => `* ${item.name}${entry.mode === "bawain" ? "" : ` (${formatQtyText(item.qty)})`}`).join("\n");
+      try {
+        if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(text);
+        else if (!copyTextWithFallback(text)) throw new Error("Fallback copy gagal");
+        showToast("Teks riwayat disalin");
+      } catch (error) {
+        const copied = copyTextWithFallback(text);
+        showToast(copied ? "Teks riwayat disalin" : "Gagal menyalin riwayat");
+      }
+    }
+
+    function handleHistoryListClick(event) {
+      const actionButton = event.target.closest("[data-history-action]");
+      if (!actionButton) return;
+      const card = actionButton.closest("[data-history-id]");
+      const entry = findHistoryEntry(card ? card.dataset.historyId : "");
+      const action = actionButton.dataset.historyAction;
+      if (action === "replace") applyHistoryEntry(entry, "replace");
+      if (action === "merge") applyHistoryEntry(entry, "merge");
+      if (action === "copy") copyHistoryText(entry);
+      if (action === "delete") deleteHistoryEntry(entry && entry.id);
+    }
+
+    function repeatLastHistory() {
+      const latest = loadOrderHistory()[0];
+      if (!latest) { showToast("Belum ada riwayat order"); return; }
+      applyHistoryEntry(latest, "replace");
     }
 
 
@@ -27445,6 +27763,7 @@
 
     function renderSummary() {
       updateListChangeSupplierButton();
+      renderHistoryButtonState();
       const activeItems = getActiveItems();
       const qtyTotal = activeItems.reduce((total, item) => total + item.qty, 0);
       const supplierTotal = Object.keys(groupBySupplier(activeItems)).length;
@@ -27863,6 +28182,8 @@
         } else if (!copyTextWithFallback(text)) {
           throw new Error("Fallback copy gagal");
         }
+        saveCurrentListToHistory("Salin List");
+        renderHistoryButtonState();
         showToast(isBawainMode ? "List bawain barang berhasil disalin" : "Teks berhasil disalin");
       } catch (error) {
         const copied = copyTextWithFallback(text);
@@ -27988,6 +28309,10 @@
       const textValue = getValidShareTextForWa();
       if (!textValue) return;
       const cleanNumber = String(number || WA_NUMBER).replace(/\D/g, "");
+      saveCurrentListToHistory("Kirim WA");
+      renderHistoryButtonState();
+      saveCurrentListToHistory("Kirim WA");
+      renderHistoryButtonState();
       const text = encodeURIComponent(textValue);
       closeWaTargetModal();
       const waUrl = `https://wa.me/${cleanNumber}?text=${text}`;
@@ -28348,6 +28673,11 @@
     document.querySelectorAll(".theme-choice-btn[data-theme]").forEach(button => {
       button.addEventListener("click", () => chooseThemeMode(button.dataset.theme || "light"));
     });
+
+    if (el.historyBtn) el.historyBtn.addEventListener("click", openHistoryModal);
+    if (el.repeatLastBtn) el.repeatLastBtn.addEventListener("click", repeatLastHistory);
+    if (el.closeHistoryBtn) el.closeHistoryBtn.addEventListener("click", closeHistoryModal);
+    if (el.historyList) el.historyList.addEventListener("click", handleHistoryListClick);
 
     el.copyBtn.addEventListener("click", copyList);
     el.waBtn.addEventListener("click", sendToWhatsApp);
