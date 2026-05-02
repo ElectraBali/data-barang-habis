@@ -415,7 +415,8 @@
     .badge strong { display: block; font-size: 20px; line-height: 1; }
     .badge span { font-size: 10px; opacity: 0.9; }
 
-    #totalBadge { transition: opacity 0.25s ease, transform 0.25s ease; }
+    #totalBadge { transition: opacity 0.25s ease, transform 0.25s ease; cursor: pointer; }
+    #totalBadge.bawain-toggle-badge strong { font-size: 12px; line-height: 1.1; }
     .header.hide-badge #totalBadge { display: none; }
 
     .header-right-tools {
@@ -2394,6 +2395,14 @@
       display: none !important;
     }
 
+
+    /* Khusus mode Bawain Barang: tidak ada pengisian / pengaturan qty */
+    body.bawain-mode .suggestion-qty-input,
+    body.bawain-mode .catalog-qty-input,
+    body.bawain-mode #addedPage .qty-control {
+      display: none !important;
+    }
+
   </style>
 </head>
 
@@ -2683,6 +2692,7 @@
     const SUPPLIER_RENAME_STORAGE_KEY = "barang_habis_supplier_rename_map_v1";
     const WA_TARGETS = { septi: "6285904294798", electra: "628175777488" };
     const WA_NUMBER = WA_TARGETS.electra;
+    const BAWAIN_SUPPLIER_KEY = "__BAWAIN_BARANG__";
 
     const SUPPLIERS = [
       "CNC",
@@ -24559,6 +24569,7 @@
     let keepSuggestionsAfterClear = false;
     let suggestionCurtainTimer = null;
     let selectedSupplier = "";
+    let isBawainMode = false;
     let pendingAddItem = null;
     let editingSupplierName = "";
     let isSupplierMenuOpen = false;
@@ -24636,11 +24647,16 @@
       const name = cleanText(item && item.name);
       const masterItem = findMasterItem(name);
 
+      const rawMode = cleanText(item && item.mode).toLowerCase();
+      const rawSupplier = cleanText(item && item.supplier);
+      const itemMode = rawMode === "bawain" || rawSupplier === BAWAIN_SUPPLIER_KEY ? "bawain" : "normal";
+
       return {
         id: cleanText(item && item.id) || String(Date.now() + Math.random()),
         name: masterItem ? masterItem.name : name,
         category: cleanText((item && item.category) || (masterItem && masterItem.category) || "Lainnya"),
-        supplier: cleanText(item && item.supplier) || "Tanpa Supplier",
+        supplier: itemMode === "bawain" ? BAWAIN_SUPPLIER_KEY : (rawSupplier || "Tanpa Supplier"),
+        mode: itemMode,
         qty: Math.max(0, parseInt(item && item.qty, 10) || 0),
         createdAt: cleanText(item && item.createdAt) || new Date().toISOString(),
         updatedAt: cleanText(item && item.updatedAt) || new Date().toISOString()
@@ -25080,6 +25096,43 @@
       return cleanText(selectedSupplier);
     }
 
+    function getItemMode(item) {
+      const rawMode = cleanText(item && item.mode).toLowerCase();
+      const rawSupplier = cleanText(item && item.supplier);
+      return rawMode === "bawain" || rawSupplier === BAWAIN_SUPPLIER_KEY ? "bawain" : "normal";
+    }
+
+    function getCurrentModeName() {
+      return isBawainMode ? "bawain" : "normal";
+    }
+
+    function getActiveItems() {
+      const currentMode = getCurrentModeName();
+      return items.filter(item => getItemMode(item) === currentMode);
+    }
+
+    function getDisplaySupplierName(supplier) {
+      return cleanText(supplier) === BAWAIN_SUPPLIER_KEY ? "Bawain Barang" : cleanText(supplier);
+    }
+
+    function setBawainMode(active, options = {}) {
+      isBawainMode = Boolean(active);
+      document.body.classList.toggle("bawain-mode", isBawainMode);
+      supplierContextFilter = "";
+      if (isBawainMode) {
+        selectedSupplier = "";
+        isSupplierMenuOpen = false;
+        isSupplierEditMode = false;
+      }
+      if (options.openList) openAddedPage();
+      else render();
+    }
+
+    function toggleBawainMode() {
+      setBawainMode(!isBawainMode, { openList: true });
+      showToast(isBawainMode ? "Mode Bawain Barang aktif" : "Kembali ke catatan biasa");
+    }
+
     function syncSavedHomeSupplierState(supplierName) {
       const supplier = cleanText(supplierName || selectedSupplier);
       if (savedHomeMenuState) savedHomeMenuState.selectedSupplierValue = supplier;
@@ -25179,6 +25232,7 @@
       });
 
       items.forEach(item => {
+        if (getItemMode(item) === "bawain") return;
         const supplier = cleanText(item.supplier);
         if (supplier) set.add(supplier);
       });
@@ -25187,7 +25241,7 @@
     }
 
     function getFilteredItems() {
-      let source = items;
+      let source = getActiveItems();
 
       // Di halaman daftar catatan barang habis, semua supplier yang punya catatan tetap tampil.
       // supplierContextFilter sekarang dipakai sebagai prioritas urutan, bukan untuk menyaring/hide supplier lain.
@@ -25922,7 +25976,7 @@
       el.topResetBtn.classList.remove("show");
 
       el.pageTitle.textContent = getHeaderTitleText();
-      el.pageSubtitle.textContent = `Supplier aktif: ${getCurrentSupplier()}`;
+      el.pageSubtitle.textContent = isBawainMode ? "Cari barang untuk diminta bawakan dari gudang." : `Supplier aktif: ${getCurrentSupplier()}`;
       el.searchInput.placeholder = "Cari semua barang...";
       el.viewAddedLabel.textContent = "📦 Lihat semua List";
 
@@ -25934,7 +25988,7 @@
       currentPage = "added";
       isSupplierMenuOpen = false;
       isSupplierEditMode = false;
-      supplierContextFilter = cleanText(filterSupplier);
+      supplierContextFilter = isBawainMode ? "" : cleanText(filterSupplier);
 
       el.homePage.style.display = "none";
       el.addedPage.style.display = "block";
@@ -25946,9 +26000,11 @@
       el.topResetBtn.classList.add("show");
 
       el.pageTitle.textContent = getListHeadingText();
-      el.pageSubtitle.textContent = supplierContextFilter
-        ? `Catatan aktif untuk supplier: ${supplierContextFilter}`
-        : "List barang otomatis digrup per supplier.";
+      el.pageSubtitle.textContent = isBawainMode
+        ? "Tanpa supplier. Format text khusus bawain barang."
+        : (supplierContextFilter
+          ? `Catatan aktif untuk supplier: ${supplierContextFilter}`
+          : "List barang otomatis digrup per supplier.");
 
       el.searchInput.placeholder = "Cari semua barang...";
 
@@ -25993,6 +26049,39 @@
         - kalau supplier sudah dipilih manual/sebelumnya, langsung pakai supplier aktif tanpa modal.
         completePendingAddAfterSupplier() memanggil addItem lagi dengan skipSupplierPicker=true.
       */
+      if (isBawainMode) {
+        let masterItem = findMasterItem(requestedName);
+        if (!masterItem) { const firstMatch = getFilteredCatalog()[0]; if (firstMatch) masterItem = firstMatch; }
+        if (!masterItem) { showToast("Barang tidak ada di katalog"); el.searchInput.focus(); return false; }
+
+        const existing = items.find(item =>
+          getItemMode(item) === "bawain" &&
+          cleanText(item.name).toLowerCase() === masterItem.name.toLowerCase()
+        );
+
+        if (existing) {
+          existing.updatedAt = new Date().toISOString();
+          showToast("Barang sudah ada di Bawain Barang");
+        } else {
+          items.unshift({
+            id: String(Date.now() + Math.random()),
+            name: masterItem.name,
+            category: masterItem.category,
+            supplier: BAWAIN_SUPPLIER_KEY,
+            mode: "bawain",
+            qty: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          });
+          showToast("Barang masuk ke Bawain Barang");
+        }
+
+        markHomePlusUsedForSession();
+        saveItems();
+        render();
+        return true;
+      }
+
       const activeSupplierForAdd = getCurrentSupplier() || cleanText(supplierContextFilter);
       if (!options.skipSupplierPicker && !activeSupplierForAdd) {
         setPendingAddItem(requestedName, parsedQty);
@@ -26030,7 +26119,7 @@
         showToast(parsedQty === 0 ? "Barang sudah ditandai di list" : `Qty barang ditambahkan ${parsedQty} pcs`);
       }
       else {
-        items.unshift({ id: String(Date.now() + Math.random()), name: masterItem.name, category: masterItem.category, supplier, qty: parsedQty, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+        items.unshift({ id: String(Date.now() + Math.random()), name: masterItem.name, category: masterItem.category, supplier, mode: "normal", qty: parsedQty, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
         showToast(parsedQty === 0 ? `Barang tercatat tanpa qty ke ${supplier}` : `Barang tercatat ${parsedQty} pcs ke ${supplier}`);
       }
       markHomePlusUsedForSession();
@@ -26522,6 +26611,36 @@
     }
 
 
+    function buildAddToolsHTML(alreadyAddedItem, inputClass, buttonClass) {
+      if (isBawainMode) {
+        return `<span class="${buttonClass}" role="button">+ Tambah</span>`;
+      }
+      return `<input class="${inputClass}" type="number" min="0" inputmode="numeric" placeholder="0" aria-label="Jumlah barang" />
+            <button class="${buttonClass}" type="button">+ Tambah</button>`;
+    }
+
+    function bindAddTools(button, itemName, inputSelector, buttonSelector, afterSuccess) {
+      const qtyInput = button.querySelector(inputSelector);
+      const addButton = button.querySelector(buttonSelector);
+      const runAdd = event => {
+        if (event) { event.preventDefault(); event.stopPropagation(); }
+        const qty = isBawainMode ? 0 : parseAddQty(qtyInput ? qtyInput.value : "", 0);
+        if (qty === null) { showToast("Qty tidak valid"); if (qtyInput) qtyInput.focus(); return; }
+        const success = addItem(itemName, qty);
+        if (success && typeof afterSuccess === "function") afterSuccess();
+      };
+      if (qtyInput) {
+        qtyInput.addEventListener("click", event => event.stopPropagation());
+        qtyInput.addEventListener("keydown", event => { event.stopPropagation(); if (event.key === "Enter") { event.preventDefault(); runAdd(event); } });
+      }
+      if (addButton) addButton.addEventListener("click", runAdd);
+      button.addEventListener("click", event => {
+        if (event.target.closest("input, button, .suggestion-added-note")) return;
+        if (isBawainMode) runAdd(event);
+        else if (qtyInput) qtyInput.focus();
+      });
+    }
+
     function renderMenuCatalogBodyOnly() {
       if (currentPage !== "home" || !selectedProductMenu) return false;
 
@@ -26568,27 +26687,17 @@
           <span>
             <span class="catalog-name">${escapeHTML(item.name)}</span>
             <span class="catalog-category">${escapeHTML(item.category)}</span>\n                    ${isItemAlreadyListed(item.name) ? `<span class="suggestion-added-note" data-added-name="${escapeHTML(item.name)}">Sudah di list</span>` : ""}
-            ${alreadyAdded ? `<span class="suggestion-added-note">✓ Sudah di list (${alreadyAddedItem.qty})</span>` : ""}
+            ${alreadyAdded ? `<span class="suggestion-added-note">✓ Sudah di list${isBawainMode ? "" : ` (${alreadyAddedItem.qty})`}</span>` : ""}
           </span>
           <span class="catalog-add-tools">
-            <input class="catalog-qty-input" type="number" min="0" inputmode="numeric" placeholder="0" aria-label="Jumlah barang" />
-            <button class="catalog-add-btn" type="button">+ Tambah</button>
+            ${buildAddToolsHTML(alreadyAddedItem, "catalog-qty-input", "catalog-add-btn")}
           </span>
         `;
 
-        const qtyInput = button.querySelector(".catalog-qty-input");
-        const addButton = button.querySelector(".catalog-add-btn");
-        qtyInput.addEventListener("click", event => event.stopPropagation());
-        qtyInput.addEventListener("keydown", event => { event.stopPropagation(); if (event.key === "Enter") { event.preventDefault(); addButton.click(); } });
-        addButton.addEventListener("click", event => {
-          event.preventDefault(); event.stopPropagation();
-          const qty = parseAddQty(qtyInput.value, 0);
-          if (qty === null) { showToast("Qty tidak valid"); qtyInput.focus(); return; }
+        bindAddTools(button, item.name, ".catalog-qty-input", ".catalog-add-btn", () => {
           closeSuggestionsCurtainUp();
-          const success = addItem(item.name, qty);
-          if (success && selectedProductMenu) { isMenuSearchFocused = true; isMenuCatalogLoading = false; renderMenuCatalogBodyOnly(); }
+          if (selectedProductMenu) { isMenuSearchFocused = true; isMenuCatalogLoading = false; renderMenuCatalogBodyOnly(); }
         });
-        button.addEventListener("click", event => { if (event.target.closest("input, button, .suggestion-added-note")) return; qtyInput.focus(); });
 
         const addedNote = button.querySelector(".suggestion-added-note");
         if (addedNote && alreadyAddedItem) {
@@ -26784,27 +26893,17 @@
           <span>
             <span class="catalog-name">${escapeHTML(item.name)}</span>
             <span class="catalog-category">${escapeHTML(item.category)}</span>\n                    ${isItemAlreadyListed(item.name) ? `<span class="suggestion-added-note" data-added-name="${escapeHTML(item.name)}">Sudah di list</span>` : ""}
-            ${alreadyAdded ? `<span class="suggestion-added-note">✓ Sudah di list (${alreadyAddedItem.qty})</span>` : ""}
+            ${alreadyAdded ? `<span class="suggestion-added-note">✓ Sudah di list${isBawainMode ? "" : ` (${alreadyAddedItem.qty})`}</span>` : ""}
           </span>
           <span class="catalog-add-tools">
-            <input class="catalog-qty-input" type="number" min="0" inputmode="numeric" placeholder="0" aria-label="Jumlah barang" />
-            <button class="catalog-add-btn" type="button">+ Tambah</button>
+            ${buildAddToolsHTML(alreadyAddedItem, "catalog-qty-input", "catalog-add-btn")}
           </span>
         `;
 
-        const qtyInput = button.querySelector(".catalog-qty-input");
-        const addButton = button.querySelector(".catalog-add-btn");
-        qtyInput.addEventListener("click", event => event.stopPropagation());
-        qtyInput.addEventListener("keydown", event => { event.stopPropagation(); if (event.key === "Enter") { event.preventDefault(); addButton.click(); } });
-        addButton.addEventListener("click", event => {
-          event.preventDefault(); event.stopPropagation();
-          const qty = parseAddQty(qtyInput.value, 0);
-          if (qty === null) { showToast("Qty tidak valid"); qtyInput.focus(); return; }
+        bindAddTools(button, item.name, ".catalog-qty-input", ".catalog-add-btn", () => {
           closeSuggestionsCurtainUp();
-          const success = addItem(item.name, qty);
-          if (success && selectedProductMenu) { isMenuSearchFocused = true; isMenuCatalogLoading = false; if (!renderMenuCatalogBodyOnly()) renderCatalog(); }
+          if (selectedProductMenu) { isMenuSearchFocused = true; isMenuCatalogLoading = false; if (!renderMenuCatalogBodyOnly()) renderCatalog(); }
         });
-        button.addEventListener("click", event => { if (event.target.closest("input, button, .suggestion-added-note")) return; qtyInput.focus(); });
 
         const addedNote = button.querySelector(".suggestion-added-note");
         if (addedNote && alreadyAddedItem) {
@@ -26838,6 +26937,48 @@
         `;
         const emptyListAddBtn = document.getElementById("emptyListAddBtn");
         if (emptyListAddBtn) emptyListAddBtn.addEventListener("click", () => openInitialSearchSuggestions({ keepPage: true }));
+        return;
+      }
+
+      if (isBawainMode) {
+        const groupElement = document.createElement("div");
+        groupElement.className = "supplier-group";
+
+        const titleElement = document.createElement("div");
+        titleElement.className = "supplier-title";
+        titleElement.innerHTML = `
+          <div class="supplier-title-left">
+            <button class="supplier-add-btn" type="button" aria-label="Tambah barang">+</button>
+            <strong class="supplier-title-name">Bawain Barang</strong>
+          </div>
+          <div class="supplier-title-right">
+            <span>${filteredItems.length} item</span>
+          </div>
+        `;
+        titleElement.querySelector(".supplier-add-btn").addEventListener("click", () => {
+          openInitialSearchSuggestions({ keepPage: true });
+          showToast("Tambah barang bawain");
+        });
+        groupElement.appendChild(titleElement);
+
+        filteredItems.forEach(item => {
+          const itemElement = document.createElement("div");
+          itemElement.className = "item";
+          itemElement.innerHTML = `
+            <div class="item-left">
+              <p class="item-name">${escapeHTML(item.name)}</p>
+              <div class="item-meta">${escapeHTML(item.category)} • Update: ${formatDate(item.updatedAt)}</div>
+            </div>
+            <div class="item-actions">
+              <button class="delete-btn" type="button">×</button>
+            </div>
+          `;
+          const deleteButton = itemElement.querySelector(".delete-btn");
+          deleteButton.addEventListener("click", () => removeItem(item.id));
+          groupElement.appendChild(itemElement);
+        });
+
+        el.itemList.appendChild(groupElement);
         return;
       }
 
@@ -26951,13 +27092,20 @@
     }
 
     function generateMessage() {
-      if (items.length === 0) return "";
+      const activeItems = getActiveItems();
+      if (activeItems.length === 0) return "";
 
       const supplierDivider = "----------------------";
-      const grouped = groupBySupplier(items);
+
+      if (isBawainMode) {
+        const bawainLines = activeItems.map(item => `* ${item.name}`);
+        return `bawain barang\n${supplierDivider}\n${bawainLines.join("\n")}\n${supplierDivider}`;
+      }
+
+      const grouped = groupBySupplier(activeItems);
       const sections = getMessageSupplierOrder(grouped).map(supplier => {
         const lines = grouped[supplier].map(item => `* ${item.name} (${formatQtyText(item.qty)})`);
-        return `Supplier ${supplier}\n${supplierDivider}\n${lines.join("\n")}`;
+        return `Supplier ${getDisplaySupplierName(supplier)}\n${supplierDivider}\n${lines.join("\n")}`;
       });
 
       return `Catatan barang menipis / habis\n\n${sections.join("\n\n")}`;
@@ -26995,6 +27143,14 @@
     }
 
     function getShareText() {
+      // Khusus mode Bawain Barang, tombol Salin List dan Kirim WA harus selalu
+      // mengambil teks otomatis langsung dari data item bawain. Ini membuat
+      // tombol bawah tetap berfungsi walaupun user masih berada di tab
+      // "Daftar Barang" dan textarea Preview sedang tidak terlihat.
+      if (isBawainMode) {
+        return generateMessage();
+      }
+
       const previewValue = getPreviewTextValue();
       return previewValue || generateAutoPreviewMessage();
     }
@@ -27002,8 +27158,8 @@
     function syncPreviewText(options = {}) {
       if (!el.previewText) return;
 
-      const autoText = generateAutoPreviewMessage();
-      const shouldForceAuto = Boolean(options.forceAuto);
+      const autoText = isBawainMode ? generateMessage() : generateAutoPreviewMessage();
+      const shouldForceAuto = Boolean(options.forceAuto) || isBawainMode;
 
       if (shouldForceAuto) {
         manualPreviewText = "";
@@ -27150,7 +27306,7 @@
       el.listChangeSupplierBtn.title = hasSupplier ? "Ganti supplier aktif untuk tambah catatan berikutnya" : "Pilih supplier dulu";
       el.listChangeSupplierBtn.setAttribute("aria-label", hasSupplier ? "Ganti supplier" : "Pilih supplier");
 
-      const shouldShow = currentPage === "added";
+      const shouldShow = currentPage === "added" && !isBawainMode;
       el.listChangeSupplierBtn.classList.toggle("show", shouldShow);
       el.listChangeSupplierBtn.style.display = shouldShow ? "inline-flex" : "none";
       if (el.listAddSupplierBtn) {
@@ -27270,11 +27426,13 @@
     }
 
     function getHeaderTitleText() {
+      if (isBawainMode) return "Bawain Barang";
       const supplierName = cleanText(supplierContextFilter || getCurrentSupplier());
       return supplierName ? `Catat barang ${supplierName}` : "Elektra Bali";
     }
 
     function getListHeadingText() {
+      if (isBawainMode) return "Bawain Barang";
       const supplierName = cleanText(supplierContextFilter || getCurrentSupplier());
       return supplierName ? `Catat Barang Habis (${supplierName})` : "Catatan Barang Habis";
     }
@@ -27287,13 +27445,19 @@
 
     function renderSummary() {
       updateListChangeSupplierButton();
-      const qtyTotal = items.reduce((total, item) => total + item.qty, 0);
-      const supplierTotal = Object.keys(groupBySupplier(items)).length;
+      const activeItems = getActiveItems();
+      const qtyTotal = activeItems.reduce((total, item) => total + item.qty, 0);
+      const supplierTotal = Object.keys(groupBySupplier(activeItems)).length;
 
-      el.totalItems.textContent = items.length;
-      el.viewAddedCount.textContent = items.length + " item";
+      document.body.classList.toggle("bawain-mode", isBawainMode);
+      if (el.totalBadge) el.totalBadge.classList.toggle("bawain-toggle-badge", true);
+      el.totalItems.textContent = isBawainMode ? "Normal" : "Bawain";
+      const badgeSpan = el.totalBadge ? el.totalBadge.querySelector("span") : null;
+      if (badgeSpan) badgeSpan.textContent = isBawainMode ? "Kembali" : "Barang";
+      if (el.totalBadge) el.totalBadge.title = isBawainMode ? "Klik untuk kembali ke halaman biasa" : "Klik untuk buka halaman Bawain Barang";
+      el.viewAddedCount.textContent = activeItems.length + " item";
 
-      const hasItemsInList = items.length > 0;
+      const hasItemsInList = activeItems.length > 0;
       setBottomBarVisible(hasItemsInList);
       const isInsideProductMenu = currentPage === "home" && Boolean(selectedProductMenu);
       const menuBackCountEl = el.menuBackBtn.querySelector("span");
@@ -27309,19 +27473,23 @@
       el.viewAddedLabel.textContent = currentPage === "home" ? "📦 Lihat semua List" : "← Kembali";
       if (currentPage === "home") {
         el.pageTitle.textContent = getHeaderTitleText();
-        el.pageSubtitle.textContent = getCurrentSupplier()
-          ? `Supplier aktif: ${getCurrentSupplier()}`
-          : "Cari barang lalu klik tambah item.";
+        el.pageSubtitle.textContent = isBawainMode
+          ? "Cari barang untuk diminta bawakan dari gudang."
+          : (getCurrentSupplier()
+            ? `Supplier aktif: ${getCurrentSupplier()}`
+            : "Cari barang lalu klik tambah item.");
       }
       if (el.listHeading) el.listHeading.textContent = getListHeadingText();
       if (currentPage === "added") {
         const activeSupplierTitle = cleanText(supplierContextFilter || getCurrentSupplier());
         el.pageTitle.textContent = getHeaderTitleText();
-        el.pageSubtitle.textContent = activeSupplierTitle
-          ? `Catatan aktif untuk supplier: ${activeSupplierTitle}`
-          : "List barang otomatis digrup per supplier.";
+        el.pageSubtitle.textContent = isBawainMode
+          ? "Tanpa supplier. Format text khusus bawain barang."
+          : (activeSupplierTitle
+            ? `Catatan aktif untuk supplier: ${activeSupplierTitle}`
+            : "List barang otomatis digrup per supplier.");
       }
-      el.totalQty.textContent = "Total qty: " + qtyTotal;
+      el.totalQty.textContent = isBawainMode ? ("Total item: " + activeItems.length) : ("Total qty: " + qtyTotal);
       if (el.summaryText) {
         el.summaryText.textContent = "";
         el.summaryText.style.display = "none";
@@ -27363,12 +27531,21 @@
     }
 
     function getAddedItemForSuggestion(itemName) {
-      const supplier = getSuggestionSupplierContext();
       const cleanName = cleanText(itemName).toLowerCase();
+      if (!cleanName) return null;
 
-      if (!supplier || !cleanName) return null;
+      if (isBawainMode) {
+        return items.find(item =>
+          getItemMode(item) === "bawain" &&
+          cleanText(item.name).toLowerCase() === cleanName
+        ) || null;
+      }
+
+      const supplier = getSuggestionSupplierContext();
+      if (!supplier) return null;
 
       return items.find(item =>
+        getItemMode(item) === "normal" &&
         cleanText(item.name).toLowerCase() === cleanName &&
         cleanText(item.supplier).toLowerCase() === supplier.toLowerCase()
       ) || null;
@@ -27434,23 +27611,28 @@
           <span>
             <span class="suggestion-name">${escapeHTML(item.name)}</span>
             <span class="suggestion-category">${escapeHTML(item.category || "Barang")}</span>
-            ${alreadyAdded ? `<span class="suggestion-added-note">✓ Sudah di list (${alreadyAddedItem.qty})</span>` : ""}
+            ${alreadyAdded ? `<span class="suggestion-added-note">✓ Sudah di list${isBawainMode ? "" : ` (${alreadyAddedItem.qty})`}</span>` : ""}
           </span>
           <span class="suggestion-add-tools">
-            <input class="suggestion-qty-input" type="number" min="0" inputmode="numeric" placeholder="0" aria-label="Jumlah barang" />
-            <button class="suggestion-action-btn" type="button">+ Tambah</button>
+            ${buildAddToolsHTML(alreadyAddedItem, "suggestion-qty-input", "suggestion-action-btn")}
           </span>
         `;
 
         const qtyInput = button.querySelector(".suggestion-qty-input");
         const addButton = button.querySelector(".suggestion-action-btn");
-        qtyInput.addEventListener("click", event => event.stopPropagation());
-        qtyInput.addEventListener("keydown", event => { event.stopPropagation(); if (event.key === "Enter") { event.preventDefault(); addButton.click(); } });
-        button.addEventListener("click", event => { if (event.target.closest("input, button, .suggestion-added-note")) return; qtyInput.focus(); });
+        if (qtyInput) {
+          qtyInput.addEventListener("click", event => event.stopPropagation());
+          qtyInput.addEventListener("keydown", event => { event.stopPropagation(); if (event.key === "Enter") { event.preventDefault(); addButton.click(); } });
+        }
+        button.addEventListener("click", event => {
+          if (event.target.closest("input, button, .suggestion-added-note")) return;
+          if (isBawainMode) addButton.click();
+          else if (qtyInput) qtyInput.focus();
+        });
         addButton.addEventListener("click", event => {
           event.preventDefault(); event.stopPropagation();
-          const qty = parseAddQty(qtyInput.value, 0);
-          if (qty === null) { showToast("Qty tidak valid"); qtyInput.focus(); return; }
+          const qty = isBawainMode ? 0 : parseAddQty(qtyInput ? qtyInput.value : "", 0);
+          if (qty === null) { showToast("Qty tidak valid"); if (qtyInput) qtyInput.focus(); return; }
           const lastScroll = window.scrollY;
           const keepKeyword = cleanText(el.searchInput.value);
           const selectedItemName = item.name;
@@ -27471,7 +27653,7 @@
           el.addedPage.style.display = currentPage === "added" ? "block" : "none";
           el.searchBox.classList.remove("hidden");
           el.headerActions.classList.toggle("list-mode", currentPage === "added");
-          el.listChangeSupplierBtn.classList.toggle("show", currentPage === "added");
+          el.listChangeSupplierBtn.classList.toggle("show", currentPage === "added" && !isBawainMode);
       el.topResetBtn.classList.toggle("show", currentPage === "added");
           el.viewAddedLabel.textContent = currentPage === "home" ? "📦 Lihat semua List" : "← Kembali";
           el.menuBackBtn.classList.toggle("show", currentPage === "home" && Boolean(selectedProductMenu));
@@ -27642,28 +27824,59 @@
       }, SEARCH_DELAY);
     }
 
+    function copyTextWithFallback(text) {
+      const tempTextarea = document.createElement("textarea");
+      tempTextarea.value = text;
+      tempTextarea.setAttribute("readonly", "readonly");
+      tempTextarea.style.position = "fixed";
+      tempTextarea.style.left = "-9999px";
+      tempTextarea.style.top = "0";
+      tempTextarea.style.opacity = "0";
+      tempTextarea.style.pointerEvents = "none";
+      document.body.appendChild(tempTextarea);
+      tempTextarea.focus();
+      tempTextarea.select();
+      tempTextarea.setSelectionRange(0, tempTextarea.value.length);
+      let copied = false;
+      try {
+        copied = document.execCommand("copy");
+      } catch (error) {
+        copied = false;
+      }
+      document.body.removeChild(tempTextarea);
+      return copied;
+    }
+
     async function copyList() {
+      // Penting: saat tab aktif masih "Daftar Barang", previewText sedang hidden.
+      // Jadi fallback copy tidak boleh memakai textarea preview yang tersembunyi,
+      // karena di beberapa browser hasilnya hanya kosong / tidak tersalin.
       const text = getShareText();
       if (!cleanText(text) || text === "Belum ada barang menipis / habis.") {
-        showToast("Belum ada teks untuk disalin");
+        showToast(isBawainMode ? "Belum ada barang bawain untuk disalin" : "Belum ada teks untuk disalin");
         return;
       }
 
       try {
-        await navigator.clipboard.writeText(text);
-        showToast("Teks berhasil disalin");
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else if (!copyTextWithFallback(text)) {
+          throw new Error("Fallback copy gagal");
+        }
+        showToast(isBawainMode ? "List bawain barang berhasil disalin" : "Teks berhasil disalin");
       } catch (error) {
-        el.previewText.value = text;
-        el.previewText.select();
-        document.execCommand("copy");
-        showToast("Teks berhasil disalin");
+        const copied = copyTextWithFallback(text);
+        showToast(copied
+          ? (isBawainMode ? "List bawain barang berhasil disalin" : "Teks berhasil disalin")
+          : "Gagal menyalin otomatis, buka Preview lalu salin manual"
+        );
       }
     }
 
     function getValidShareTextForWa() {
       const textValue = getShareText();
       if (!cleanText(textValue) || textValue === "Belum ada barang menipis / habis.") {
-        showToast("Belum ada teks untuk dikirim");
+        showToast(isBawainMode ? "Belum ada barang bawain untuk dikirim" : "Belum ada teks untuk dikirim");
         return "";
       }
       return textValue;
@@ -27777,7 +27990,9 @@
       const cleanNumber = String(number || WA_NUMBER).replace(/\D/g, "");
       const text = encodeURIComponent(textValue);
       closeWaTargetModal();
-      window.open(`https://wa.me/${cleanNumber}?text=${text}`, "_blank");
+      const waUrl = `https://wa.me/${cleanNumber}?text=${text}`;
+      const opened = window.open(waUrl, "_blank");
+      if (!opened) window.location.href = waUrl;
     }
 
     function sendToWhatsAppGroup() {
@@ -27785,7 +28000,9 @@
       if (!textValue) return;
       const text = encodeURIComponent(textValue);
       closeWaTargetModal();
-      window.open(`https://wa.me/?text=${text}`, "_blank");
+      const waUrl = `https://wa.me/?text=${text}`;
+      const opened = window.open(waUrl, "_blank");
+      if (!opened) window.location.href = waUrl;
     }
 
     function sendToWhatsApp() {
@@ -27842,8 +28059,10 @@
     }
 
     function resetAll() {
-      items = [];
-      clearSavedItems();
+      const modeToReset = getCurrentModeName();
+      items = items.filter(item => getItemMode(item) !== modeToReset);
+      if (items.length === 0) clearSavedItems();
+      else saveItems();
       manualPreviewText = "";
       continuedListText = "";
       isPreviewManuallyEdited = false;
@@ -27854,7 +28073,7 @@
       supplierContextFilter = "";
       closeResetModal();
       render();
-      showToast("Semua list berhasil direset");
+      showToast(isBawainMode ? "List bawain barang berhasil direset" : "Semua list catatan biasa berhasil direset");
     }
 
 
@@ -28080,6 +28299,18 @@
     render();
     });
 
+    if (el.totalBadge) {
+      el.totalBadge.addEventListener("click", toggleBawainMode);
+      el.totalBadge.setAttribute("role", "button");
+      el.totalBadge.setAttribute("tabindex", "0");
+      el.totalBadge.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          toggleBawainMode();
+        }
+      });
+    }
+
     el.viewAddedBtn.addEventListener("click", () => {
       if (currentPage === "home") {
         savedHomeSuggestionState = null;
@@ -28098,6 +28329,7 @@
     el.topResetBtn.addEventListener("click", openResetModal);
 
     el.listChangeSupplierBtn.addEventListener("click", () => {
+      if (isBawainMode) return;
       if (currentPage === "added") {
         openListSupplierModal({ focusSearchAfterPick: true });
         return;
