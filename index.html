@@ -791,7 +791,20 @@
     }
 
     .header-actions.home-mode #viewAddedBtn {
+      order: 1;
       margin-left: auto;
+      margin-right: 0;
+    }
+
+    .header-actions.home-mode #historyBtn {
+      order: 2;
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    .header-actions.list-mode #historyBtn {
+      margin-left: 0;
+      margin-right: 0;
     }
 
     .header-actions.product-menu-mode #viewAddedBtn {
@@ -2524,13 +2537,6 @@
             <div id="homePlusDescription" class="home-plus-description">
               Program ini dipakai untuk mencatat barang habis, memilih supplier, mengatur qty, lalu membuat teks list yang siap disalin atau dikirim ke WhatsApp.
             </div>
-            <button id="repeatLastBtn" class="history-quick-btn" type="button">
-              <span>
-                <span id="repeatLastTitle">Pakai list terakhir</span>
-                <small id="repeatLastMeta">Riwayat order akan muncul setelah kamu salin/kirim WA.</small>
-              </span>
-              <span class="history-quick-icon">↻</span>
-            </button>
             <div class="quick-head" id="quickHead">
               <p id="quickMenuTitle" class="quick-title">Menu barang</p>
               <div class="supplier-control">
@@ -25003,15 +25009,15 @@
     function renderHistoryButtonState() {
       const history = loadOrderHistory();
       const latest = history[0];
-      if (el.historyBtn) el.historyBtn.style.display = history.length ? "inline-flex" : "none";
+
+      /* Tombol Riwayat hanya tampil di halaman depan dan halaman Bawain Barang.
+         Di halaman Catatan Barang Habis / daftar list, tombol ini disembunyikan. */
+      const showHistoryButton = history.length > 0 && currentPage === "home";
+      if (el.historyBtn) el.historyBtn.style.display = showHistoryButton ? "inline-flex" : "none";
+
       if (!el.repeatLastBtn) return;
-      el.repeatLastBtn.classList.toggle("show", Boolean(latest));
-      if (latest) {
-        el.repeatLastTitle.textContent = "↻ Pakai list terakhir";
-        el.repeatLastMeta.textContent = `${formatHistoryDate(latest.createdAt)} • ${getHistorySupplierSummary(latest)} • ${latest.items.length} item`;
-      } else {
-        el.repeatLastMeta.textContent = "Riwayat order akan muncul setelah kamu salin/kirim WA.";
-      }
+      el.repeatLastBtn.classList.remove("show");
+      el.repeatLastBtn.style.display = "none";
     }
 
     function renderHistoryList() {
@@ -25260,7 +25266,8 @@
       // Saat suggestion search aktif, tombol dark mode diganti tombol ganti supplier.
       if (el.themeToggleBtn) el.themeToggleBtn.style.display = shouldShowTools ? "none" : "inline-flex";
       if (el.suggestionChangeSupplierBtn) {
-        el.suggestionChangeSupplierBtn.style.display = shouldShowTools ? "inline-flex" : "none";
+        const showSupplierTool = shouldShowTools && !isBawainMode;
+        el.suggestionChangeSupplierBtn.style.display = showSupplierTool ? "inline-flex" : "none";
         el.suggestionChangeSupplierBtn.textContent = getCurrentSupplier() ? "🔁 Ganti Supplier" : "🏷️ Pilih Supplier";
       }
     }
