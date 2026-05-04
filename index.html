@@ -2453,10 +2453,718 @@
     body.theme-gray .history-quick-btn, body.theme-gray .history-card, body.theme-gray .history-small-btn { background: #273142 !important; color: var(--text) !important; border-color: rgba(156, 163, 175, 0.34) !important; box-shadow: 0 12px 28px rgba(0,0,0,.22) !important; }
     body.theme-gray .history-small-btn.primary { background: linear-gradient(135deg,#4b5563,#6b7280) !important; color: #f9fafb !important; border-color: transparent !important; }
 
+
+    /* =====================================================
+       MODERN UI UPGRADE - clean glass, softer spacing, intuitive states
+       ===================================================== */
+    :root {
+      --font-ui: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      --radius-sm: 12px;
+      --radius-md: 18px;
+      --radius-lg: 24px;
+      --radius-xl: 30px;
+      --ease-modern: cubic-bezier(.2,.8,.2,1);
+      --ring: 0 0 0 4px color-mix(in srgb, var(--primary) 22%, transparent);
+      --shadow-sm: 0 8px 18px rgba(15, 23, 42, 0.07);
+      --shadow-md: 0 18px 42px rgba(15, 23, 42, 0.12);
+      --shadow-lg: 0 24px 70px rgba(15, 23, 42, 0.18);
+      --glass: rgba(255, 255, 255, 0.78);
+      --glass-strong: rgba(255, 255, 255, 0.92);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-ui);
+      letter-spacing: -0.01em;
+      background:
+        radial-gradient(circle at 10% -8%, rgba(20, 184, 166, 0.18), transparent 34%),
+        radial-gradient(circle at 92% 8%, rgba(14, 165, 233, 0.18), transparent 32%),
+        linear-gradient(180deg, #eef7fb 0%, #f8fafc 45%, #edf4f7 100%);
+    }
+
+    .app {
+      background:
+        radial-gradient(circle at 12% 0%, rgba(45, 212, 191, 0.16), transparent 34%),
+        radial-gradient(circle at 90% 0%, rgba(56, 189, 248, 0.15), transparent 32%),
+        linear-gradient(180deg, rgba(248, 250, 252, 0.94) 0%, rgba(241, 245, 249, 0.98) 100%);
+    }
+
+    .header {
+      padding: 18px 16px 16px;
+      border-bottom-left-radius: 32px;
+      border-bottom-right-radius: 32px;
+      background:
+        radial-gradient(circle at 82% 0%, rgba(255, 255, 255, 0.24), transparent 34%),
+        linear-gradient(135deg, #0f766e 0%, #0891b2 54%, #2563eb 115%);
+      box-shadow: 0 20px 50px rgba(8, 145, 178, 0.24);
+      overflow: visible;
+    }
+
+    .title h1 {
+      font-size: 23px;
+      font-weight: 950;
+      letter-spacing: -0.035em;
+    }
+
+    .title p { font-weight: 650; opacity: 0.86; }
+
+    .badge,
+    .theme-toggle-btn {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 12px 26px rgba(15,23,42,.14);
+    }
+
+    .badge {
+      min-width: 60px;
+      height: 60px;
+      border-radius: 22px;
+    }
+
+    .search-box input,
+    .menu-search-input,
+    .edit-field,
+    .preview-text,
+    .suggestion-qty-input,
+    .catalog-qty-input,
+    .qty-input {
+      transition: border-color .18s ease, box-shadow .18s ease, background .18s ease, transform .18s ease;
+    }
+
+    .search-box input {
+      border: 1px solid rgba(255,255,255,.58);
+      border-radius: 20px;
+      min-height: 52px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 12px 30px rgba(15,23,42,.10);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      font-weight: 750;
+    }
+
+    .search-box input:focus,
+    .menu-search-input:focus,
+    .edit-field:focus,
+    .preview-text:focus {
+      transform: translateY(-1px);
+      box-shadow: var(--ring), 0 16px 34px rgba(15,23,42,.10) !important;
+    }
+
+    .card,
+    .item,
+    .catalog-item,
+    .product-menu-card,
+    .suggestion-btn,
+    .empty,
+    .summary-box,
+    .modal,
+    .history-card,
+    .history-quick-btn {
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      transition: transform .2s var(--ease-modern), box-shadow .2s var(--ease-modern), border-color .2s ease, background .2s ease;
+    }
+
+    .card {
+      padding: 16px;
+      background: var(--glass-strong);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .card:hover,
+    .item:hover,
+    .catalog-item:hover,
+    .product-menu-card:hover,
+    .suggestion-btn:hover,
+    .history-card:hover,
+    .history-quick-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn,
+    .view-added-btn,
+    .open-product-menu-btn,
+    .menu-back-btn,
+    .top-change-supplier-btn,
+    .top-add-supplier-btn,
+    .top-reset-btn,
+    .suggestion-mini-btn,
+    .quick-btn,
+    .category-btn,
+    .tab-btn,
+    .preview-small-btn,
+    .history-small-btn,
+    .theme-choice-btn,
+    .wa-choice-btn,
+    .supplier-picker-btn,
+    .supplier-menu-edit-btn,
+    .supplier-picker-edit-btn,
+    .home-plus-search-btn,
+    .manual-add-card,
+    .delete-btn,
+    .qty-btn {
+      transition: transform .18s var(--ease-modern), box-shadow .18s var(--ease-modern), background .18s ease, border-color .18s ease, opacity .18s ease;
+    }
+
+    button:active { transform: scale(.97); }
+
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: none;
+      box-shadow: var(--ring) !important;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 72%, #2563eb));
+      box-shadow: 0 14px 28px color-mix(in srgb, var(--primary) 24%, transparent);
+    }
+
+    .btn-soft,
+    .preview-small-btn,
+    .history-small-btn,
+    .quick-btn,
+    .category-btn,
+    .tab-btn {
+      background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(248,250,252,.90));
+    }
+
+    .catalog-item,
+    .suggestion-btn,
+    .item {
+      min-height: 72px;
+      border-radius: 22px;
+    }
+
+    .catalog-name,
+    .suggestion-name,
+    .item-name,
+    .product-menu-name {
+      letter-spacing: -0.02em;
+    }
+
+    .product-menu-grid,
+    .theme-choice-list,
+    .supplier-picker-list {
+      gap: 12px;
+    }
+
+    .product-menu-card {
+      min-height: 104px;
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--primary-soft) 72%, transparent), transparent 42%),
+        linear-gradient(145deg, rgba(255,255,255,.98), rgba(248,250,252,.92));
+    }
+
+    .product-menu-icon,
+    .history-quick-icon,
+    .wa-choice-icon {
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 8px 18px color-mix(in srgb, var(--primary) 18%, transparent);
+    }
+
+    .supplier-title {
+      border-radius: 20px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.52);
+    }
+
+    .qty-control {
+      min-height: 40px;
+      border-radius: 999px;
+    }
+
+    .delete-btn {
+      box-shadow: 0 10px 20px rgba(220, 38, 38, 0.12);
+    }
+
+    .bottom-bar {
+      border-top: 1px solid rgba(148, 163, 184, 0.30);
+      background: rgba(255,255,255,.84);
+      backdrop-filter: blur(22px) saturate(1.25);
+      -webkit-backdrop-filter: blur(22px) saturate(1.25);
+      box-shadow: 0 -18px 44px rgba(15, 23, 42, 0.12);
+    }
+
+    .modal-backdrop.show {
+      backdrop-filter: blur(10px) saturate(1.12);
+      -webkit-backdrop-filter: blur(10px) saturate(1.12);
+    }
+
+    .modal {
+      border: 1px solid color-mix(in srgb, var(--line) 74%, transparent);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .modal h3 {
+      font-size: 20px;
+      letter-spacing: -0.035em;
+      font-weight: 950;
+    }
+
+    .theme-choice-btn {
+      border-radius: 22px;
+      min-height: 82px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .theme-choice-btn::after {
+      content: "";
+      position: absolute;
+      right: -18px;
+      top: -18px;
+      width: 58px;
+      height: 58px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--primary) 16%, transparent);
+    }
+
+    .theme-choice-btn.active::before {
+      content: "✓";
+      position: absolute;
+      right: 12px;
+      bottom: 10px;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: var(--primary);
+      font-size: 13px;
+      font-weight: 950;
+    }
+
+    .home-plus-search-btn {
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 70% 0%, color-mix(in srgb, var(--primary-soft) 85%, white), transparent 46%),
+        linear-gradient(145deg, #ffffff, #f8fafc);
+    }
+
+    .home-plus-search-symbol {
+      width: 56px;
+      height: 56px;
+      border-radius: 22px;
+      display: grid;
+      place-items: center;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
+    }
+
+    .toast {
+      border-radius: 18px;
+      box-shadow: 0 18px 44px rgba(2, 6, 23, 0.26);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    /* New default: Aurora modern theme */
+    body.theme-aurora {
+      --bg: #06131f;
+      --card: rgba(8, 25, 38, 0.86);
+      --text: #effbff;
+      --muted: #9fc4d1;
+      --line: rgba(148, 211, 232, 0.18);
+      --primary: #22d3ee;
+      --primary-dark: #e0faff;
+      --primary-soft: rgba(34, 211, 238, 0.16);
+      --danger: #fb7185;
+      --danger-soft: rgba(251, 113, 133, 0.16);
+      --shadow: 0 22px 60px rgba(0, 0, 0, 0.34);
+      background:
+        radial-gradient(circle at 12% -4%, rgba(45, 212, 191, .32), transparent 36%),
+        radial-gradient(circle at 90% 4%, rgba(59, 130, 246, .30), transparent 34%),
+        radial-gradient(circle at 50% 104%, rgba(16, 185, 129, .18), transparent 34%),
+        #06131f !important;
+    }
+
+    body.theme-aurora .app {
+      background:
+        radial-gradient(circle at 16% 0%, rgba(45, 212, 191, .22), transparent 35%),
+        radial-gradient(circle at 86% 0%, rgba(59, 130, 246, .22), transparent 34%),
+        linear-gradient(180deg, rgba(8, 24, 37, .96) 0%, rgba(5, 15, 26, .98) 100%) !important;
+      color: var(--text);
+    }
+
+    body.theme-aurora .header {
+      background:
+        radial-gradient(circle at 15% 0%, rgba(34, 211, 238, .32), transparent 36%),
+        radial-gradient(circle at 92% 8%, rgba(16, 185, 129, .26), transparent 34%),
+        linear-gradient(135deg, rgba(2, 6, 23, .92) 0%, rgba(8, 47, 73, .94) 52%, rgba(6, 78, 59, .92) 100%) !important;
+      border-bottom: 1px solid rgba(186, 230, 253, .18);
+      box-shadow: 0 24px 70px rgba(0,0,0,.46), 0 0 50px rgba(34,211,238,.10);
+    }
+
+    body.theme-aurora .card,
+    body.theme-aurora .modal,
+    body.theme-aurora .item,
+    body.theme-aurora .catalog-item,
+    body.theme-aurora .suggestion-btn,
+    body.theme-aurora .search-suggestions,
+    body.theme-aurora .empty,
+    body.theme-aurora .preview-text,
+    body.theme-aurora .product-menu-card,
+    body.theme-aurora .category-btn,
+    body.theme-aurora .quick-btn,
+    body.theme-aurora .tab-btn,
+    body.theme-aurora .qty-control,
+    body.theme-aurora .theme-choice-btn,
+    body.theme-aurora .wa-choice-btn,
+    body.theme-aurora .supplier-picker-btn,
+    body.theme-aurora .history-card,
+    body.theme-aurora .history-quick-btn,
+    body.theme-aurora .manual-add-card,
+    body.theme-aurora .catalog-skeleton,
+    body.theme-aurora .suggestion-loading {
+      background: rgba(8, 25, 38, 0.78) !important;
+      color: var(--text) !important;
+      border-color: rgba(148, 211, 232, .18) !important;
+      box-shadow: 0 16px 38px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.05) !important;
+      backdrop-filter: blur(18px) saturate(1.12);
+      -webkit-backdrop-filter: blur(18px) saturate(1.12);
+    }
+
+    body.theme-aurora .bottom-bar {
+      background: rgba(3, 12, 22, .82) !important;
+      border-color: rgba(148, 211, 232, .16) !important;
+      backdrop-filter: blur(24px) saturate(1.25);
+      -webkit-backdrop-filter: blur(24px) saturate(1.25);
+    }
+
+    body.theme-aurora input,
+    body.theme-aurora textarea,
+    body.theme-aurora .search-box input,
+    body.theme-aurora .edit-field,
+    body.theme-aurora .menu-search-input,
+    body.theme-aurora .suggestion-qty-input,
+    body.theme-aurora .catalog-qty-input,
+    body.theme-aurora .qty-input,
+    body.theme-aurora .continue-list-field {
+      background: rgba(255, 255, 255, .08) !important;
+      color: var(--text) !important;
+      border-color: rgba(148, 211, 232, .20) !important;
+    }
+
+    body.theme-aurora input::placeholder,
+    body.theme-aurora textarea::placeholder { color: rgba(224, 250, 255, .58) !important; }
+
+    body.theme-aurora input:focus,
+    body.theme-aurora textarea:focus,
+    body.theme-aurora .edit-field:focus,
+    body.theme-aurora .menu-search-input:focus {
+      background: rgba(255,255,255,.11) !important;
+      border-color: rgba(103, 232, 249, .46) !important;
+      box-shadow: 0 0 0 4px rgba(34, 211, 238, .16), 0 16px 34px rgba(0,0,0,.25) !important;
+    }
+
+    body.theme-aurora .supplier-title,
+    body.theme-aurora .summary-box,
+    body.theme-aurora .supplier-chip,
+    body.theme-aurora .product-menu-icon,
+    body.theme-aurora .product-menu-count,
+    body.theme-aurora .suggestion-action,
+    body.theme-aurora .catalog-add,
+    body.theme-aurora .suggestion-action-btn,
+    body.theme-aurora .catalog-add-btn,
+    body.theme-aurora .top-add-item-btn,
+    body.theme-aurora .theme-choice-btn.active,
+    body.theme-aurora .quick-btn.active,
+    body.theme-aurora .category-btn.active,
+    body.theme-aurora .supplier-picker-btn.active,
+    body.theme-aurora .supplier-picker-btn.custom {
+      background: linear-gradient(135deg, rgba(34, 211, 238, .18), rgba(16, 185, 129, .14)) !important;
+      color: #e0faff !important;
+      border-color: rgba(103, 232, 249, .32) !important;
+      box-shadow: 0 0 0 3px rgba(34, 211, 238, .10) !important;
+    }
+
+    body.theme-aurora .tab-btn.active,
+    body.theme-aurora .btn-primary,
+    body.theme-aurora .supplier-edit-mode-btn.active,
+    body.theme-aurora .supplier-picker-edit-mode-btn.active {
+      background: linear-gradient(135deg, #0891b2, #10b981) !important;
+      color: white !important;
+      border-color: transparent !important;
+    }
+
+    body.theme-aurora .btn-soft,
+    body.theme-aurora .clear-search,
+    body.theme-aurora .menu-search-clear,
+    body.theme-aurora .preview-small-btn,
+    body.theme-aurora .history-small-btn,
+    body.theme-aurora .wa-add-number-btn,
+    body.theme-aurora .empty-add-list-btn,
+    body.theme-aurora .view-added-btn,
+    body.theme-aurora .open-product-menu-btn,
+    body.theme-aurora .menu-back-btn,
+    body.theme-aurora .top-change-supplier-btn,
+    body.theme-aurora .top-add-supplier-btn,
+    body.theme-aurora .top-reset-btn,
+    body.theme-aurora .suggestion-mini-btn,
+    body.theme-aurora .theme-toggle-btn {
+      background: rgba(255, 255, 255, .09) !important;
+      color: var(--text) !important;
+      border-color: rgba(148, 211, 232, .20) !important;
+    }
+
+    body.theme-aurora .supplier-title span,
+    body.theme-aurora .catalog-category,
+    body.theme-aurora .item-meta,
+    body.theme-aurora .small-info,
+    body.theme-aurora .quick-title,
+    body.theme-aurora .product-menu-desc,
+    body.theme-aurora .suggestion-category,
+    body.theme-aurora .theme-choice-btn span,
+    body.theme-aurora .wa-choice-btn span,
+    body.theme-aurora .modal p,
+    body.theme-aurora .preview-edit-note,
+    body.theme-aurora .history-card-meta,
+    body.theme-aurora .history-preview { color: var(--muted) !important; }
+
+    body.theme-aurora .catalog-item:hover,
+    body.theme-aurora .suggestion-btn:hover,
+    body.theme-aurora .product-menu-card:hover,
+    body.theme-aurora .wa-choice-btn:hover,
+    body.theme-aurora .home-plus-search-btn:hover,
+    body.theme-aurora .manual-add-card:hover,
+    body.theme-aurora .category-btn:hover,
+    body.theme-aurora .quick-btn:hover {
+      background: rgba(14, 116, 144, .26) !important;
+      border-color: rgba(103, 232, 249, .34) !important;
+    }
+
+    /* Warm modern light theme */
+    body.theme-sunset {
+      --bg: #fff7ed;
+      --card: #ffffff;
+      --text: #23180f;
+      --muted: #8a6b54;
+      --line: #fed7aa;
+      --primary: #ea580c;
+      --primary-dark: #7c2d12;
+      --primary-soft: #ffedd5;
+      --danger: #dc2626;
+      --danger-soft: #fee2e2;
+      --shadow: 0 18px 44px rgba(124, 45, 18, .12);
+      background:
+        radial-gradient(circle at 10% -4%, rgba(251, 146, 60, .24), transparent 34%),
+        radial-gradient(circle at 92% 0%, rgba(244, 114, 182, .16), transparent 32%),
+        linear-gradient(180deg, #fff7ed 0%, #fffaf3 100%) !important;
+    }
+
+    body.theme-sunset .app {
+      background:
+        radial-gradient(circle at 14% 0%, rgba(251, 146, 60, .18), transparent 35%),
+        linear-gradient(180deg, #fffaf3 0%, #ffedd5 120%) !important;
+    }
+
+    body.theme-sunset .header {
+      background:
+        radial-gradient(circle at 80% 0%, rgba(255,255,255,.28), transparent 34%),
+        linear-gradient(135deg, #9a3412 0%, #ea580c 55%, #f59e0b 100%) !important;
+      box-shadow: 0 20px 50px rgba(234, 88, 12, .24);
+    }
+
+    body.theme-sunset .card,
+    body.theme-sunset .modal,
+    body.theme-sunset .item,
+    body.theme-sunset .catalog-item,
+    body.theme-sunset .suggestion-btn,
+    body.theme-sunset .empty,
+    body.theme-sunset .preview-text,
+    body.theme-sunset .product-menu-card,
+    body.theme-sunset .history-card,
+    body.theme-sunset .history-quick-btn {
+      background: rgba(255, 255, 255, .88) !important;
+      border-color: rgba(251, 146, 60, .30) !important;
+    }
+
+    @media (min-width: 700px) {
+      .app {
+        border-radius: 34px;
+        box-shadow: 0 28px 90px rgba(15, 23, 42, 0.16);
+      }
+      .bottom-bar { border-radius: 0 0 34px 34px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+
+  
+
+    /* =====================================================
+       FINAL OVERRIDE - TRANSPARENT SKELETON & ADD BUTTONS
+       Menghilangkan warna putih keras pada skeleton dan tombol tambah.
+       Berlaku untuk semua tema, termasuk light/gray/dark/ocean/emerald/aurora.
+       ===================================================== */
+
+    .catalog-skeleton,
+    .suggestion-loading {
+      background: color-mix(in srgb, var(--card) 18%, transparent) !important;
+      border: 1px solid color-mix(in srgb, var(--line) 76%, transparent) !important;
+      box-shadow: none !important;
+      backdrop-filter: blur(12px) saturate(130%) !important;
+      -webkit-backdrop-filter: blur(12px) saturate(130%) !important;
+    }
+
+    .catalog-skeleton-row,
+    .suggestion-skeleton-row,
+    .skeleton {
+      background: color-mix(in srgb, var(--text) 9%, transparent) !important;
+      box-shadow: none !important;
+    }
+
+    .skeleton::after {
+      background: linear-gradient(
+        90deg,
+        transparent,
+        color-mix(in srgb, var(--text) 11%, transparent),
+        transparent
+      ) !important;
+    }
+
+    .home-plus-search-btn,
+    .empty-add-list-btn,
+    #addedPage .empty-add-list-btn,
+    .supplier-add-btn,
+    #addedPage .supplier-add-btn {
+      background: color-mix(in srgb, var(--card) 14%, transparent) !important;
+      color: var(--text) !important;
+      border: 1.5px dashed color-mix(in srgb, var(--text) 24%, transparent) !important;
+      box-shadow: none !important;
+      backdrop-filter: blur(12px) saturate(130%) !important;
+      -webkit-backdrop-filter: blur(12px) saturate(130%) !important;
+      transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease !important;
+    }
+
+    .home-plus-search-btn:hover,
+    .empty-add-list-btn:hover,
+    #addedPage .empty-add-list-btn:hover,
+    .supplier-add-btn:hover,
+    #addedPage .supplier-add-btn:hover {
+      background: color-mix(in srgb, var(--primary) 12%, transparent) !important;
+      border-color: color-mix(in srgb, var(--primary) 68%, transparent) !important;
+      color: var(--primary-dark) !important;
+      transform: translateY(-1px) !important;
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 14%, transparent) !important;
+    }
+
+    .home-plus-search-symbol,
+    .home-plus-search-label {
+      color: inherit !important;
+    }
+
+    body.theme-gray .catalog-skeleton,
+    body.theme-gray .suggestion-loading,
+    body.dark-mode .catalog-skeleton,
+    body.dark-mode .suggestion-loading,
+    body.dark-mode.theme-ocean .catalog-skeleton,
+    body.dark-mode.theme-ocean .suggestion-loading,
+    body.dark-mode.theme-emerald .catalog-skeleton,
+    body.dark-mode.theme-emerald .suggestion-loading,
+    body.theme-aurora .catalog-skeleton,
+    body.theme-aurora .suggestion-loading {
+      background: rgba(255, 255, 255, 0.035) !important;
+      border-color: color-mix(in srgb, var(--line) 72%, transparent) !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-gray .skeleton,
+    body.dark-mode .skeleton,
+    body.dark-mode.theme-ocean .skeleton,
+    body.dark-mode.theme-emerald .skeleton,
+    body.theme-aurora .skeleton {
+      background: rgba(255, 255, 255, 0.075) !important;
+    }
+
+    body.theme-gray .skeleton::after,
+    body.dark-mode .skeleton::after,
+    body.dark-mode.theme-ocean .skeleton::after,
+    body.dark-mode.theme-emerald .skeleton::after,
+    body.theme-aurora .skeleton::after {
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.13), transparent) !important;
+    }
+
+    body.theme-gray .home-plus-search-btn,
+    body.theme-gray .empty-add-list-btn,
+    body.theme-gray #addedPage .empty-add-list-btn,
+    body.theme-gray .supplier-add-btn,
+    body.theme-gray #addedPage .supplier-add-btn,
+    body.dark-mode .home-plus-search-btn,
+    body.dark-mode .empty-add-list-btn,
+    body.dark-mode #addedPage .empty-add-list-btn,
+    body.dark-mode .supplier-add-btn,
+    body.dark-mode #addedPage .supplier-add-btn,
+    body.dark-mode.theme-ocean .home-plus-search-btn,
+    body.dark-mode.theme-ocean .empty-add-list-btn,
+    body.dark-mode.theme-ocean #addedPage .empty-add-list-btn,
+    body.dark-mode.theme-ocean .supplier-add-btn,
+    body.dark-mode.theme-ocean #addedPage .supplier-add-btn,
+    body.dark-mode.theme-emerald .home-plus-search-btn,
+    body.dark-mode.theme-emerald .empty-add-list-btn,
+    body.dark-mode.theme-emerald #addedPage .empty-add-list-btn,
+    body.dark-mode.theme-emerald .supplier-add-btn,
+    body.dark-mode.theme-emerald #addedPage .supplier-add-btn,
+    body.theme-aurora .home-plus-search-btn,
+    body.theme-aurora .empty-add-list-btn,
+    body.theme-aurora #addedPage .empty-add-list-btn,
+    body.theme-aurora .supplier-add-btn,
+    body.theme-aurora #addedPage .supplier-add-btn {
+      background: rgba(255, 255, 255, 0.045) !important;
+      color: var(--text) !important;
+      border-color: rgba(255, 255, 255, 0.18) !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-gray .home-plus-search-btn:hover,
+    body.theme-gray .empty-add-list-btn:hover,
+    body.theme-gray #addedPage .empty-add-list-btn:hover,
+    body.theme-gray .supplier-add-btn:hover,
+    body.theme-gray #addedPage .supplier-add-btn:hover,
+    body.dark-mode .home-plus-search-btn:hover,
+    body.dark-mode .empty-add-list-btn:hover,
+    body.dark-mode #addedPage .empty-add-list-btn:hover,
+    body.dark-mode .supplier-add-btn:hover,
+    body.dark-mode #addedPage .supplier-add-btn:hover,
+    body.dark-mode.theme-ocean .home-plus-search-btn:hover,
+    body.dark-mode.theme-ocean .empty-add-list-btn:hover,
+    body.dark-mode.theme-ocean #addedPage .empty-add-list-btn:hover,
+    body.dark-mode.theme-ocean .supplier-add-btn:hover,
+    body.dark-mode.theme-ocean #addedPage .supplier-add-btn:hover,
+    body.dark-mode.theme-emerald .home-plus-search-btn:hover,
+    body.dark-mode.theme-emerald .empty-add-list-btn:hover,
+    body.dark-mode.theme-emerald #addedPage .empty-add-list-btn:hover,
+    body.dark-mode.theme-emerald .supplier-add-btn:hover,
+    body.dark-mode.theme-emerald #addedPage .supplier-add-btn:hover,
+    body.theme-aurora .home-plus-search-btn:hover,
+    body.theme-aurora .empty-add-list-btn:hover,
+    body.theme-aurora #addedPage .empty-add-list-btn:hover,
+    body.theme-aurora .supplier-add-btn:hover,
+    body.theme-aurora #addedPage .supplier-add-btn:hover {
+      background: color-mix(in srgb, var(--primary) 18%, transparent) !important;
+      border-color: color-mix(in srgb, var(--primary) 70%, transparent) !important;
+      color: var(--primary-dark) !important;
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 16%, transparent) !important;
+    }
+
   </style>
 </head>
 
-<body class="theme-gray">
+<body class="theme-aurora">
   <div id="searchOverlay" class="search-overlay"></div>
 
   <div class="app">
@@ -2589,8 +3297,10 @@
       <h3>Pilih tema</h3>
       <p>Pilih tampilan aplikasi. Tema akan otomatis tersimpan.</p>
       <div class="theme-choice-list">
-        <button class="theme-choice-btn" type="button" data-theme="light">☀️ Terang<span>Mode putih bersih</span></button>
-        <button class="theme-choice-btn" type="button" data-theme="gray">⚙️ Abu Full<span>Full abu tanpa background putih</span></button>
+        <button class="theme-choice-btn" type="button" data-theme="aurora">✨ Aurora<span>Modern glass default</span></button>
+        <button class="theme-choice-btn" type="button" data-theme="sunset">🌅 Sunset<span>Terang hangat modern</span></button>
+        <button class="theme-choice-btn" type="button" data-theme="light">☀️ Terang<span>Putih bersih klasik</span></button>
+        <button class="theme-choice-btn" type="button" data-theme="gray">⚙️ Abu Full<span>Full abu tanpa putih</span></button>
         <button class="theme-choice-btn" type="button" data-theme="dark">🌙 Gelap Biru Hijau<span>Dark mode utama</span></button>
         <button class="theme-choice-btn" type="button" data-theme="ocean">🌊 Gelap Biru<span>Nuansa biru malam</span></button>
         <button class="theme-choice-btn" type="button" data-theme="emerald">🌿 Gelap Hijau<span>Nuansa hijau gelap</span></button>
@@ -25151,6 +25861,8 @@
 
 
     function getThemeLabel(mode) {
+      if (mode === "aurora") return "Aurora";
+      if (mode === "sunset") return "Sunset";
       if (mode === "gray") return "Abu";
       if (mode === "dark") return "Gelap Biru Hijau";
       if (mode === "ocean") return "Gelap Biru";
@@ -25159,12 +25871,14 @@
     }
 
     function applyThemeMode(mode) {
-      const finalMode = ["light", "gray", "dark", "ocean", "emerald"].includes(mode) ? mode : "light";
-      document.body.classList.remove("dark-mode", "theme-gray", "theme-ocean", "theme-emerald");
+      const finalMode = ["light", "gray", "dark", "ocean", "emerald", "aurora", "sunset"].includes(mode) ? mode : "aurora";
+      document.body.classList.remove("dark-mode", "theme-gray", "theme-ocean", "theme-emerald", "theme-aurora", "theme-sunset");
       if (["dark", "ocean", "emerald"].includes(finalMode)) document.body.classList.add("dark-mode");
       if (finalMode === "gray") document.body.classList.add("theme-gray");
       if (finalMode === "ocean") document.body.classList.add("theme-ocean");
       if (finalMode === "emerald") document.body.classList.add("theme-emerald");
+      if (finalMode === "aurora") document.body.classList.add("theme-aurora");
+      if (finalMode === "sunset") document.body.classList.add("theme-sunset");
       if (el.themeToggleBtn) {
         el.themeToggleBtn.textContent = "🎨";
         el.themeToggleBtn.title = "Pilih tema";
@@ -25177,7 +25891,7 @@
 
     function getSavedThemeMode() {
       const savedMode = localStorage.getItem(THEME_STORAGE_KEY);
-      return ["light", "gray", "dark", "ocean", "emerald"].includes(savedMode) ? savedMode : "gray";
+      return ["light", "gray", "dark", "ocean", "emerald", "aurora", "sunset"].includes(savedMode) ? savedMode : "aurora";
     }
 
     function openThemeModal() {
@@ -25190,7 +25904,7 @@
     }
 
     function chooseThemeMode(mode) {
-      const finalMode = ["light", "gray", "dark", "ocean", "emerald"].includes(mode) ? mode : "light";
+      const finalMode = ["light", "gray", "dark", "ocean", "emerald", "aurora", "sunset"].includes(mode) ? mode : "aurora";
       localStorage.setItem(THEME_STORAGE_KEY, finalMode);
       applyThemeMode(finalMode);
       closeThemeModal();
