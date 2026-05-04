@@ -3551,11 +3551,1008 @@
       .tutorial-card { min-height: 188px; }
     }
 
+    /* =====================================================
+       TUTORIAL OUTRO SMOOTH - animasi penutup saat Akhiri
+       ===================================================== */
+    .tutorial-overlay.ending {
+      display: block;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .36s ease;
+    }
+
+    .tutorial-overlay.ending .tutorial-card {
+      animation: tutorialCardOutro .42s cubic-bezier(.4,0,.2,1) both;
+      transform-origin: center center;
+    }
+
+    .tutorial-overlay.ending .tutorial-spotlight {
+      animation: tutorialSpotlightOutro .38s cubic-bezier(.4,0,.2,1) both;
+    }
+
+    @keyframes tutorialCardOutro {
+      0% { opacity: 1; transform: translate3d(0,0,0) scale(1); filter: blur(0); }
+      55% { opacity: .78; transform: translate3d(0,-6px,0) scale(.985); filter: blur(0); }
+      100% { opacity: 0; transform: translate3d(0,14px,0) scale(.94); filter: blur(2px); }
+    }
+
+    @keyframes tutorialSpotlightOutro {
+      0% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.035); }
+    }
+
+
+
+    /* =====================================================
+       HOME TUTORIAL BUTTON + THEME WATER TRANSITION
+       ===================================================== */
+    .form-title .home-tutorial-btn {
+      width: 36px;
+      height: 36px;
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      border: 1px solid color-mix(in srgb, var(--primary) 42%, transparent);
+      box-shadow: 0 8px 18px color-mix(in srgb, var(--primary) 14%, transparent), inset 0 1px 0 rgba(255,255,255,.18);
+    }
+
+    .form-title .home-tutorial-btn:hover {
+      background: color-mix(in srgb, var(--primary) 18%, var(--primary-soft));
+      border-color: color-mix(in srgb, var(--primary) 72%, transparent);
+      color: var(--primary-dark);
+    }
+
+    body.theme-gray .form-title .home-tutorial-btn,
+    body.dark-mode .form-title .home-tutorial-btn,
+    body.theme-aurora .form-title .home-tutorial-btn {
+      background: rgba(255, 255, 255, .08) !important;
+      color: var(--text) !important;
+      border-color: rgba(148, 211, 232, .24) !important;
+    }
+
+    .theme-water-transition {
+      position: fixed;
+      inset: 0;
+      z-index: 1000000;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at var(--water-x, 50%) var(--water-y, 50%),
+          color-mix(in srgb, var(--water-color, #22d3ee) 92%, white) 0 2%,
+          color-mix(in srgb, var(--water-color, #22d3ee) 68%, transparent) 9%,
+          color-mix(in srgb, var(--water-color, #22d3ee) 28%, transparent) 18%,
+          transparent 32%);
+      transform: scale(.72);
+      filter: blur(0px) saturate(1.15);
+    }
+
+    .theme-water-transition::before,
+    .theme-water-transition::after {
+      content: "";
+      position: absolute;
+      inset: -18%;
+      opacity: 0;
+      background:
+        radial-gradient(circle at 20% 34%, rgba(255,255,255,.30), transparent 9%),
+        radial-gradient(circle at 74% 22%, rgba(255,255,255,.22), transparent 8%),
+        radial-gradient(circle at 58% 78%, rgba(255,255,255,.18), transparent 10%),
+        radial-gradient(circle at 36% 66%, color-mix(in srgb, var(--water-color, #22d3ee) 42%, transparent), transparent 12%);
+      transform: rotate(0deg) scale(.92);
+    }
+
+    .theme-water-transition::after {
+      inset: -26%;
+      background:
+        radial-gradient(circle at 18% 72%, color-mix(in srgb, var(--water-color, #22d3ee) 36%, transparent), transparent 10%),
+        radial-gradient(circle at 84% 68%, rgba(255,255,255,.16), transparent 9%),
+        radial-gradient(circle at 48% 24%, color-mix(in srgb, var(--water-color, #22d3ee) 30%, transparent), transparent 12%);
+      transform: rotate(18deg) scale(.88);
+    }
+
+    .theme-water-transition.show {
+      visibility: visible;
+      animation: waterThemeSplash .82s cubic-bezier(.16,1,.3,1) both;
+    }
+
+    .theme-water-transition.show::before {
+      animation: waterThemeDrops .82s cubic-bezier(.16,1,.3,1) both;
+    }
+
+    .theme-water-transition.show::after {
+      animation: waterThemeDropsAlt .82s cubic-bezier(.16,1,.3,1) both;
+    }
+
+    @keyframes waterThemeSplash {
+      0% { opacity: 0; transform: scale(.40); filter: blur(10px) saturate(1.1); }
+      18% { opacity: .92; transform: scale(.72); filter: blur(1px) saturate(1.35); }
+      54% { opacity: .82; transform: scale(1.82); filter: blur(0px) saturate(1.55); }
+      100% { opacity: 0; transform: scale(2.72); filter: blur(14px) saturate(1.1); visibility: hidden; }
+    }
+
+    @keyframes waterThemeDrops {
+      0% { opacity: 0; transform: rotate(-10deg) scale(.82); }
+      28% { opacity: .70; }
+      100% { opacity: 0; transform: rotate(16deg) scale(1.18); }
+    }
+
+    @keyframes waterThemeDropsAlt {
+      0% { opacity: 0; transform: rotate(12deg) scale(.78); }
+      34% { opacity: .55; }
+      100% { opacity: 0; transform: rotate(-14deg) scale(1.22); }
+    }
+
+
+    /* =====================================================
+       TEMA BARU - FULL GELAP PURE / MIDNIGHT
+       Semua warna dibuat hitam + abu netral, tanpa aksen biru/hijau/ungu.
+       ===================================================== */
+    body.theme-midnight {
+      --bg: #000000;
+      --card: #101010;
+      --text: #eeeeee;
+      --muted: #a3a3a3;
+      --line: #2a2a2a;
+      --primary: #3a3a3a;
+      --primary-dark: #ffffff;
+      --primary-soft: #1a1a1a;
+      --danger: #8f3a3a;
+      --danger-soft: rgba(143, 58, 58, 0.22);
+      --shadow: 0 22px 70px rgba(0, 0, 0, 0.72);
+      background: #000000 !important;
+      color: var(--text) !important;
+    }
+
+    body.theme-midnight,
+    body.theme-midnight .app {
+      background: #000000 !important;
+      color: var(--text) !important;
+    }
+
+    body.theme-midnight .header {
+      background: #080808 !important;
+      color: #f5f5f5 !important;
+      border-bottom: 1px solid #1e1e1e !important;
+      box-shadow: 0 20px 54px rgba(0, 0, 0, 0.72) !important;
+    }
+
+    body.theme-midnight .main {
+      background: #000000 !important;
+    }
+
+    body.theme-midnight .card,
+    body.theme-midnight .modal,
+    body.theme-midnight .item,
+    body.theme-midnight .catalog-item,
+    body.theme-midnight .suggestion-btn,
+    body.theme-midnight .search-suggestions,
+    body.theme-midnight .empty,
+    body.theme-midnight .preview-text,
+    body.theme-midnight .bottom-bar,
+    body.theme-midnight .product-menu-card,
+    body.theme-midnight .category-btn,
+    body.theme-midnight .quick-btn,
+    body.theme-midnight .tab-btn,
+    body.theme-midnight .qty-control,
+    body.theme-midnight .theme-choice-btn,
+    body.theme-midnight .wa-choice-btn,
+    body.theme-midnight .supplier-picker-btn,
+    body.theme-midnight .supplier-menu-edit-btn,
+    body.theme-midnight .supplier-picker-edit-btn,
+    body.theme-midnight .home-plus-search-btn,
+    body.theme-midnight .manual-add-card,
+    body.theme-midnight .catalog-skeleton,
+    body.theme-midnight .suggestion-loading,
+    body.theme-midnight .history-card,
+    body.theme-midnight .history-quick-btn {
+      background: #101010 !important;
+      color: var(--text) !important;
+      border-color: #2a2a2a !important;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.42) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    body.theme-midnight .bottom-bar {
+      background: #070707 !important;
+      border-top: 1px solid #1e1e1e !important;
+      box-shadow: 0 -16px 42px rgba(0, 0, 0, 0.58) !important;
+    }
+
+    body.theme-midnight input,
+    body.theme-midnight textarea,
+    body.theme-midnight .search-box input,
+    body.theme-midnight .edit-field,
+    body.theme-midnight .menu-search-input,
+    body.theme-midnight .suggestion-qty-input,
+    body.theme-midnight .catalog-qty-input,
+    body.theme-midnight .qty-input,
+    body.theme-midnight .continue-list-field {
+      background: #050505 !important;
+      color: #f5f5f5 !important;
+      border-color: #303030 !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-midnight input::placeholder,
+    body.theme-midnight textarea::placeholder,
+    body.theme-midnight .search-box input::placeholder,
+    body.theme-midnight .menu-search-input::placeholder,
+    body.theme-midnight .edit-field::placeholder {
+      color: #777777 !important;
+    }
+
+    body.theme-midnight input:focus,
+    body.theme-midnight textarea:focus,
+    body.theme-midnight .edit-field:focus,
+    body.theme-midnight .menu-search-input:focus,
+    body.theme-midnight .suggestion-qty-input:focus,
+    body.theme-midnight .catalog-qty-input:focus,
+    body.theme-midnight .qty-input:focus,
+    body.theme-midnight .preview-text:focus {
+      background: #080808 !important;
+      border-color: #666666 !important;
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08) !important;
+    }
+
+    body.theme-midnight .supplier-title,
+    body.theme-midnight .summary-box,
+    body.theme-midnight .supplier-chip,
+    body.theme-midnight .product-menu-icon,
+    body.theme-midnight .product-menu-count,
+    body.theme-midnight .suggestion-action,
+    body.theme-midnight .catalog-add,
+    body.theme-midnight .suggestion-action-btn,
+    body.theme-midnight .catalog-add-btn,
+    body.theme-midnight .top-add-item-btn,
+    body.theme-midnight .theme-choice-btn.active,
+    body.theme-midnight .quick-btn.active,
+    body.theme-midnight .category-btn.active,
+    body.theme-midnight .supplier-picker-btn.active,
+    body.theme-midnight .supplier-picker-btn.custom {
+      background: #1a1a1a !important;
+      color: #ffffff !important;
+      border-color: #3a3a3a !important;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05) !important;
+    }
+
+    body.theme-midnight .tab-btn.active,
+    body.theme-midnight .btn-primary,
+    body.theme-midnight .supplier-edit-mode-btn.active,
+    body.theme-midnight .supplier-picker-edit-mode-btn.active,
+    body.theme-midnight .history-small-btn.primary,
+    body.theme-midnight .tutorial-step-btn.primary {
+      background: #3a3a3a !important;
+      color: #ffffff !important;
+      border-color: #555555 !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-midnight .btn-soft,
+    body.theme-midnight .clear-search,
+    body.theme-midnight .menu-search-clear,
+    body.theme-midnight .preview-small-btn,
+    body.theme-midnight .history-small-btn,
+    body.theme-midnight .wa-add-number-btn,
+    body.theme-midnight .empty-add-list-btn,
+    body.theme-midnight .view-added-btn,
+    body.theme-midnight .open-product-menu-btn,
+    body.theme-midnight .menu-back-btn,
+    body.theme-midnight .top-change-supplier-btn,
+    body.theme-midnight .top-add-supplier-btn,
+    body.theme-midnight .top-reset-btn,
+    body.theme-midnight .suggestion-mini-btn,
+    body.theme-midnight .theme-toggle-btn,
+    body.theme-midnight .tutorial-btn,
+    body.theme-midnight .tutorial-step-btn,
+    body.theme-midnight .theme-choice-btn {
+      background: #161616 !important;
+      color: #eeeeee !important;
+      border-color: #303030 !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-midnight .catalog-item:hover,
+    body.theme-midnight .suggestion-btn:hover,
+    body.theme-midnight .product-menu-card:hover,
+    body.theme-midnight .wa-choice-btn:hover,
+    body.theme-midnight .home-plus-search-btn:hover,
+    body.theme-midnight .manual-add-card:hover,
+    body.theme-midnight .category-btn:hover,
+    body.theme-midnight .quick-btn:hover,
+    body.theme-midnight .history-card:hover,
+    body.theme-midnight .history-quick-btn:hover,
+    body.theme-midnight .btn-soft:hover,
+    body.theme-midnight .preview-small-btn:hover,
+    body.theme-midnight .theme-choice-btn:hover {
+      background: #202020 !important;
+      border-color: #4a4a4a !important;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.04) !important;
+    }
+
+    body.theme-midnight .supplier-title span,
+    body.theme-midnight .catalog-category,
+    body.theme-midnight .item-meta,
+    body.theme-midnight .small-info,
+    body.theme-midnight .quick-title,
+    body.theme-midnight .product-menu-desc,
+    body.theme-midnight .suggestion-category,
+    body.theme-midnight .theme-choice-btn span,
+    body.theme-midnight .wa-choice-btn span,
+    body.theme-midnight .modal p,
+    body.theme-midnight .preview-edit-note,
+    body.theme-midnight .history-card-meta,
+    body.theme-midnight .history-preview,
+    body.theme-midnight .home-plus-description,
+    body.theme-midnight .tutorial-desc {
+      color: var(--muted) !important;
+    }
+
+    body.theme-midnight .item .qty-control,
+    body.theme-midnight #addedPage #listSection .supplier-title,
+    body.theme-midnight #addedPage #listSection .item,
+    body.theme-midnight #addedPage #listSection .qty-control {
+      background: #0b0b0b !important;
+      color: var(--text) !important;
+      border: 1px solid #303030 !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-midnight .item .qty-btn,
+    body.theme-midnight .item .qty-input,
+    body.theme-midnight #addedPage #listSection .qty-btn,
+    body.theme-midnight #addedPage #listSection .qty-input {
+      background: transparent !important;
+      color: #ffffff !important;
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-midnight .delete-btn {
+      background: #241212 !important;
+      color: #f2b8b8 !important;
+      border: 1px solid #4a2424 !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-midnight .search-overlay {
+      background: rgba(0, 0, 0, 0.78) !important;
+    }
+
+    body.theme-midnight .toast {
+      background: #0b0b0b !important;
+      color: #f5f5f5 !important;
+      border: 1px solid #303030 !important;
+    }
+
+    body.theme-midnight .tutorial-card {
+      background: #101010 !important;
+      color: var(--text) !important;
+      border-color: #303030 !important;
+      box-shadow: 0 26px 76px rgba(0,0,0,0.72) !important;
+    }
+
+    body.theme-midnight .tutorial-skip-btn {
+      background: #1a1a1a !important;
+      color: #eeeeee !important;
+    }
+
+    body.theme-midnight .tutorial-dot.active {
+      background: #d4d4d4 !important;
+    }
+
+    body.theme-midnight .tutorial-spotlight {
+      box-shadow:
+        0 0 0 9999px rgba(0, 0, 0, 0.66),
+        0 0 0 4px rgba(245, 245, 245, 0.70),
+        0 0 30px rgba(255, 255, 255, 0.20) !important;
+      animation: none !important;
+    }
+
+    body.theme-midnight .theme-water-transition,
+    body.theme-midnight .theme-water-transition.active {
+      background: #000000 !important;
+    }
+
+
+
+    /* =====================================================
+       FINAL UPDATE - FULL GELAP BERWARNA LEMBUT + RIPPLE TEMA
+       Gelap tetap dominan, tetapi diberi aksen plum/amber yang redup.
+       ===================================================== */
+    body.theme-midnight {
+      --bg: #111014;
+      --card: #1b1920;
+      --text: #f1eef6;
+      --muted: #b1a9bc;
+      --line: #343039;
+      --primary: #6d5a7d;
+      --primary-dark: #fbf7ff;
+      --primary-soft: #2a2431;
+      --danger: #b85c5c;
+      --danger-soft: rgba(184, 92, 92, 0.18);
+      --shadow: 0 22px 70px rgba(6, 5, 9, 0.58);
+      background:
+        radial-gradient(circle at 12% -4%, rgba(124, 58, 237, 0.14), transparent 34%),
+        radial-gradient(circle at 90% 2%, rgba(180, 83, 9, 0.10), transparent 32%),
+        linear-gradient(180deg, #151219 0%, #100f13 100%) !important;
+      color: var(--text) !important;
+    }
+
+    body.theme-midnight .app {
+      background:
+        radial-gradient(circle at 16% 0%, rgba(124, 58, 237, 0.12), transparent 35%),
+        radial-gradient(circle at 86% 4%, rgba(217, 119, 6, 0.08), transparent 34%),
+        linear-gradient(180deg, #17151c 0%, #111014 100%) !important;
+      color: var(--text) !important;
+    }
+
+    body.theme-midnight .header {
+      background:
+        radial-gradient(circle at 82% 0%, rgba(168, 85, 247, 0.16), transparent 36%),
+        linear-gradient(135deg, #19151f 0%, #241b2b 58%, #2b211d 120%) !important;
+      color: var(--text) !important;
+      border-bottom: 1px solid rgba(177, 169, 188, 0.18) !important;
+      box-shadow: 0 20px 54px rgba(6, 5, 9, 0.52) !important;
+    }
+
+    body.theme-midnight .main {
+      background:
+        radial-gradient(circle at 14% 0%, rgba(124, 58, 237, 0.10), transparent 34%),
+        radial-gradient(circle at 90% 2%, rgba(180, 83, 9, 0.08), transparent 30%),
+        linear-gradient(180deg, #17151c 0%, #111014 56%, #111014 100%) !important;
+    }
+
+    body.theme-midnight .card,
+    body.theme-midnight .modal,
+    body.theme-midnight .item,
+    body.theme-midnight .catalog-item,
+    body.theme-midnight .suggestion-btn,
+    body.theme-midnight .search-suggestions,
+    body.theme-midnight .empty,
+    body.theme-midnight .preview-text,
+    body.theme-midnight .bottom-bar,
+    body.theme-midnight .product-menu-card,
+    body.theme-midnight .category-btn,
+    body.theme-midnight .quick-btn,
+    body.theme-midnight .tab-btn,
+    body.theme-midnight .qty-control,
+    body.theme-midnight .theme-choice-btn,
+    body.theme-midnight .wa-choice-btn,
+    body.theme-midnight .supplier-picker-btn,
+    body.theme-midnight .supplier-menu-edit-btn,
+    body.theme-midnight .supplier-picker-edit-btn,
+    body.theme-midnight .home-plus-search-btn,
+    body.theme-midnight .manual-add-card,
+    body.theme-midnight .catalog-skeleton,
+    body.theme-midnight .suggestion-loading,
+    body.theme-midnight .history-card,
+    body.theme-midnight .history-quick-btn {
+      background: rgba(27, 25, 32, 0.94) !important;
+      color: var(--text) !important;
+      border-color: rgba(177, 169, 188, 0.18) !important;
+      box-shadow: 0 14px 34px rgba(6, 5, 9, 0.34), inset 0 1px 0 rgba(255,255,255,0.035) !important;
+      backdrop-filter: blur(14px) saturate(1.05) !important;
+      -webkit-backdrop-filter: blur(14px) saturate(1.05) !important;
+    }
+
+    body.theme-midnight .bottom-bar {
+      background: rgba(17, 16, 20, 0.90) !important;
+      border-top: 1px solid rgba(177, 169, 188, 0.16) !important;
+      box-shadow: 0 -16px 42px rgba(6, 5, 9, 0.44) !important;
+    }
+
+    body.theme-midnight input,
+    body.theme-midnight textarea,
+    body.theme-midnight .search-box input,
+    body.theme-midnight .edit-field,
+    body.theme-midnight .menu-search-input,
+    body.theme-midnight .suggestion-qty-input,
+    body.theme-midnight .catalog-qty-input,
+    body.theme-midnight .qty-input,
+    body.theme-midnight .continue-list-field {
+      background: #15131a !important;
+      color: var(--text) !important;
+      border-color: rgba(177, 169, 188, 0.22) !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-midnight input::placeholder,
+    body.theme-midnight textarea::placeholder,
+    body.theme-midnight .search-box input::placeholder,
+    body.theme-midnight .menu-search-input::placeholder,
+    body.theme-midnight .edit-field::placeholder {
+      color: rgba(241, 238, 246, 0.46) !important;
+    }
+
+    body.theme-midnight input:focus,
+    body.theme-midnight textarea:focus,
+    body.theme-midnight .edit-field:focus,
+    body.theme-midnight .menu-search-input:focus,
+    body.theme-midnight .suggestion-qty-input:focus,
+    body.theme-midnight .catalog-qty-input:focus,
+    body.theme-midnight .qty-input:focus,
+    body.theme-midnight .preview-text:focus {
+      background: #1c1822 !important;
+      border-color: rgba(196, 181, 253, 0.45) !important;
+      box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12) !important;
+    }
+
+    body.theme-midnight .supplier-title,
+    body.theme-midnight .summary-box,
+    body.theme-midnight .supplier-chip,
+    body.theme-midnight .product-menu-icon,
+    body.theme-midnight .product-menu-count,
+    body.theme-midnight .suggestion-action,
+    body.theme-midnight .catalog-add,
+    body.theme-midnight .suggestion-action-btn,
+    body.theme-midnight .catalog-add-btn,
+    body.theme-midnight .top-add-item-btn,
+    body.theme-midnight .theme-choice-btn.active,
+    body.theme-midnight .quick-btn.active,
+    body.theme-midnight .category-btn.active,
+    body.theme-midnight .supplier-picker-btn.active,
+    body.theme-midnight .supplier-picker-btn.custom {
+      background: linear-gradient(135deg, rgba(109, 90, 125, 0.34), rgba(120, 83, 46, 0.20)) !important;
+      color: #fbf7ff !important;
+      border-color: rgba(196, 181, 253, 0.22) !important;
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08) !important;
+    }
+
+    body.theme-midnight .tab-btn.active,
+    body.theme-midnight .btn-primary,
+    body.theme-midnight .supplier-edit-mode-btn.active,
+    body.theme-midnight .supplier-picker-edit-mode-btn.active,
+    body.theme-midnight .history-small-btn.primary,
+    body.theme-midnight .tutorial-step-btn.primary {
+      background: linear-gradient(135deg, #5b4b69, #7a5a3a) !important;
+      color: #ffffff !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+      box-shadow: 0 12px 26px rgba(6, 5, 9, 0.24) !important;
+    }
+
+    body.theme-midnight .btn-soft,
+    body.theme-midnight .clear-search,
+    body.theme-midnight .menu-search-clear,
+    body.theme-midnight .preview-small-btn,
+    body.theme-midnight .history-small-btn,
+    body.theme-midnight .wa-add-number-btn,
+    body.theme-midnight .empty-add-list-btn,
+    body.theme-midnight .view-added-btn,
+    body.theme-midnight .open-product-menu-btn,
+    body.theme-midnight .menu-back-btn,
+    body.theme-midnight .top-change-supplier-btn,
+    body.theme-midnight .top-add-supplier-btn,
+    body.theme-midnight .top-reset-btn,
+    body.theme-midnight .suggestion-mini-btn,
+    body.theme-midnight .theme-toggle-btn,
+    body.theme-midnight .tutorial-btn,
+    body.theme-midnight .tutorial-step-btn,
+    body.theme-midnight .theme-choice-btn {
+      background: rgba(42, 36, 49, 0.92) !important;
+      color: var(--text) !important;
+      border-color: rgba(177, 169, 188, 0.18) !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-midnight .catalog-item:hover,
+    body.theme-midnight .suggestion-btn:hover,
+    body.theme-midnight .product-menu-card:hover,
+    body.theme-midnight .wa-choice-btn:hover,
+    body.theme-midnight .home-plus-search-btn:hover,
+    body.theme-midnight .manual-add-card:hover,
+    body.theme-midnight .category-btn:hover,
+    body.theme-midnight .quick-btn:hover,
+    body.theme-midnight .history-card:hover,
+    body.theme-midnight .history-quick-btn:hover,
+    body.theme-midnight .btn-soft:hover,
+    body.theme-midnight .preview-small-btn:hover,
+    body.theme-midnight .theme-choice-btn:hover {
+      background: rgba(48, 42, 56, 0.96) !important;
+      border-color: rgba(196, 181, 253, 0.28) !important;
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.07) !important;
+    }
+
+    body.theme-midnight .supplier-title span,
+    body.theme-midnight .catalog-category,
+    body.theme-midnight .item-meta,
+    body.theme-midnight .small-info,
+    body.theme-midnight .quick-title,
+    body.theme-midnight .product-menu-desc,
+    body.theme-midnight .suggestion-category,
+    body.theme-midnight .theme-choice-btn span,
+    body.theme-midnight .wa-choice-btn span,
+    body.theme-midnight .modal p,
+    body.theme-midnight .preview-edit-note,
+    body.theme-midnight .history-card-meta,
+    body.theme-midnight .history-preview,
+    body.theme-midnight .home-plus-description,
+    body.theme-midnight .tutorial-desc {
+      color: var(--muted) !important;
+    }
+
+    body.theme-midnight .item .qty-control,
+    body.theme-midnight #addedPage #listSection .supplier-title,
+    body.theme-midnight #addedPage #listSection .item,
+    body.theme-midnight #addedPage #listSection .qty-control {
+      background: rgba(21, 19, 26, 0.96) !important;
+      color: var(--text) !important;
+      border: 1px solid rgba(177, 169, 188, 0.20) !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-midnight .item .qty-btn,
+    body.theme-midnight .item .qty-input,
+    body.theme-midnight #addedPage #listSection .qty-btn,
+    body.theme-midnight #addedPage #listSection .qty-input {
+      background: transparent !important;
+      color: #fbf7ff !important;
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-midnight .delete-btn {
+      background: rgba(90, 42, 48, 0.34) !important;
+      color: #ffd6d6 !important;
+      border: 1px solid rgba(184, 92, 92, 0.30) !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-midnight .search-overlay {
+      background: rgba(10, 8, 14, 0.72) !important;
+    }
+
+    body.theme-midnight .toast,
+    body.theme-midnight .tutorial-card {
+      background: rgba(27, 25, 32, 0.98) !important;
+      color: var(--text) !important;
+      border-color: rgba(177, 169, 188, 0.22) !important;
+      box-shadow: 0 26px 76px rgba(6, 5, 9, 0.56) !important;
+    }
+
+    body.theme-midnight .tutorial-skip-btn {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: var(--text) !important;
+    }
+
+    body.theme-midnight .tutorial-dot.active {
+      background: #c4b5fd !important;
+    }
+
+    body.theme-midnight .tutorial-spotlight {
+      box-shadow:
+        0 0 0 9999px rgba(10, 8, 14, 0.64),
+        0 0 0 4px rgba(196, 181, 253, 0.72),
+        0 0 30px rgba(124, 58, 237, 0.22) !important;
+    }
+
+    .theme-water-transition.theme-ripple {
+      background:
+        radial-gradient(circle at var(--water-x, 50%) var(--water-y, 50%),
+          color-mix(in srgb, var(--water-color, #7c3aed) 95%, white) 0 1.5%,
+          color-mix(in srgb, var(--water-color, #7c3aed) 58%, transparent) 6%,
+          transparent 16%),
+        repeating-radial-gradient(circle at var(--water-x, 50%) var(--water-y, 50%),
+          transparent 0 18px,
+          color-mix(in srgb, var(--water-color, #7c3aed) 24%, transparent) 19px 22px,
+          transparent 23px 44px) !important;
+      transform: scale(0.88);
+      filter: blur(0px) saturate(1.18);
+    }
+
+    .theme-water-transition.theme-ripple.show {
+      animation: themeRippleSplash .94s cubic-bezier(.16,1,.3,1) both !important;
+    }
+
+    .theme-water-transition.theme-ripple.show::before {
+      animation: themeRippleDrops .94s cubic-bezier(.16,1,.3,1) both !important;
+    }
+
+    .theme-water-transition.theme-ripple.show::after {
+      animation: themeRippleDropsAlt .94s cubic-bezier(.16,1,.3,1) both !important;
+    }
+
+    @keyframes themeRippleSplash {
+      0% { opacity: 0; transform: scale(.22); filter: blur(10px) saturate(1); }
+      20% { opacity: .92; transform: scale(.66); filter: blur(2px) saturate(1.25); }
+      58% { opacity: .78; transform: scale(1.72); filter: blur(0px) saturate(1.32); }
+      100% { opacity: 0; transform: scale(3.18); filter: blur(14px) saturate(1); visibility: hidden; }
+    }
+
+    @keyframes themeRippleDrops {
+      0% { opacity: 0; transform: rotate(-8deg) scale(.78); }
+      26% { opacity: .62; }
+      100% { opacity: 0; transform: rotate(12deg) scale(1.26); }
+    }
+
+    @keyframes themeRippleDropsAlt {
+      0% { opacity: 0; transform: rotate(10deg) scale(.74); }
+      32% { opacity: .52; }
+      100% { opacity: 0; transform: rotate(-12deg) scale(1.32); }
+    }
+
+
+  
+
+    /* =====================================================
+       FINAL FIX - FULL GELAP HITAM PUTIH LEMBUT + RIPPLE ABU
+       Tanpa aksen biru/hijau/ungu. Intensitas hitam dibuat lebih ringan
+       memakai layer abu gelap agar tetap enak dibaca.
+       ===================================================== */
+    body.theme-midnight {
+      --bg: #141414;
+      --card: #1f1f1f;
+      --text: #f2f2f2;
+      --muted: #b8b8b8;
+      --line: #3a3a3a;
+      --primary: #4a4a4a;
+      --primary-dark: #ffffff;
+      --primary-soft: #2b2b2b;
+      --danger: #d8d8d8;
+      --danger-soft: #2f2f2f;
+      --shadow: 0 18px 48px rgba(0, 0, 0, 0.42);
+      background: linear-gradient(180deg, #191919 0%, #141414 100%) !important;
+      color: var(--text) !important;
+    }
+
+    body.theme-midnight .app {
+      background: linear-gradient(180deg, #1b1b1b 0%, #141414 100%) !important;
+      color: var(--text) !important;
+    }
+
+    body.theme-midnight .header {
+      background: linear-gradient(135deg, #181818 0%, #242424 58%, #1b1b1b 100%) !important;
+      color: var(--text) !important;
+      border-bottom: 1px solid #343434 !important;
+      box-shadow: 0 18px 44px rgba(0, 0, 0, 0.36) !important;
+    }
+
+    body.theme-midnight .main {
+      background: linear-gradient(180deg, #1c1c1c 0%, #161616 52%, #141414 100%) !important;
+    }
+
+    body.theme-midnight .card,
+    body.theme-midnight .modal,
+    body.theme-midnight .item,
+    body.theme-midnight .catalog-item,
+    body.theme-midnight .suggestion-btn,
+    body.theme-midnight .search-suggestions,
+    body.theme-midnight .empty,
+    body.theme-midnight .preview-text,
+    body.theme-midnight .bottom-bar,
+    body.theme-midnight .product-menu-card,
+    body.theme-midnight .category-btn,
+    body.theme-midnight .quick-btn,
+    body.theme-midnight .tab-btn,
+    body.theme-midnight .qty-control,
+    body.theme-midnight .theme-choice-btn,
+    body.theme-midnight .wa-choice-btn,
+    body.theme-midnight .supplier-picker-btn,
+    body.theme-midnight .supplier-menu-edit-btn,
+    body.theme-midnight .supplier-picker-edit-btn,
+    body.theme-midnight .home-plus-search-btn,
+    body.theme-midnight .manual-add-card,
+    body.theme-midnight .catalog-skeleton,
+    body.theme-midnight .suggestion-loading,
+    body.theme-midnight .history-card,
+    body.theme-midnight .history-quick-btn {
+      background: #202020 !important;
+      color: var(--text) !important;
+      border-color: #3a3a3a !important;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24) !important;
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
+    }
+
+    body.theme-midnight .bottom-bar {
+      background: rgba(22, 22, 22, 0.94) !important;
+      border-top: 1px solid #333333 !important;
+      box-shadow: 0 -14px 34px rgba(0, 0, 0, 0.32) !important;
+    }
+
+    body.theme-midnight input,
+    body.theme-midnight textarea,
+    body.theme-midnight .search-box input,
+    body.theme-midnight .edit-field,
+    body.theme-midnight .menu-search-input,
+    body.theme-midnight .suggestion-qty-input,
+    body.theme-midnight .catalog-qty-input,
+    body.theme-midnight .qty-input,
+    body.theme-midnight .continue-list-field {
+      background: #191919 !important;
+      color: #f5f5f5 !important;
+      border-color: #3c3c3c !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-midnight input::placeholder,
+    body.theme-midnight textarea::placeholder,
+    body.theme-midnight .search-box input::placeholder,
+    body.theme-midnight .menu-search-input::placeholder,
+    body.theme-midnight .edit-field::placeholder {
+      color: #8f8f8f !important;
+    }
+
+    body.theme-midnight input:focus,
+    body.theme-midnight textarea:focus,
+    body.theme-midnight .edit-field:focus,
+    body.theme-midnight .menu-search-input:focus,
+    body.theme-midnight .suggestion-qty-input:focus,
+    body.theme-midnight .catalog-qty-input:focus,
+    body.theme-midnight .qty-input:focus,
+    body.theme-midnight .preview-text:focus {
+      background: #222222 !important;
+      border-color: #777777 !important;
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.10) !important;
+    }
+
+    body.theme-midnight .supplier-title,
+    body.theme-midnight .summary-box,
+    body.theme-midnight .supplier-chip,
+    body.theme-midnight .product-menu-icon,
+    body.theme-midnight .product-menu-count,
+    body.theme-midnight .suggestion-action,
+    body.theme-midnight .catalog-add,
+    body.theme-midnight .suggestion-action-btn,
+    body.theme-midnight .catalog-add-btn,
+    body.theme-midnight .top-add-item-btn,
+    body.theme-midnight .theme-choice-btn.active,
+    body.theme-midnight .quick-btn.active,
+    body.theme-midnight .category-btn.active,
+    body.theme-midnight .supplier-picker-btn.active,
+    body.theme-midnight .supplier-picker-btn.custom {
+      background: #303030 !important;
+      color: #ffffff !important;
+      border-color: #4a4a4a !important;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.055) !important;
+    }
+
+    body.theme-midnight .tab-btn.active,
+    body.theme-midnight .btn-primary,
+    body.theme-midnight .supplier-edit-mode-btn.active,
+    body.theme-midnight .supplier-picker-edit-mode-btn.active,
+    body.theme-midnight .history-small-btn.primary,
+    body.theme-midnight .tutorial-step-btn.primary {
+      background: linear-gradient(135deg, #3a3a3a, #555555) !important;
+      color: #ffffff !important;
+      border-color: #626262 !important;
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22) !important;
+    }
+
+    body.theme-midnight .btn-soft,
+    body.theme-midnight .clear-search,
+    body.theme-midnight .menu-search-clear,
+    body.theme-midnight .preview-small-btn,
+    body.theme-midnight .history-small-btn,
+    body.theme-midnight .wa-add-number-btn,
+    body.theme-midnight .empty-add-list-btn,
+    body.theme-midnight .view-added-btn,
+    body.theme-midnight .open-product-menu-btn,
+    body.theme-midnight .menu-back-btn,
+    body.theme-midnight .top-change-supplier-btn,
+    body.theme-midnight .top-add-supplier-btn,
+    body.theme-midnight .top-reset-btn,
+    body.theme-midnight .suggestion-mini-btn,
+    body.theme-midnight .theme-toggle-btn,
+    body.theme-midnight .tutorial-btn,
+    body.theme-midnight .tutorial-step-btn,
+    body.theme-midnight .theme-choice-btn {
+      background: #2a2a2a !important;
+      color: #f2f2f2 !important;
+      border-color: #444444 !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-midnight .catalog-item:hover,
+    body.theme-midnight .suggestion-btn:hover,
+    body.theme-midnight .product-menu-card:hover,
+    body.theme-midnight .wa-choice-btn:hover,
+    body.theme-midnight .home-plus-search-btn:hover,
+    body.theme-midnight .manual-add-card:hover,
+    body.theme-midnight .category-btn:hover,
+    body.theme-midnight .quick-btn:hover,
+    body.theme-midnight .history-card:hover,
+    body.theme-midnight .history-quick-btn:hover,
+    body.theme-midnight .btn-soft:hover,
+    body.theme-midnight .preview-small-btn:hover,
+    body.theme-midnight .theme-choice-btn:hover {
+      background: #303030 !important;
+      border-color: #5a5a5a !important;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06) !important;
+    }
+
+    body.theme-midnight .supplier-title span,
+    body.theme-midnight .catalog-category,
+    body.theme-midnight .item-meta,
+    body.theme-midnight .small-info,
+    body.theme-midnight .quick-title,
+    body.theme-midnight .product-menu-desc,
+    body.theme-midnight .suggestion-category,
+    body.theme-midnight .theme-choice-btn span,
+    body.theme-midnight .wa-choice-btn span,
+    body.theme-midnight .modal p,
+    body.theme-midnight .preview-edit-note,
+    body.theme-midnight .history-card-meta,
+    body.theme-midnight .history-preview,
+    body.theme-midnight .home-plus-description,
+    body.theme-midnight .tutorial-desc {
+      color: #b8b8b8 !important;
+    }
+
+    body.theme-midnight .item .qty-control,
+    body.theme-midnight #addedPage #listSection .supplier-title,
+    body.theme-midnight #addedPage #listSection .item,
+    body.theme-midnight #addedPage #listSection .qty-control {
+      background: #1b1b1b !important;
+      color: #f2f2f2 !important;
+      border: 1px solid #3a3a3a !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-midnight .item .qty-btn,
+    body.theme-midnight .item .qty-input,
+    body.theme-midnight #addedPage #listSection .qty-btn,
+    body.theme-midnight #addedPage #listSection .qty-input {
+      background: transparent !important;
+      color: #ffffff !important;
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-midnight .delete-btn {
+      background: #2f2f2f !important;
+      color: #ffffff !important;
+      border: 1px solid #505050 !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-midnight .search-overlay {
+      background: rgba(0, 0, 0, 0.66) !important;
+    }
+
+    body.theme-midnight .toast,
+    body.theme-midnight .tutorial-card {
+      background: #202020 !important;
+      color: #f2f2f2 !important;
+      border-color: #444444 !important;
+      box-shadow: 0 24px 66px rgba(0, 0, 0, 0.44) !important;
+    }
+
+    body.theme-midnight .tutorial-skip-btn {
+      background: #303030 !important;
+      color: #f2f2f2 !important;
+    }
+
+    body.theme-midnight .tutorial-dot.active {
+      background: #e5e5e5 !important;
+    }
+
+    body.theme-midnight .tutorial-spotlight {
+      box-shadow:
+        0 0 0 9999px rgba(0, 0, 0, 0.58),
+        0 0 0 4px rgba(230, 230, 230, 0.80),
+        0 0 28px rgba(255, 255, 255, 0.18) !important;
+    }
+
+    body.theme-midnight .theme-water-transition.theme-ripple {
+      background:
+        radial-gradient(circle at var(--water-x, 50%) var(--water-y, 50%),
+          rgba(245, 245, 245, 0.72) 0 1.5%,
+          rgba(190, 190, 190, 0.34) 6%,
+          transparent 16%),
+        repeating-radial-gradient(circle at var(--water-x, 50%) var(--water-y, 50%),
+          transparent 0 18px,
+          rgba(220, 220, 220, 0.14) 19px 22px,
+          transparent 23px 44px) !important;
+      filter: blur(0px) saturate(1) !important;
+    }
+
   </style>
 </head>
 
 <body class="theme-aurora">
   <div id="searchOverlay" class="search-overlay"></div>
+  <div id="themeWaterTransition" class="theme-water-transition" aria-hidden="true"></div>
 
   <div class="app">
     <header id="appHeader" class="header">
@@ -3566,7 +4563,6 @@
         </div>
 
         <div class="header-right-tools">
-          <button id="tutorialBtn" class="tutorial-btn" type="button" title="Tutorial penggunaan" aria-label="Tutorial penggunaan">?</button>
           <button id="themeToggleBtn" class="theme-toggle-btn" type="button" title="Aktifkan dark mode" aria-label="Aktifkan dark mode">🌙</button>
 
           <div id="suggestionTopActions" class="suggestion-top-actions">
@@ -3623,7 +4619,7 @@
         <section class="card">
           <div class="form-title">
             <h2 id="formMainTitle">Pilih Barang Habis</h2>
-            <span class="small-info">Supplier aktif</span>
+            <button id="tutorialBtn" class="tutorial-btn home-tutorial-btn" type="button" title="Tutorial penggunaan" aria-label="Tutorial penggunaan">?</button>
           </div>
 
           <div class="input-group">
@@ -3712,6 +4708,7 @@
         <button class="theme-choice-btn" type="button" data-theme="light">☀️ Terang<span>Putih bersih klasik</span></button>
         <button class="theme-choice-btn" type="button" data-theme="gray">⚙️ Abu Full<span>Full abu tanpa putih</span></button>
         <button class="theme-choice-btn" type="button" data-theme="dark">🌙 Gelap Biru Hijau<span>Dark mode utama</span></button>
+        <button class="theme-choice-btn" type="button" data-theme="midnight">⬛ Full Gelap<span>Hitam putih lembut, tidak terlalu pekat</span></button>
         <button class="theme-choice-btn" type="button" data-theme="ocean">🌊 Gelap Biru<span>Nuansa biru malam</span></button>
         <button class="theme-choice-btn" type="button" data-theme="emerald">🌿 Gelap Hijau<span>Nuansa hijau gelap</span></button>
       </div>
@@ -25665,6 +26662,7 @@
       totalItems: $("totalItems"),
       totalBadge: $("totalBadge"),
       tutorialBtn: $("tutorialBtn"),
+      themeWaterTransition: $("themeWaterTransition"),
       tutorialOverlay: $("tutorialOverlay"),
       tutorialSpotlight: $("tutorialSpotlight"),
       tutorialCard: $("tutorialCard"),
@@ -26286,16 +27284,18 @@
       if (mode === "sunset") return "Sunset";
       if (mode === "gray") return "Abu";
       if (mode === "dark") return "Gelap Biru Hijau";
+      if (mode === "midnight") return "Full Gelap";
       if (mode === "ocean") return "Gelap Biru";
       if (mode === "emerald") return "Gelap Hijau";
       return "Terang";
     }
 
     function applyThemeMode(mode) {
-      const finalMode = ["light", "gray", "dark", "ocean", "emerald", "aurora", "sunset"].includes(mode) ? mode : "aurora";
-      document.body.classList.remove("dark-mode", "theme-gray", "theme-ocean", "theme-emerald", "theme-aurora", "theme-sunset");
+      const finalMode = ["light", "gray", "dark", "midnight", "ocean", "emerald", "aurora", "sunset"].includes(mode) ? mode : "aurora";
+      document.body.classList.remove("dark-mode", "theme-gray", "theme-ocean", "theme-emerald", "theme-aurora", "theme-sunset", "theme-midnight");
       if (["dark", "ocean", "emerald"].includes(finalMode)) document.body.classList.add("dark-mode");
       if (finalMode === "gray") document.body.classList.add("theme-gray");
+      if (finalMode === "midnight") document.body.classList.add("theme-midnight");
       if (finalMode === "ocean") document.body.classList.add("theme-ocean");
       if (finalMode === "emerald") document.body.classList.add("theme-emerald");
       if (finalMode === "aurora") document.body.classList.add("theme-aurora");
@@ -26312,7 +27312,7 @@
 
     function getSavedThemeMode() {
       const savedMode = localStorage.getItem(THEME_STORAGE_KEY);
-      return ["light", "gray", "dark", "ocean", "emerald", "aurora", "sunset"].includes(savedMode) ? savedMode : "aurora";
+      return ["light", "gray", "dark", "midnight", "ocean", "emerald", "aurora", "sunset"].includes(savedMode) ? savedMode : "aurora";
     }
 
     function openThemeModal() {
@@ -26324,12 +27324,52 @@
       closeSmoothModal(el.themeModal);
     }
 
-    function chooseThemeMode(mode) {
-      const finalMode = ["light", "gray", "dark", "ocean", "emerald", "aurora", "sunset"].includes(mode) ? mode : "aurora";
+    function getThemeWaterColor(mode) {
+      if (mode === "sunset") return "#f97316";
+      if (mode === "gray") return "#9ca3af";
+      if (mode === "dark") return "#0891b2";
+      if (mode === "ocean") return "#0ea5e9";
+      if (mode === "midnight") return "#9ca3af";
+      if (mode === "emerald") return "#10b981";
+      if (mode === "light") return "#14b8a6";
+      return "#22d3ee";
+    }
+
+    function playThemeWaterTransition(mode, originEvent, afterMiddle) {
+      const layer = el.themeWaterTransition;
+      if (!layer) {
+        if (typeof afterMiddle === "function") afterMiddle();
+        return;
+      }
+
+      const touch = originEvent && originEvent.touches && originEvent.touches[0];
+      const clientX = touch ? touch.clientX : (originEvent && typeof originEvent.clientX === "number" ? originEvent.clientX : window.innerWidth / 2);
+      const clientY = touch ? touch.clientY : (originEvent && typeof originEvent.clientY === "number" ? originEvent.clientY : window.innerHeight / 2);
+
+      layer.classList.remove("show", "theme-ripple");
+      void layer.offsetWidth;
+      layer.style.setProperty("--water-x", `${clientX}px`);
+      layer.style.setProperty("--water-y", `${clientY}px`);
+      layer.style.setProperty("--water-color", getThemeWaterColor(mode));
+      layer.classList.add("show", "theme-ripple");
+
+      window.setTimeout(() => {
+        if (typeof afterMiddle === "function") afterMiddle();
+      }, 260);
+
+      window.setTimeout(() => {
+        layer.classList.remove("show", "theme-ripple");
+      }, 980);
+    }
+
+    function chooseThemeMode(mode, originEvent) {
+      const finalMode = ["light", "gray", "dark", "midnight", "ocean", "emerald", "aurora", "sunset"].includes(mode) ? mode : "aurora";
       localStorage.setItem(THEME_STORAGE_KEY, finalMode);
-      applyThemeMode(finalMode);
-      closeThemeModal();
-      showToast(`Tema ${getThemeLabel(finalMode)} aktif`);
+      playThemeWaterTransition(finalMode, originEvent, () => {
+        applyThemeMode(finalMode);
+        closeThemeModal();
+        showToast(`Tema ${getThemeLabel(finalMode)} aktif`);
+      });
     }
 
     function showSearchOverlay() {
@@ -29519,7 +30559,19 @@
       {
         target: "#tutorialBtn",
         title: "Tombol Tutorial",
-        desc: "Klik tombol kecil ini kapan saja kalau ingin membuka panduan penggunaan program dari awal.",
+        desc: "Klik ikon ini di halaman depan kapan saja kalau ingin membuka panduan penggunaan program dari awal.",
+        before: () => tutorialOpenHome()
+      },
+      {
+        target: "#themeToggleBtn",
+        title: "Ganti Tema",
+        desc: "Tombol palet ini dipakai untuk memilih tema tampilan aplikasi. Tema yang dipilih akan otomatis tersimpan, jadi tampilan tetap sama saat dibuka lagi.",
+        before: () => tutorialOpenHome()
+      },
+      {
+        target: "#totalBadge",
+        title: "Bawain Barang",
+        desc: "Tombol Bawain Barang dipakai untuk membuat list khusus barang yang perlu dibawakan dari gudang. Mode ini tidak memakai supplier dan tidak memakai qty.",
         before: () => tutorialOpenHome()
       },
       {
@@ -29541,9 +30593,9 @@
         before: () => tutorialOpenHome()
       },
       {
-        target: "#catalogResults .product-menu-grid",
+        target: "#catalogResults",
         title: "Semua Menu Barang",
-        desc: "Di sini semua menu barang ditampilkan sekaligus, seperti Komponen, Kabel, CCTV, DVR/NVR, Penyimpanan, Adaptor, Power Supply, Tinta, dan Tambah Barang Custom. Tidak perlu dijelaskan satu per satu.",
+        desc: "Area ini adalah tempat semua menu barang ditampilkan, tepat di bawah bagian Pilih Barang Habis. Pilih salah satu menu untuk masuk ke daftar barangnya.",
         before: () => tutorialOpenProductMenu()
       },
       {
@@ -29808,6 +30860,7 @@
       document.body.classList.add("tutorial-running");
       document.body.classList.remove("tutorial-force-bottom");
       if (el.tutorialOverlay) {
+        el.tutorialOverlay.classList.remove("ending");
         el.tutorialOverlay.classList.add("show");
         el.tutorialOverlay.setAttribute("aria-hidden", "false");
       }
@@ -29816,17 +30869,32 @@
     }
 
     function endTutorial() {
+      const overlayWasOpen = el.tutorialOverlay && el.tutorialOverlay.classList.contains("show");
       tutorialActive = false;
       tutorialRenderToken += 1;
       tutorialStepBusy = false;
       if (el.tutorialNextBtn) el.tutorialNextBtn.disabled = false;
       if (el.tutorialBackBtn) el.tutorialBackBtn.disabled = false;
-      document.body.classList.remove("tutorial-running", "tutorial-force-bottom");
       window.clearTimeout(tutorialRepositionTimer);
+
+      if (el.tutorialOverlay && overlayWasOpen) {
+        el.tutorialOverlay.classList.add("ending");
+        el.tutorialOverlay.setAttribute("aria-hidden", "true");
+
+        window.setTimeout(() => {
+          if (!el.tutorialOverlay) return;
+          el.tutorialOverlay.classList.remove("show", "ending");
+          document.body.classList.remove("tutorial-running", "tutorial-force-bottom");
+          renderSummary();
+        }, 430);
+        return;
+      }
+
       if (el.tutorialOverlay) {
-        el.tutorialOverlay.classList.remove("show");
+        el.tutorialOverlay.classList.remove("show", "ending");
         el.tutorialOverlay.setAttribute("aria-hidden", "true");
       }
+      document.body.classList.remove("tutorial-running", "tutorial-force-bottom");
       renderSummary();
     }
 
@@ -30197,7 +31265,7 @@
     el.themeToggleBtn.addEventListener("click", openThemeModal);
     if (el.closeThemeModalBtn) el.closeThemeModalBtn.addEventListener("click", closeThemeModal);
     document.querySelectorAll(".theme-choice-btn[data-theme]").forEach(button => {
-      button.addEventListener("click", () => chooseThemeMode(button.dataset.theme || "light"));
+      button.addEventListener("click", event => chooseThemeMode(button.dataset.theme || "light", event));
     });
 
     if (el.historyBtn) el.historyBtn.addEventListener("click", openHistoryModal);
