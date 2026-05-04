@@ -4547,6 +4547,97 @@
       filter: blur(0px) saturate(1) !important;
     }
 
+
+    /* =====================================================
+       FINAL THEME TRANSITION - SMOOTH & RINGAN
+       Override animasi bercak air/ripple lama agar perpindahan tema
+       terasa halus, cepat, dan tidak berat di mata.
+       ===================================================== */
+    .theme-water-transition,
+    .theme-water-transition.theme-ripple {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 1000000 !important;
+      pointer-events: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      overflow: hidden !important;
+      background:
+        radial-gradient(circle at var(--water-x, 50%) var(--water-y, 50%),
+          rgba(255, 255, 255, 0.20) 0%,
+          rgba(255, 255, 255, 0.14) 13%,
+          rgba(255, 255, 255, 0.07) 28%,
+          rgba(255, 255, 255, 0.025) 44%,
+          transparent 62%) !important;
+      transform: scale(0.18) !important;
+      filter: blur(10px) !important;
+      mix-blend-mode: screen !important;
+      will-change: opacity, transform, filter !important;
+    }
+
+    .theme-water-transition::before,
+    .theme-water-transition::after,
+    .theme-water-transition.theme-ripple::before,
+    .theme-water-transition.theme-ripple::after {
+      display: none !important;
+      content: none !important;
+      animation: none !important;
+    }
+
+    .theme-water-transition.show,
+    .theme-water-transition.theme-ripple.show {
+      visibility: visible !important;
+      animation: smoothThemeRipple 0.46s cubic-bezier(.22,.75,.25,1) both !important;
+    }
+
+    @keyframes smoothThemeRipple {
+      0% {
+        opacity: 0;
+        transform: scale(0.18);
+        filter: blur(12px);
+      }
+      34% {
+        opacity: 0.55;
+        transform: scale(1.05);
+        filter: blur(7px);
+      }
+      72% {
+        opacity: 0.28;
+        transform: scale(2.25);
+        filter: blur(12px);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(3.15);
+        filter: blur(18px);
+        visibility: hidden;
+      }
+    }
+
+    body.theme-midnight .theme-water-transition,
+    body.theme-midnight .theme-water-transition.theme-ripple {
+      background:
+        radial-gradient(circle at var(--water-x, 50%) var(--water-y, 50%),
+          rgba(245, 245, 245, 0.18) 0%,
+          rgba(229, 229, 229, 0.12) 15%,
+          rgba(180, 180, 180, 0.06) 32%,
+          rgba(120, 120, 120, 0.025) 48%,
+          transparent 64%) !important;
+      mix-blend-mode: screen !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .theme-water-transition.show,
+      .theme-water-transition.theme-ripple.show {
+        animation: smoothThemeFadeOnly 0.18s ease both !important;
+      }
+      @keyframes smoothThemeFadeOnly {
+        0% { opacity: 0; visibility: visible; }
+        50% { opacity: .18; visibility: visible; }
+        100% { opacity: 0; visibility: hidden; }
+      }
+    }
+
   </style>
 </head>
 
@@ -26811,7 +26902,7 @@
       modalEl.classList.add("closing");
       window.setTimeout(() => {
         modalEl.classList.remove("show", "closing");
-      }, 260);
+      }, 115);
     }
 
     function safeString(value) {
@@ -27355,11 +27446,11 @@
 
       window.setTimeout(() => {
         if (typeof afterMiddle === "function") afterMiddle();
-      }, 260);
+      }, 115);
 
       window.setTimeout(() => {
         layer.classList.remove("show", "theme-ripple");
-      }, 980);
+      }, 520);
     }
 
     function chooseThemeMode(mode, originEvent) {
@@ -29729,7 +29820,7 @@
       window.setTimeout(() => {
         if (!el.continueListModal) return;
         el.continueListModal.classList.remove("closing");
-      }, 260);
+      }, 115);
     }
 
     function openContinueListModal() {
@@ -30492,7 +30583,7 @@
       window.setTimeout(() => {
         if (!el.waTargetModal) return;
         el.waTargetModal.classList.remove("closing");
-      }, 260);
+      }, 115);
     }
 
     function sendToWhatsAppNumber(number) {
