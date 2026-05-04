@@ -3161,6 +3161,76 @@
       box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 16%, transparent) !important;
     }
 
+
+    /* =====================================================
+       NAVBAR LOWER BACKGROUND GRADIENT + SWIPE PAGE MOTION
+       Area di bawah navbar dibuat nyambung dengan tema aktif.
+       ===================================================== */
+    .main {
+      position: relative;
+      min-height: calc(100vh - 170px);
+      background:
+        radial-gradient(circle at 10% 0%, color-mix(in srgb, var(--primary) 16%, transparent), transparent 34%),
+        radial-gradient(circle at 92% 4%, color-mix(in srgb, var(--primary-soft) 46%, transparent), transparent 32%),
+        linear-gradient(180deg, color-mix(in srgb, var(--primary-soft) 18%, transparent) 0%, transparent 42%);
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      margin-top: -8px;
+      padding-top: 24px;
+      overflow: hidden;
+    }
+
+    body.theme-aurora .main {
+      background:
+        radial-gradient(circle at 12% 0%, rgba(34, 211, 238, .18), transparent 34%),
+        radial-gradient(circle at 90% 0%, rgba(16, 185, 129, .14), transparent 32%),
+        linear-gradient(180deg, rgba(34, 211, 238, .08) 0%, rgba(5, 15, 26, 0) 46%);
+    }
+
+    body.theme-sunset .main {
+      background:
+        radial-gradient(circle at 14% 0%, rgba(251, 146, 60, .22), transparent 34%),
+        radial-gradient(circle at 88% 2%, rgba(244, 114, 182, .12), transparent 30%),
+        linear-gradient(180deg, rgba(255, 237, 213, .86) 0%, rgba(255, 250, 243, 0) 48%);
+    }
+
+    body.theme-gray .main {
+      background:
+        radial-gradient(circle at 12% 0%, rgba(156, 163, 175, .15), transparent 34%),
+        radial-gradient(circle at 90% 4%, rgba(75, 85, 99, .18), transparent 32%),
+        linear-gradient(180deg, rgba(55, 65, 81, .38) 0%, rgba(31, 41, 55, 0) 48%) !important;
+    }
+
+    body.dark-mode .main,
+    body.dark-mode.theme-ocean .main,
+    body.dark-mode.theme-emerald .main {
+      background:
+        radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--primary) 20%, transparent), transparent 34%),
+        radial-gradient(circle at 90% 4%, color-mix(in srgb, var(--primary-soft) 56%, transparent), transparent 32%),
+        linear-gradient(180deg, color-mix(in srgb, var(--primary) 9%, transparent) 0%, transparent 48%);
+    }
+
+    #homePage,
+    #addedPage,
+    #listSection,
+    #previewSection {
+      touch-action: pan-y;
+    }
+
+    .swipe-page-in-left { animation: swipePageInLeft .24s cubic-bezier(.2,.8,.2,1) both; }
+    .swipe-page-in-right { animation: swipePageInRight .24s cubic-bezier(.2,.8,.2,1) both; }
+
+    @keyframes swipePageInLeft {
+      from { opacity: .2; transform: translateX(26px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes swipePageInRight {
+      from { opacity: .2; transform: translateX(-26px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+
   </style>
 </head>
 
@@ -29533,9 +29603,106 @@
       renderSummary();
     });
 
+
+    /* =====================================================
+       SWIPE NAVIGATION
+       Urutan swipe: Home ⇄ Daftar Barang ⇄ Preview Text
+       ===================================================== */
+    function hasOpenModal() {
+      return Array.from(document.querySelectorAll('.modal-backdrop')).some(modal =>
+        modal.classList.contains('show') || modal.classList.contains('closing')
+      );
+    }
+
+    function isInteractiveSwipeTarget(target) {
+      if (!target || !target.closest) return false;
+      return Boolean(target.closest('input, textarea, button, select, option, a, .search-suggestions, .suggestion-top-actions, .modal, .bottom-bar, .qty-control'));
+    }
+
+    function playSwipeMotion(direction) {
+      const target = currentPage === 'home' ? el.homePage : el.addedPage;
+      if (!target) return;
+      target.classList.remove('swipe-page-in-left', 'swipe-page-in-right');
+      void target.offsetWidth;
+      target.classList.add(direction === 'left' ? 'swipe-page-in-left' : 'swipe-page-in-right');
+      window.setTimeout(() => target.classList.remove('swipe-page-in-left', 'swipe-page-in-right'), 280);
+    }
+
+    function goSwipeLeft() {
+      if (currentPage === 'home') {
+        savedHomeSuggestionState = null;
+        captureHomeMenuState();
+        forceCloseSuggestionLayer();
+        openAddedPage();
+        setTab('list', false);
+        playSwipeMotion('left');
+        return;
+      }
+
+      if (currentPage === 'added' && activeTab === 'list') {
+        setTab('preview');
+        playSwipeMotion('left');
+      }
+    }
+
+    function goSwipeRight() {
+      if (currentPage === 'added' && activeTab === 'preview') {
+        setTab('list');
+        playSwipeMotion('right');
+        return;
+      }
+
+      if (currentPage === 'added' && activeTab === 'list') {
+        if (savedHomeMenuState && savedHomeMenuState.shouldRestoreMenu) {
+          restoreHomeMenuState();
+        } else {
+          openHomePage(Boolean(savedHomeSuggestionState));
+        }
+        playSwipeMotion('right');
+      }
+    }
+
+    function initSwipeNavigation() {
+      let startX = 0;
+      let startY = 0;
+      let startTime = 0;
+      let tracking = false;
+
+      document.addEventListener('touchstart', event => {
+        if (!event.touches || event.touches.length !== 1) return;
+        if (hasOpenModal() || isInteractiveSwipeTarget(event.target)) return;
+        if (el.searchSuggestions && el.searchSuggestions.classList.contains('show')) return;
+
+        const touch = event.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+        startTime = Date.now();
+        tracking = true;
+      }, { passive: true });
+
+      document.addEventListener('touchend', event => {
+        if (!tracking) return;
+        tracking = false;
+        if (!event.changedTouches || event.changedTouches.length !== 1) return;
+
+        const touch = event.changedTouches[0];
+        const dx = touch.clientX - startX;
+        const dy = touch.clientY - startY;
+        const elapsed = Date.now() - startTime;
+
+        if (elapsed > 900) return;
+        if (Math.abs(dx) < 58) return;
+        if (Math.abs(dx) < Math.abs(dy) * 1.35) return;
+
+        if (dx < 0) goSwipeLeft();
+        else goSwipeRight();
+      }, { passive: true });
+    }
+
     document.body.classList.remove("dark-mode");
     applyThemeMode(getSavedThemeMode());
     renderSupplierDropdown();
+    initSwipeNavigation();
 
     // Saat refresh di sesi yang sama dan masih ada catatan, langsung balik ke halaman daftar barang.
     // Saat web benar-benar ditutup lalu dibuka lagi, sessionStorage kosong, jadi halaman awal menampilkan tombol + lagi.
