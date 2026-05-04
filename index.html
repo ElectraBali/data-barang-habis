@@ -3168,11 +3168,14 @@
        ===================================================== */
     .main {
       position: relative;
-      min-height: calc(100vh - 170px);
+      min-height: calc(100vh - 132px);
       background:
         radial-gradient(circle at 10% 0%, color-mix(in srgb, var(--primary) 16%, transparent), transparent 34%),
         radial-gradient(circle at 92% 4%, color-mix(in srgb, var(--primary-soft) 46%, transparent), transparent 32%),
-        linear-gradient(180deg, color-mix(in srgb, var(--primary-soft) 18%, transparent) 0%, transparent 42%);
+        linear-gradient(180deg,
+          color-mix(in srgb, var(--primary-soft) 22%, var(--bg)) 0%,
+          color-mix(in srgb, var(--primary-soft) 12%, var(--bg)) 46%,
+          var(--bg) 100%);
       border-top-left-radius: 28px;
       border-top-right-radius: 28px;
       margin-top: -8px;
@@ -3184,21 +3187,21 @@
       background:
         radial-gradient(circle at 12% 0%, rgba(34, 211, 238, .18), transparent 34%),
         radial-gradient(circle at 90% 0%, rgba(16, 185, 129, .14), transparent 32%),
-        linear-gradient(180deg, rgba(34, 211, 238, .08) 0%, rgba(5, 15, 26, 0) 46%);
+        linear-gradient(180deg, rgba(34, 211, 238, .10) 0%, rgba(5, 15, 26, .76) 52%, #06131f 100%);
     }
 
     body.theme-sunset .main {
       background:
         radial-gradient(circle at 14% 0%, rgba(251, 146, 60, .22), transparent 34%),
         radial-gradient(circle at 88% 2%, rgba(244, 114, 182, .12), transparent 30%),
-        linear-gradient(180deg, rgba(255, 237, 213, .86) 0%, rgba(255, 250, 243, 0) 48%);
+        linear-gradient(180deg, rgba(255, 237, 213, .96) 0%, #fff7ed 54%, #fff7ed 100%);
     }
 
     body.theme-gray .main {
       background:
         radial-gradient(circle at 12% 0%, rgba(156, 163, 175, .15), transparent 34%),
         radial-gradient(circle at 90% 4%, rgba(75, 85, 99, .18), transparent 32%),
-        linear-gradient(180deg, rgba(55, 65, 81, .38) 0%, rgba(31, 41, 55, 0) 48%) !important;
+        linear-gradient(180deg, rgba(55, 65, 81, .48) 0%, #1f2937 56%, #1f2937 100%) !important;
     }
 
     body.dark-mode .main,
@@ -3207,7 +3210,10 @@
       background:
         radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--primary) 20%, transparent), transparent 34%),
         radial-gradient(circle at 90% 4%, color-mix(in srgb, var(--primary-soft) 56%, transparent), transparent 32%),
-        linear-gradient(180deg, color-mix(in srgb, var(--primary) 9%, transparent) 0%, transparent 48%);
+        linear-gradient(180deg,
+          color-mix(in srgb, var(--primary) 11%, var(--bg)) 0%,
+          color-mix(in srgb, var(--primary) 5%, var(--bg)) 54%,
+          var(--bg) 100%);
     }
 
     #homePage,
@@ -29616,6 +29622,11 @@
 
     function isInteractiveSwipeTarget(target) {
       if (!target || !target.closest) return false;
+
+      // Preview Text memenuhi hampir seluruh layar, jadi tetap izinkan swipe
+      // dari textarea preview supaya user bisa kembali ke Daftar Barang.
+      if (target.closest('#previewText')) return false;
+
       return Boolean(target.closest('input, textarea, button, select, option, a, .search-suggestions, .suggestion-top-actions, .modal, .bottom-bar, .qty-control'));
     }
 
