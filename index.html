@@ -3237,6 +3237,285 @@
     }
 
 
+
+
+    /* =====================================================
+       GUIDED ONBOARDING TOUR / TUTORIAL INTERAKTIF
+       ===================================================== */
+    .tutorial-btn {
+      flex: 0 0 auto;
+      width: 34px;
+      height: 34px;
+      border: 1px solid rgba(255, 255, 255, 0.30);
+      background: rgba(255, 255, 255, 0.14);
+      color: white;
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 950;
+      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.14), inset 0 1px 0 rgba(255,255,255,.20);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .tutorial-btn:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.24);
+      box-shadow: 0 12px 26px rgba(15, 23, 42, 0.18), 0 0 0 4px rgba(255,255,255,.10);
+    }
+
+    body.theme-gray .tutorial-btn,
+    body.dark-mode .tutorial-btn,
+    body.theme-aurora .tutorial-btn {
+      background: rgba(255, 255, 255, .09) !important;
+      color: var(--text) !important;
+      border-color: rgba(148, 211, 232, .20) !important;
+    }
+
+    .tutorial-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99990;
+      display: none;
+      background: transparent;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      opacity: 0;
+      transition: opacity .24s ease;
+      pointer-events: auto;
+    }
+
+    .tutorial-overlay.show {
+      display: block;
+      opacity: 1;
+    }
+
+    .tutorial-spotlight {
+      position: fixed;
+      z-index: 99991;
+      border-radius: 18px;
+      pointer-events: none;
+      box-shadow:
+        0 0 0 9999px rgba(2, 6, 23, 0.58),
+        0 0 0 4px rgba(103, 232, 249, 0.95),
+        0 0 34px rgba(34, 211, 238, 0.80);
+      transition:
+        top .42s cubic-bezier(.16,1,.3,1),
+        left .42s cubic-bezier(.16,1,.3,1),
+        width .42s cubic-bezier(.16,1,.3,1),
+        height .42s cubic-bezier(.16,1,.3,1),
+        border-radius .34s ease,
+        opacity .22s ease,
+        transform .42s cubic-bezier(.16,1,.3,1);
+      transform: translate3d(0,0,0);
+      animation: tutorialPulse 1.6s ease-in-out infinite;
+    }
+
+    .tutorial-spotlight.step-changing {
+      opacity: .70;
+      transform: scale(.985);
+    }
+
+    @keyframes tutorialPulse {
+      0%, 100% { box-shadow: 0 0 0 9999px rgba(2, 6, 23, 0.58), 0 0 0 4px rgba(103, 232, 249, 0.95), 0 0 26px rgba(34, 211, 238, 0.60); }
+      50% { box-shadow: 0 0 0 9999px rgba(2, 6, 23, 0.58), 0 0 0 6px rgba(103, 232, 249, 0.88), 0 0 42px rgba(34, 211, 238, 0.86); }
+    }
+
+    .tutorial-card {
+      position: fixed;
+      z-index: 99992;
+      width: min(320px, calc(100vw - 32px));
+      background: rgba(255, 255, 255, 0.98);
+      color: #0f172a;
+      border: 1px solid rgba(255,255,255,.72);
+      border-radius: 22px;
+      padding: 14px;
+      box-shadow: 0 22px 70px rgba(0, 0, 0, 0.34);
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      opacity: 1;
+      transform: translate3d(0,0,0) scale(1);
+      transition:
+        top .42s cubic-bezier(.16,1,.3,1),
+        left .42s cubic-bezier(.16,1,.3,1),
+        opacity .22s ease,
+        transform .32s cubic-bezier(.16,1,.3,1);
+    }
+
+    .tutorial-card.step-changing {
+      opacity: .15;
+      transform: translate3d(0,8px,0) scale(.985);
+    }
+
+    body.theme-gray .tutorial-card,
+    body.dark-mode .tutorial-card,
+    body.theme-aurora .tutorial-card {
+      background: rgba(8, 25, 38, 0.98);
+      color: var(--text);
+      border-color: rgba(148, 211, 232, .22);
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    .tutorial-progress {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: var(--muted, #64748b);
+      font-size: 11px;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .tutorial-title {
+      margin: 0 0 7px;
+      font-size: 16px;
+      line-height: 1.25;
+      font-weight: 950;
+      letter-spacing: -0.03em;
+    }
+
+    .tutorial-desc {
+      margin: 0;
+      color: #475569;
+      font-size: 13px;
+      font-weight: 750;
+      line-height: 1.45;
+    }
+
+    body.theme-gray .tutorial-desc,
+    body.dark-mode .tutorial-desc,
+    body.theme-aurora .tutorial-desc {
+      color: var(--muted);
+    }
+
+    .tutorial-actions {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;
+      align-items: center;
+      margin-top: 13px;
+    }
+
+    .tutorial-step-btn {
+      border: 1px solid rgba(148, 163, 184, .38);
+      background: #f8fafc;
+      color: #334155;
+      border-radius: 12px;
+      min-height: 36px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 950;
+      cursor: pointer;
+    }
+
+    .tutorial-step-btn.primary {
+      background: linear-gradient(135deg, #0891b2, #10b981);
+      color: white;
+      border-color: transparent;
+      padding-left: 14px;
+      padding-right: 14px;
+    }
+
+    .tutorial-step-btn:disabled {
+      opacity: .42;
+      cursor: not-allowed;
+    }
+
+    body.theme-gray .tutorial-step-btn,
+    body.dark-mode .tutorial-step-btn,
+    body.theme-aurora .tutorial-step-btn {
+      background: rgba(255, 255, 255, .08);
+      color: var(--text);
+      border-color: rgba(148, 211, 232, .20);
+    }
+
+    body.theme-gray .tutorial-step-btn.primary,
+    body.dark-mode .tutorial-step-btn.primary,
+    body.theme-aurora .tutorial-step-btn.primary {
+      background: linear-gradient(135deg, #0891b2, #10b981);
+      color: white;
+      border-color: transparent;
+    }
+
+    .tutorial-dots {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .tutorial-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, .55);
+      transition: width .2s ease, background .2s ease;
+    }
+
+    .tutorial-dot.active {
+      width: 18px;
+      background: #0891b2;
+    }
+
+    .tutorial-skip-btn {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      width: 26px;
+      height: 26px;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, .08);
+      color: inherit;
+      font-size: 17px;
+      font-weight: 950;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+
+    body.theme-gray .tutorial-skip-btn,
+    body.dark-mode .tutorial-skip-btn,
+    body.theme-aurora .tutorial-skip-btn {
+      background: rgba(255, 255, 255, .10);
+    }
+
+    @media (max-width: 420px) {
+      .tutorial-card { width: calc(100vw - 24px); }
+      .tutorial-btn { width: 32px; height: 32px; font-size: 14px; }
+    }
+
+
+    /* =====================================================
+       TUTORIAL FIX - preview/list steps lebih stabil
+       ===================================================== */
+    body.tutorial-running .tutorial-overlay,
+    body.tutorial-running .tutorial-card {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    body.tutorial-force-bottom .bottom-bar.hidden {
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+      transform: translateX(-50%) translateY(0) scale(1) !important;
+      transition: opacity .28s ease, transform .34s cubic-bezier(.16,1,.3,1) !important;
+    }
+
+    body.tutorial-running .tutorial-spotlight {
+      will-change: top, left, width, height, border-radius, transform;
+    }
+
   </style>
 </head>
 
@@ -3252,6 +3531,7 @@
         </div>
 
         <div class="header-right-tools">
+          <button id="tutorialBtn" class="tutorial-btn" type="button" title="Tutorial penggunaan" aria-label="Tutorial penggunaan">?</button>
           <button id="themeToggleBtn" class="theme-toggle-btn" type="button" title="Aktifkan dark mode" aria-label="Aktifkan dark mode">🌙</button>
 
           <div id="suggestionTopActions" class="suggestion-top-actions">
@@ -3367,6 +3647,25 @@
   </div>
 
   <div id="toast" class="toast">Berhasil</div>
+
+
+  <div id="tutorialOverlay" class="tutorial-overlay" aria-hidden="true">
+    <div id="tutorialSpotlight" class="tutorial-spotlight"></div>
+    <div id="tutorialCard" class="tutorial-card" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
+      <button id="tutorialSkipBtn" class="tutorial-skip-btn" type="button" aria-label="Tutup tutorial">×</button>
+      <div class="tutorial-progress">
+        <span id="tutorialProgressText">Step 1/1</span>
+        <span>Panduan</span>
+      </div>
+      <h3 id="tutorialTitle" class="tutorial-title">Tutorial</h3>
+      <p id="tutorialDesc" class="tutorial-desc">Ikuti panduan singkat ini.</p>
+      <div class="tutorial-actions">
+        <button id="tutorialBackBtn" class="tutorial-step-btn" type="button">← Back</button>
+        <div id="tutorialDots" class="tutorial-dots"></div>
+        <button id="tutorialNextBtn" class="tutorial-step-btn primary" type="button">Next →</button>
+      </div>
+    </div>
+  </div>
 
   <div id="themeModal" class="modal-backdrop">
     <div class="modal">
@@ -25330,6 +25629,17 @@
       itemList: $("itemList"),
       totalItems: $("totalItems"),
       totalBadge: $("totalBadge"),
+      tutorialBtn: $("tutorialBtn"),
+      tutorialOverlay: $("tutorialOverlay"),
+      tutorialSpotlight: $("tutorialSpotlight"),
+      tutorialCard: $("tutorialCard"),
+      tutorialSkipBtn: $("tutorialSkipBtn"),
+      tutorialBackBtn: $("tutorialBackBtn"),
+      tutorialNextBtn: $("tutorialNextBtn"),
+      tutorialTitle: $("tutorialTitle"),
+      tutorialDesc: $("tutorialDesc"),
+      tutorialProgressText: $("tutorialProgressText"),
+      tutorialDots: $("tutorialDots"),
       themeToggleBtn: $("themeToggleBtn"),
       themeModal: $("themeModal"),
       closeThemeModalBtn: $("closeThemeModalBtn"),
@@ -29151,6 +29461,281 @@
     }
 
 
+
+
+    /* =====================================================
+       GUIDED TOUR / TUTORIAL INTERAKTIF
+       ===================================================== */
+    let tutorialActive = false;
+    let tutorialIndex = 0;
+    let tutorialRepositionTimer = null;
+
+    const tutorialSteps = [
+      {
+        target: "#tutorialBtn",
+        title: "Tombol Tutorial",
+        desc: "Klik tombol kecil ini kapan saja kalau ingin membuka panduan penggunaan program dari awal.",
+        before: () => tutorialOpenHome()
+      },
+      {
+        target: "#searchInput",
+        title: "Search Barang",
+        desc: "Pakai kolom ini untuk mencari barang dengan cepat. Ketik nama barang, lalu pilih hasil yang muncul.",
+        before: () => tutorialOpenHome()
+      },
+      {
+        target: "#homePlusSearchBtn",
+        title: "Tambah Barang",
+        desc: "Tombol plus ini membuka pencarian/tambah barang dari halaman awal. Cocok untuk mulai membuat list baru.",
+        before: () => tutorialOpenHome()
+      },
+      {
+        target: "#viewAddedBtn",
+        title: "Lihat Semua List",
+        desc: "Tombol ini membawa kamu ke daftar barang yang sudah dipilih. Dari halaman depan, kamu juga bisa swipe ke kiri untuk masuk ke list.",
+        before: () => tutorialOpenHome()
+      },
+      {
+        target: "#listChangeSupplierBtn",
+        title: "Pilih Supplier",
+        desc: "Di halaman list, tombol ini dipakai untuk memilih atau mengganti supplier aktif saat menambahkan barang.",
+        before: () => tutorialOpenList()
+      },
+      {
+        target: "#tabList",
+        title: "Tab Daftar Barang",
+        desc: "Tab ini menampilkan semua barang yang sudah masuk. Kamu bisa ubah qty, hapus barang, atau cek total qty.",
+        before: () => tutorialOpenList()
+      },
+      {
+        target: "#itemList",
+        title: "Area List Barang",
+        desc: "Semua barang yang kamu pilih akan muncul di sini dan otomatis dikelompokkan sesuai supplier.",
+        before: () => tutorialOpenList()
+      },
+      {
+        target: "#tabPreview",
+        title: "Tab Preview Text",
+        desc: "Klik tab ini untuk melihat format teks siap salin atau siap kirim ke WhatsApp. Dari daftar barang, kamu juga bisa swipe ke kiri.",
+        before: () => tutorialOpenList()
+      },
+      {
+        target: "#previewText",
+        title: "Preview Text",
+        desc: "Ini hasil teks otomatis dari list barang. Kamu masih bisa edit manual sebelum disalin atau dikirim.",
+        before: () => tutorialOpenPreview()
+      },
+      {
+        target: "#copyBtn",
+        title: "Salin List",
+        desc: "Tekan tombol ini untuk menyalin list ke clipboard. Riwayat order juga otomatis tersimpan.",
+        forceBottom: true,
+        before: () => tutorialOpenPreview(true)
+      },
+      {
+        target: "#waBtn",
+        title: "Kirim WhatsApp",
+        desc: "Tekan ini untuk mengirim list langsung ke WhatsApp, bisa ke grup atau nomor tujuan yang sudah disimpan.",
+        forceBottom: true,
+        before: () => tutorialOpenPreview(true)
+      },
+      {
+        target: "#historyBtn",
+        title: "Riwayat Order",
+        desc: "Buka riwayat untuk memakai ulang list lama. Kamu bisa replace list sekarang atau merge dengan list yang sedang dibuat.",
+        before: () => tutorialOpenHome()
+      },
+      {
+        target: "#themeToggleBtn",
+        title: "Pilih Tema",
+        desc: "Tombol ini untuk mengganti tema tampilan aplikasi, termasuk Aurora, Sunset, Gelap, Abu, dan lainnya.",
+        before: () => tutorialOpenHome()
+      }
+    ];
+
+    function tutorialOpenHome() {
+      document.body.classList.remove("tutorial-force-bottom");
+      openHomePage(false);
+    }
+
+    function tutorialOpenList() {
+      document.body.classList.remove("tutorial-force-bottom");
+      openAddedPage();
+      setTab("list", false);
+      renderList();
+      renderSummary();
+    }
+
+    function tutorialOpenPreview(forceBottom = false) {
+      if (forceBottom) document.body.classList.add("tutorial-force-bottom");
+      else document.body.classList.remove("tutorial-force-bottom");
+      openAddedPage();
+      setTab("preview", false);
+      renderPreview();
+      renderSummary();
+      if (forceBottom && el.bottomBar) el.bottomBar.classList.remove("hidden");
+    }
+
+    function tutorialAfterLayout(callback) {
+      window.clearTimeout(tutorialRepositionTimer);
+      tutorialRepositionTimer = window.setTimeout(() => {
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(callback);
+        });
+      }, 120);
+    }
+
+    function getTutorialTarget(step) {
+      if (!step) return null;
+      return document.querySelector(step.target);
+    }
+
+    function isElementVisibleInLayout(node) {
+      if (!node) return false;
+      const rect = node.getBoundingClientRect();
+      const style = window.getComputedStyle(node);
+      return rect.width > 0 && rect.height > 0 && style.display !== "none" && style.visibility !== "hidden" && style.opacity !== "0";
+    }
+
+    function buildTutorialDots() {
+      if (!el.tutorialDots) return;
+      el.tutorialDots.innerHTML = tutorialSteps.map((_, index) => `<span class="tutorial-dot${index === tutorialIndex ? " active" : ""}"></span>`).join("");
+    }
+
+    function placeTutorialCard(rect) {
+      if (!el.tutorialCard) return;
+      const margin = 12;
+      const cardRect = el.tutorialCard.getBoundingClientRect();
+      const viewportW = window.innerWidth;
+      const viewportH = window.innerHeight;
+      let left = rect.left;
+      let top = rect.bottom + margin;
+
+      if (left + cardRect.width > viewportW - margin) left = viewportW - cardRect.width - margin;
+      if (left < margin) left = margin;
+
+      if (top + cardRect.height > viewportH - margin) top = rect.top - cardRect.height - margin;
+      if (top < margin) top = margin;
+
+      el.tutorialCard.style.left = `${left}px`;
+      el.tutorialCard.style.top = `${top}px`;
+    }
+
+    function renderTutorialStep() {
+      if (!tutorialActive) return;
+      const step = tutorialSteps[tutorialIndex];
+      if (!step) return endTutorial();
+
+      if (el.tutorialCard) el.tutorialCard.classList.add("step-changing");
+      if (el.tutorialSpotlight) el.tutorialSpotlight.classList.add("step-changing");
+
+      if (typeof step.before === "function") step.before();
+      document.body.classList.toggle("tutorial-force-bottom", Boolean(step.forceBottom));
+
+      tutorialAfterLayout(() => {
+        const target = getTutorialTarget(step);
+        if (!target || !isElementVisibleInLayout(target)) {
+          if (tutorialIndex < tutorialSteps.length - 1) {
+            tutorialIndex += 1;
+            renderTutorialStep();
+          } else {
+            endTutorial();
+          }
+          return;
+        }
+
+        const isFixedTarget = ["copyBtn", "waBtn"].includes(target.id);
+        if (!isFixedTarget) target.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+
+        window.setTimeout(() => {
+          window.requestAnimationFrame(() => {
+            const rect = target.getBoundingClientRect();
+            const pad = 8;
+            if (el.tutorialSpotlight) {
+              el.tutorialSpotlight.style.top = `${Math.max(8, rect.top - pad)}px`;
+              el.tutorialSpotlight.style.left = `${Math.max(8, rect.left - pad)}px`;
+              el.tutorialSpotlight.style.width = `${Math.min(window.innerWidth - 16, rect.width + pad * 2)}px`;
+              el.tutorialSpotlight.style.height = `${Math.max(34, rect.height + pad * 2)}px`;
+              el.tutorialSpotlight.style.borderRadius = rect.height > 42 ? "20px" : "999px";
+            }
+
+            if (el.tutorialTitle) el.tutorialTitle.textContent = step.title;
+            if (el.tutorialDesc) el.tutorialDesc.textContent = step.desc;
+            if (el.tutorialProgressText) el.tutorialProgressText.textContent = `Step ${tutorialIndex + 1}/${tutorialSteps.length}`;
+            if (el.tutorialBackBtn) el.tutorialBackBtn.disabled = tutorialIndex === 0;
+            if (el.tutorialNextBtn) el.tutorialNextBtn.textContent = tutorialIndex === tutorialSteps.length - 1 ? "Selesai" : "Next →";
+            buildTutorialDots();
+            placeTutorialCard(rect);
+
+            window.setTimeout(() => {
+              if (el.tutorialCard) el.tutorialCard.classList.remove("step-changing");
+              if (el.tutorialSpotlight) el.tutorialSpotlight.classList.remove("step-changing");
+            }, 130);
+          });
+        }, isFixedTarget ? 40 : 360);
+      });
+    }
+
+    function startTutorial() {
+      tutorialActive = true;
+      tutorialIndex = 0;
+      document.body.classList.add("tutorial-running");
+      document.body.classList.remove("tutorial-force-bottom");
+      if (el.tutorialOverlay) {
+        el.tutorialOverlay.classList.add("show");
+        el.tutorialOverlay.setAttribute("aria-hidden", "false");
+      }
+      closeSuggestionsCurtainUp();
+      renderTutorialStep();
+    }
+
+    function endTutorial() {
+      tutorialActive = false;
+      document.body.classList.remove("tutorial-running", "tutorial-force-bottom");
+      window.clearTimeout(tutorialRepositionTimer);
+      if (el.tutorialOverlay) {
+        el.tutorialOverlay.classList.remove("show");
+        el.tutorialOverlay.setAttribute("aria-hidden", "true");
+      }
+    }
+
+    function nextTutorialStep() {
+      if (!tutorialActive) return;
+      if (tutorialIndex >= tutorialSteps.length - 1) return endTutorial();
+      tutorialIndex += 1;
+      renderTutorialStep();
+    }
+
+    function prevTutorialStep() {
+      if (!tutorialActive) return;
+      tutorialIndex = Math.max(0, tutorialIndex - 1);
+      renderTutorialStep();
+    }
+
+    let tutorialViewportTimer = null;
+    function scheduleTutorialReposition() {
+      if (!tutorialActive) return;
+      window.clearTimeout(tutorialViewportTimer);
+      tutorialViewportTimer = window.setTimeout(() => {
+        const step = tutorialSteps[tutorialIndex];
+        const target = getTutorialTarget(step);
+        if (!target || !isElementVisibleInLayout(target)) return;
+        const rect = target.getBoundingClientRect();
+        const pad = 8;
+        if (el.tutorialSpotlight) {
+          el.tutorialSpotlight.style.top = `${Math.max(8, rect.top - pad)}px`;
+          el.tutorialSpotlight.style.left = `${Math.max(8, rect.left - pad)}px`;
+          el.tutorialSpotlight.style.width = `${Math.min(window.innerWidth - 16, rect.width + pad * 2)}px`;
+          el.tutorialSpotlight.style.height = `${Math.max(34, rect.height + pad * 2)}px`;
+        }
+        placeTutorialCard(rect);
+      }, 80);
+    }
+
+    window.addEventListener("resize", scheduleTutorialReposition);
+    window.addEventListener("scroll", scheduleTutorialReposition, { passive: true });
+
+
     [el.searchSuggestions, el.suggestionTopActions].forEach(layerEl => {
       if (!layerEl) return;
       ["pointerdown", "mousedown", "touchstart"].forEach(eventName => {
@@ -29464,6 +30049,18 @@
         if (currentPage === "added") openAddSupplierModal();
       });
     }
+
+    if (el.tutorialBtn) el.tutorialBtn.addEventListener("click", startTutorial);
+    if (el.tutorialNextBtn) el.tutorialNextBtn.addEventListener("click", nextTutorialStep);
+    if (el.tutorialBackBtn) el.tutorialBackBtn.addEventListener("click", prevTutorialStep);
+    if (el.tutorialSkipBtn) el.tutorialSkipBtn.addEventListener("click", endTutorial);
+    if (el.tutorialOverlay) el.tutorialOverlay.addEventListener("click", event => { if (event.target === el.tutorialOverlay) endTutorial(); });
+    document.addEventListener("keydown", event => {
+      if (!tutorialActive) return;
+      if (event.key === "Escape") endTutorial();
+      if (event.key === "ArrowRight") nextTutorialStep();
+      if (event.key === "ArrowLeft") prevTutorialStep();
+    });
 
     el.themeToggleBtn.addEventListener("click", openThemeModal);
     if (el.closeThemeModalBtn) el.closeThemeModalBtn.addEventListener("click", closeThemeModal);
