@@ -3328,12 +3328,13 @@
     .tutorial-card {
       position: fixed;
       z-index: 99992;
-      width: min(320px, calc(100vw - 32px));
+      width: min(340px, calc(100vw - 32px));
+      min-height: 188px;
       background: rgba(255, 255, 255, 0.98);
       color: #0f172a;
       border: 1px solid rgba(255,255,255,.72);
       border-radius: 22px;
-      padding: 14px;
+      padding: 18px 18px 16px;
       box-shadow: 0 22px 70px rgba(0, 0, 0, 0.34);
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
@@ -3366,7 +3367,8 @@
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
+      padding-right: 34px;
       color: var(--muted, #64748b);
       font-size: 11px;
       font-weight: 950;
@@ -3375,7 +3377,7 @@
     }
 
     .tutorial-title {
-      margin: 0 0 7px;
+      margin: 0 34px 9px 0;
       font-size: 16px;
       line-height: 1.25;
       font-weight: 950;
@@ -3384,6 +3386,7 @@
 
     .tutorial-desc {
       margin: 0;
+      padding-right: 10px;
       color: #475569;
       font-size: 13px;
       font-weight: 750;
@@ -3490,7 +3493,7 @@
     }
 
     @media (max-width: 420px) {
-      .tutorial-card { width: calc(100vw - 24px); }
+      .tutorial-card { width: calc(100vw - 24px); min-height: 198px; padding: 18px 16px 16px; }
       .tutorial-btn { width: 32px; height: 32px; font-size: 14px; }
     }
 
@@ -3504,7 +3507,9 @@
       -webkit-backdrop-filter: none !important;
     }
 
+    body.tutorial-force-bottom .bottom-bar,
     body.tutorial-force-bottom .bottom-bar.hidden {
+      display: grid !important;
       opacity: 1 !important;
       visibility: visible !important;
       pointer-events: auto !important;
@@ -3512,8 +3517,38 @@
       transition: opacity .28s ease, transform .34s cubic-bezier(.16,1,.3,1) !important;
     }
 
+    body.tutorial-force-bottom .bottom-bar .btn,
+    body.tutorial-force-bottom .bottom-bar.hidden .btn {
+      opacity: 1 !important;
+      transform: translateY(0) !important;
+      pointer-events: auto !important;
+    }
+
     body.tutorial-running .tutorial-spotlight {
       will-change: top, left, width, height, border-radius, transform;
+    }
+
+
+    /* =====================================================
+       TUTORIAL FINAL FIX - no stuck after Preview Text
+       ===================================================== */
+    .tutorial-card {
+      min-height: 178px;
+      padding: 18px 14px 14px 14px;
+    }
+
+    .tutorial-progress,
+    .tutorial-title,
+    .tutorial-desc {
+      padding-right: 34px;
+    }
+
+    .tutorial-desc {
+      min-height: 58px;
+    }
+
+    @media (max-width: 420px) {
+      .tutorial-card { min-height: 188px; }
     }
 
   </style>
@@ -28864,8 +28899,16 @@
 
     function setBottomBarVisible(isVisible) {
       if (!el.bottomBar) return;
-      el.bottomBar.classList.toggle("hidden", !isVisible);
-      document.body.classList.toggle("no-bottom-bar", !isVisible);
+
+      // Saat tutorial berada di step Preview / tombol bawah, bottom bar harus
+      // dipaksa tampil. Ini mencegah renderSummary() menyembunyikan bottom bar
+      // lagi saat list masih kosong, yang sebelumnya bikin step setelah
+      // Preview Text terlihat macet.
+      const forcedByTutorial = tutorialActive && document.body.classList.contains("tutorial-force-bottom");
+      const shouldShow = Boolean(isVisible || forcedByTutorial);
+
+      el.bottomBar.classList.toggle("hidden", !shouldShow);
+      document.body.classList.toggle("no-bottom-bar", !shouldShow);
     }
 
     function renderSummary() {
@@ -29469,6 +29512,8 @@
     let tutorialActive = false;
     let tutorialIndex = 0;
     let tutorialRepositionTimer = null;
+    let tutorialRenderToken = 0;
+    let tutorialStepBusy = false;
 
     const tutorialSteps = [
       {
@@ -29488,6 +29533,36 @@
         title: "Tambah Barang",
         desc: "Tombol plus ini membuka pencarian/tambah barang dari halaman awal. Cocok untuk mulai membuat list baru.",
         before: () => tutorialOpenHome()
+      },
+      {
+        target: "#openProductMenuBtn",
+        title: "Menu Barang",
+        desc: "Tombol ini membuka semua kategori/menu barang agar pencarian bisa langsung masuk ke kelompok barang yang sesuai.",
+        before: () => tutorialOpenHome()
+      },
+      {
+        target: "#catalogResults .product-menu-grid",
+        title: "Semua Menu Barang",
+        desc: "Di sini semua menu barang ditampilkan sekaligus, seperti Komponen, Kabel, CCTV, DVR/NVR, Penyimpanan, Adaptor, Power Supply, Tinta, dan Tambah Barang Custom. Tidak perlu dijelaskan satu per satu.",
+        before: () => tutorialOpenProductMenu()
+      },
+      {
+        target: ".menu-search-input",
+        title: "Search di Dalam Menu",
+        desc: "Setelah masuk salah satu menu, kamu bisa mencari barang khusus di menu itu agar hasilnya lebih rapi dan cepat.",
+        before: () => tutorialOpenProductMenuDetail("cctv")
+      },
+      {
+        target: "#catalogResults",
+        title: "Hasil Barang Menu",
+        desc: "Area ini menampilkan barang dari menu yang dipilih. Isi qty lalu tekan Tambah untuk memasukkan barang ke list.",
+        before: () => tutorialOpenProductMenuDetail("cctv")
+      },
+      {
+        target: "#menuBackBtn",
+        title: "Kembali ke Semua Menu",
+        desc: "Saat berada di dalam salah satu menu, tombol ini mengembalikan tampilan ke daftar semua menu barang.",
+        before: () => tutorialOpenProductMenuDetail("cctv")
       },
       {
         target: "#viewAddedBtn",
@@ -29516,40 +29591,8 @@
       {
         target: "#tabPreview",
         title: "Tab Preview Text",
-        desc: "Klik tab ini untuk melihat format teks siap salin atau siap kirim ke WhatsApp. Dari daftar barang, kamu juga bisa swipe ke kiri.",
+        desc: "Klik tab ini untuk melihat format teks siap salin atau siap kirim ke WhatsApp. Saat sudah sampai bagian ini, tekan Akhiri untuk menutup mode tutorial.",
         before: () => tutorialOpenList()
-      },
-      {
-        target: "#previewText",
-        title: "Preview Text",
-        desc: "Ini hasil teks otomatis dari list barang. Kamu masih bisa edit manual sebelum disalin atau dikirim.",
-        before: () => tutorialOpenPreview()
-      },
-      {
-        target: "#copyBtn",
-        title: "Salin List",
-        desc: "Tekan tombol ini untuk menyalin list ke clipboard. Riwayat order juga otomatis tersimpan.",
-        forceBottom: true,
-        before: () => tutorialOpenPreview(true)
-      },
-      {
-        target: "#waBtn",
-        title: "Kirim WhatsApp",
-        desc: "Tekan ini untuk mengirim list langsung ke WhatsApp, bisa ke grup atau nomor tujuan yang sudah disimpan.",
-        forceBottom: true,
-        before: () => tutorialOpenPreview(true)
-      },
-      {
-        target: "#historyBtn",
-        title: "Riwayat Order",
-        desc: "Buka riwayat untuk memakai ulang list lama. Kamu bisa replace list sekarang atau merge dengan list yang sedang dibuat.",
-        before: () => tutorialOpenHome()
-      },
-      {
-        target: "#themeToggleBtn",
-        title: "Pilih Tema",
-        desc: "Tombol ini untuk mengganti tema tampilan aplikasi, termasuk Aurora, Sunset, Gelap, Abu, dan lainnya.",
-        before: () => tutorialOpenHome()
       }
     ];
 
@@ -29573,7 +29616,32 @@
       setTab("preview", false);
       renderPreview();
       renderSummary();
-      if (forceBottom && el.bottomBar) el.bottomBar.classList.remove("hidden");
+
+      // Saat tutorial masuk ke Preview Text / tombol Salin / WA, bottom bar harus
+      // tetap tampil walaupun list masih kosong. Sebelumnya bagian ini bisa
+      // membuat step setelah Preview Text tersangkut karena target tombol bawah
+      // masih dianggap hidden oleh state normal aplikasi.
+      if (forceBottom && el.bottomBar) {
+        el.bottomBar.classList.remove("hidden");
+        document.body.classList.remove("no-bottom-bar");
+      }
+    }
+
+    function tutorialOpenProductMenu() {
+      document.body.classList.remove("tutorial-force-bottom");
+      showProductMenuFromHome();
+      renderSummary();
+    }
+
+    function tutorialOpenProductMenuDetail(menuId = "cctv") {
+      document.body.classList.remove("tutorial-force-bottom");
+      showProductMenuFromHome();
+      selectedProductMenu = menuId;
+      menuSearchDraft = "";
+      menuSearchQuery = "";
+      isMenuCatalogLoading = false;
+      render();
+      renderSummary();
     }
 
     function tutorialAfterLayout(callback) {
@@ -29593,8 +29661,24 @@
     function isElementVisibleInLayout(node) {
       if (!node) return false;
       const rect = node.getBoundingClientRect();
-      const style = window.getComputedStyle(node);
-      return rect.width > 0 && rect.height > 0 && style.display !== "none" && style.visibility !== "hidden" && style.opacity !== "0";
+      if (rect.width <= 0 || rect.height <= 0) return false;
+
+      // Cek node sampai parent supaya elemen di dalam container display:none
+      // tidak salah terdeteksi terlihat. Khusus bottom bar tutorial, izinkan
+      // walaupun state normal aplikasi sedang hidden.
+      let current = node;
+      while (current && current !== document.body) {
+        const style = window.getComputedStyle(current);
+        const isForcedBottomTarget = document.body.classList.contains("tutorial-force-bottom")
+          && el.bottomBar
+          && (current === el.bottomBar || el.bottomBar.contains(current));
+
+        if (!isForcedBottomTarget && (style.display === "none" || style.visibility === "hidden" || style.opacity === "0")) {
+          return false;
+        }
+        current = current.parentElement;
+      }
+      return true;
     }
 
     function buildTutorialDots() {
@@ -29605,10 +29689,11 @@
     function placeTutorialCard(rect) {
       if (!el.tutorialCard) return;
       const margin = 12;
+      const titleSafeShift = 10;
       const cardRect = el.tutorialCard.getBoundingClientRect();
       const viewportW = window.innerWidth;
       const viewportH = window.innerHeight;
-      let left = rect.left;
+      let left = rect.left - titleSafeShift;
       let top = rect.bottom + margin;
 
       if (left + cardRect.width > viewportW - margin) left = viewportW - cardRect.width - margin;
@@ -29621,64 +29706,105 @@
       el.tutorialCard.style.top = `${top}px`;
     }
 
+    function setTutorialNavBusy(isBusy) {
+      tutorialStepBusy = Boolean(isBusy);
+      if (el.tutorialNextBtn) el.tutorialNextBtn.disabled = tutorialStepBusy;
+      if (el.tutorialBackBtn) el.tutorialBackBtn.disabled = tutorialStepBusy || tutorialIndex === 0;
+    }
+
+    function forceTutorialBottomBar(shouldForce) {
+      document.body.classList.toggle("tutorial-force-bottom", Boolean(shouldForce));
+      if (shouldForce && el.bottomBar) {
+        el.bottomBar.classList.remove("hidden");
+        document.body.classList.remove("no-bottom-bar");
+      }
+    }
+
+    function getTutorialForceBottom(step) {
+      return Boolean(step && (step.forceBottom || step.target === "#previewText" || step.target === "#bottomBar"));
+    }
+
+    function getSafeTutorialRect(target) {
+      if (target && isElementVisibleInLayout(target)) return target.getBoundingClientRect();
+      return {
+        top: Math.max(90, window.innerHeight * 0.30),
+        left: 16,
+        bottom: Math.max(130, window.innerHeight * 0.30 + 54),
+        width: Math.max(260, window.innerWidth - 32),
+        height: 54
+      };
+    }
+
     function renderTutorialStep() {
       if (!tutorialActive) return;
+      const renderToken = ++tutorialRenderToken;
       const step = tutorialSteps[tutorialIndex];
       if (!step) return endTutorial();
 
+      setTutorialNavBusy(true);
       if (el.tutorialCard) el.tutorialCard.classList.add("step-changing");
       if (el.tutorialSpotlight) el.tutorialSpotlight.classList.add("step-changing");
 
+      const shouldForceBottom = getTutorialForceBottom(step);
       if (typeof step.before === "function") step.before();
-      document.body.classList.toggle("tutorial-force-bottom", Boolean(step.forceBottom));
+      forceTutorialBottomBar(shouldForceBottom);
 
       tutorialAfterLayout(() => {
+        if (!tutorialActive || renderToken !== tutorialRenderToken) return;
+
         const target = getTutorialTarget(step);
-        if (!target || !isElementVisibleInLayout(target)) {
-          if (tutorialIndex < tutorialSteps.length - 1) {
-            tutorialIndex += 1;
-            renderTutorialStep();
-          } else {
-            endTutorial();
-          }
-          return;
+        const hasTarget = target && isElementVisibleInLayout(target);
+        const isFixedTarget = hasTarget && ["bottomBar", "copyBtn", "waBtn"].includes(target.id);
+
+        if (hasTarget && !isFixedTarget) {
+          target.scrollIntoView({ behavior: "auto", block: "center", inline: "center" });
         }
 
-        const isFixedTarget = ["copyBtn", "waBtn"].includes(target.id);
-        if (!isFixedTarget) target.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
-
         window.setTimeout(() => {
+          if (!tutorialActive || renderToken !== tutorialRenderToken) return;
           window.requestAnimationFrame(() => {
-            const rect = target.getBoundingClientRect();
-            const pad = 8;
+            if (!tutorialActive || renderToken !== tutorialRenderToken) return;
+
+            const liveTarget = getTutorialTarget(step);
+            const liveHasTarget = liveTarget && isElementVisibleInLayout(liveTarget);
+            const rect = getSafeTutorialRect(liveTarget);
+            const pad = liveTarget && liveTarget.id === "bottomBar" ? 6 : 8;
+
             if (el.tutorialSpotlight) {
               el.tutorialSpotlight.style.top = `${Math.max(8, rect.top - pad)}px`;
               el.tutorialSpotlight.style.left = `${Math.max(8, rect.left - pad)}px`;
               el.tutorialSpotlight.style.width = `${Math.min(window.innerWidth - 16, rect.width + pad * 2)}px`;
               el.tutorialSpotlight.style.height = `${Math.max(34, rect.height + pad * 2)}px`;
               el.tutorialSpotlight.style.borderRadius = rect.height > 42 ? "20px" : "999px";
+              el.tutorialSpotlight.style.opacity = liveHasTarget ? "1" : ".55";
             }
 
             if (el.tutorialTitle) el.tutorialTitle.textContent = step.title;
             if (el.tutorialDesc) el.tutorialDesc.textContent = step.desc;
             if (el.tutorialProgressText) el.tutorialProgressText.textContent = `Step ${tutorialIndex + 1}/${tutorialSteps.length}`;
-            if (el.tutorialBackBtn) el.tutorialBackBtn.disabled = tutorialIndex === 0;
-            if (el.tutorialNextBtn) el.tutorialNextBtn.textContent = tutorialIndex === tutorialSteps.length - 1 ? "Selesai" : "Next →";
+            if (el.tutorialNextBtn) el.tutorialNextBtn.textContent = tutorialIndex === tutorialSteps.length - 1 ? "Akhiri" : "Next →";
             buildTutorialDots();
             placeTutorialCard(rect);
 
             window.setTimeout(() => {
+              if (!tutorialActive || renderToken !== tutorialRenderToken) return;
               if (el.tutorialCard) el.tutorialCard.classList.remove("step-changing");
-              if (el.tutorialSpotlight) el.tutorialSpotlight.classList.remove("step-changing");
-            }, 130);
+              if (el.tutorialSpotlight) {
+                el.tutorialSpotlight.classList.remove("step-changing");
+                el.tutorialSpotlight.style.opacity = "1";
+              }
+              setTutorialNavBusy(false);
+            }, 80);
           });
-        }, isFixedTarget ? 40 : 360);
+        }, 80);
       });
     }
 
     function startTutorial() {
       tutorialActive = true;
       tutorialIndex = 0;
+      tutorialRenderToken += 1;
+      tutorialStepBusy = false;
       document.body.classList.add("tutorial-running");
       document.body.classList.remove("tutorial-force-bottom");
       if (el.tutorialOverlay) {
@@ -29691,23 +29817,28 @@
 
     function endTutorial() {
       tutorialActive = false;
+      tutorialRenderToken += 1;
+      tutorialStepBusy = false;
+      if (el.tutorialNextBtn) el.tutorialNextBtn.disabled = false;
+      if (el.tutorialBackBtn) el.tutorialBackBtn.disabled = false;
       document.body.classList.remove("tutorial-running", "tutorial-force-bottom");
       window.clearTimeout(tutorialRepositionTimer);
       if (el.tutorialOverlay) {
         el.tutorialOverlay.classList.remove("show");
         el.tutorialOverlay.setAttribute("aria-hidden", "true");
       }
+      renderSummary();
     }
 
     function nextTutorialStep() {
-      if (!tutorialActive) return;
+      if (!tutorialActive || tutorialStepBusy) return;
       if (tutorialIndex >= tutorialSteps.length - 1) return endTutorial();
       tutorialIndex += 1;
       renderTutorialStep();
     }
 
     function prevTutorialStep() {
-      if (!tutorialActive) return;
+      if (!tutorialActive || tutorialStepBusy) return;
       tutorialIndex = Math.max(0, tutorialIndex - 1);
       renderTutorialStep();
     }
@@ -29727,6 +29858,7 @@
           el.tutorialSpotlight.style.left = `${Math.max(8, rect.left - pad)}px`;
           el.tutorialSpotlight.style.width = `${Math.min(window.innerWidth - 16, rect.width + pad * 2)}px`;
           el.tutorialSpotlight.style.height = `${Math.max(34, rect.height + pad * 2)}px`;
+          el.tutorialSpotlight.style.borderRadius = rect.height > 42 ? "20px" : "999px";
         }
         placeTutorialCard(rect);
       }, 80);
