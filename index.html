@@ -4959,6 +4959,7 @@
     const HISTORY_STORAGE_KEY = "barang_habis_order_history_v1";
     const HOME_SESSION_KEY = "barang_habis_home_session_alive_v1";
     const HOME_PLUS_USED_SESSION_KEY = "barang_habis_home_plus_used_session_v1";
+    const TUTORIAL_SEEN_STORAGE_KEY = "elektra_bali_tutorial_seen_v1";
     const PREVIEW_DRAFT_STORAGE_KEY = "barang_habis_preview_manual_draft_v1";
     const CONTINUE_LIST_STORAGE_KEY = "barang_habis_preview_continue_list_v1";
     const SUPPLIER_RENAME_STORAGE_KEY = "barang_habis_supplier_rename_map_v1";
@@ -30648,6 +30649,12 @@
 
     const tutorialSteps = [
       {
+        target: "#appHeader",
+        title: "Selamat datang di Elektra Bali",
+        desc: "Ini panduan singkat penggunaan program. Setelah salam ini, kita lanjut ke penjelasan tombol Tutorial dan tombol penting lainnya.",
+        before: () => tutorialOpenHome()
+      },
+      {
         target: "#tutorialBtn",
         title: "Tombol Tutorial",
         desc: "Klik ikon ini di halaman depan kapan saja kalau ingin membuka panduan penggunaan program dari awal.",
@@ -30943,7 +30950,8 @@
       });
     }
 
-    function startTutorial() {
+    function startTutorial(options = {}) {
+      if (options && options.auto) markTutorialSeenForThisBrowser();
       tutorialActive = true;
       tutorialIndex = 0;
       tutorialRenderToken += 1;
@@ -30957,6 +30965,31 @@
       }
       closeSuggestionsCurtainUp();
       renderTutorialStep();
+    }
+
+    function hasTutorialBeenSeenInThisBrowser() {
+      try {
+        return localStorage.getItem(TUTORIAL_SEEN_STORAGE_KEY) === "1";
+      } catch (error) {
+        return true;
+      }
+    }
+
+    function markTutorialSeenForThisBrowser() {
+      try {
+        localStorage.setItem(TUTORIAL_SEEN_STORAGE_KEY, "1");
+      } catch (error) {
+        // Kalau localStorage diblokir browser, abaikan agar program tetap jalan.
+      }
+    }
+
+    function startTutorialAutomaticallyOnce() {
+      if (hasTutorialBeenSeenInThisBrowser()) return;
+      markTutorialSeenForThisBrowser();
+      window.setTimeout(() => {
+        if (tutorialActive || hasOpenModal()) return;
+        startTutorial();
+      }, 450);
     }
 
     function endTutorial() {
@@ -31610,6 +31643,8 @@
     } else {
       openHomePage();
     }
+
+    startTutorialAutomaticallyOnce();
 
     // Fallback agar tombol Lanjutkan List dan Batal tetap jalan walaupun browser memakai cache lama.
     document.addEventListener("click", event => {
