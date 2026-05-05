@@ -4638,6 +4638,225 @@
       }
     }
 
+  
+
+    /* =====================================================
+       FINAL COACH MARKS OVERRIDE (BUBBLE + POINTER STYLE)
+       Injected: Guided tour style menjadi coach marks.
+       ===================================================== */
+
+    .tutorial-overlay.show {
+      display: block;
+      opacity: 1;
+      background: rgba(2, 6, 23, 0.18);
+    }
+
+    .tutorial-spotlight {
+      border-radius: 22px !important;
+      box-shadow:
+        0 0 0 9999px rgba(2, 6, 23, 0.65),
+        0 0 0 3px rgba(255, 255, 255, 0.95),
+        0 0 0 8px rgba(34, 211, 238, 0.35),
+        0 20px 60px rgba(34, 211, 238, 0.45) !important;
+      animation: coachPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes coachPulse {
+      0%, 100% {
+        box-shadow:
+          0 0 0 9999px rgba(2, 6, 23, 0.65),
+          0 0 0 3px rgba(255, 255, 255, 0.95),
+          0 0 0 8px rgba(34, 211, 238, 0.35),
+          0 20px 60px rgba(34, 211, 238, 0.35);
+      }
+      50% {
+        box-shadow:
+          0 0 0 9999px rgba(2, 6, 23, 0.65),
+          0 0 0 3px rgba(255, 255, 255, 1),
+          0 0 0 12px rgba(34, 211, 238, 0.22),
+          0 25px 70px rgba(34, 211, 238, 0.55);
+      }
+    }
+
+    .tutorial-card {
+      width: min(320px, calc(100vw - 24px)) !important;
+      min-height: unset !important;
+      padding: 16px !important;
+      border-radius: 22px !important;
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    .tutorial-card::before {
+      content: "";
+      position: absolute;
+      top: -8px;
+      left: 28px;
+      width: 16px;
+      height: 16px;
+      background: inherit;
+      border-left: 1px solid #e2e8f0;
+      border-top: 1px solid #e2e8f0;
+      transform: rotate(45deg);
+      z-index: -1;
+    }
+
+    .tutorial-progress {
+      margin-bottom: 10px !important;
+      padding-right: 34px !important;
+      color: #0891b2 !important;
+      font-size: 10px !important;
+      font-weight: 950 !important;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .tutorial-title {
+      margin: 0 34px 8px 0 !important;
+      font-size: 17px !important;
+      line-height: 1.25 !important;
+      font-weight: 950 !important;
+      letter-spacing: -0.035em;
+    }
+
+    .tutorial-desc {
+      min-height: unset !important;
+      padding-right: 0 !important;
+      color: #475569 !important;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      line-height: 1.5 !important;
+    }
+
+    .tutorial-actions {
+      display: grid !important;
+      grid-template-columns: auto 1fr auto !important;
+      align-items: center !important;
+      gap: 8px !important;
+      margin-top: 14px !important;
+    }
+
+    .tutorial-step-btn {
+      border-radius: 999px !important;
+      min-height: 38px !important;
+      padding: 8px 12px !important;
+      font-size: 12px !important;
+      font-weight: 950 !important;
+      border: 1px solid rgba(148, 163, 184, 0.38) !important;
+      background: #f8fafc !important;
+      color: #334155 !important;
+    }
+
+    .tutorial-step-btn.primary {
+      background: linear-gradient(135deg, #0891b2, #10b981) !important;
+      color: #ffffff !important;
+      border-color: transparent !important;
+      box-shadow: 0 10px 22px rgba(8, 145, 178, 0.24) !important;
+    }
+
+    .tutorial-step-btn:disabled {
+      opacity: 0.42 !important;
+      cursor: not-allowed !important;
+      box-shadow: none !important;
+    }
+
+    .tutorial-dots {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 5px !important;
+    }
+
+    .tutorial-dot {
+      width: 6px !important;
+      height: 6px !important;
+      border-radius: 999px !important;
+      background: rgba(148, 163, 184, 0.55) !important;
+      transition: width 0.2s ease, background 0.2s ease !important;
+    }
+
+    .tutorial-dot.active {
+      width: 20px !important;
+      background: #0891b2 !important;
+    }
+
+    .tutorial-skip-btn {
+      top: 12px !important;
+      right: 12px !important;
+      width: 28px !important;
+      height: 28px !important;
+      background: #f1f5f9 !important;
+      color: #334155 !important;
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-gray .tutorial-card,
+    body.dark-mode .tutorial-card,
+    body.theme-aurora .tutorial-card,
+    body.theme-midnight .tutorial-card {
+      background: rgba(8, 25, 38, 0.98) !important;
+      color: var(--text) !important;
+      border-color: rgba(148, 211, 232, 0.25) !important;
+    }
+
+    body.theme-gray .tutorial-card::before,
+    body.dark-mode .tutorial-card::before,
+    body.theme-aurora .tutorial-card::before,
+    body.theme-midnight .tutorial-card::before {
+      border-color: rgba(148, 211, 232, 0.25) !important;
+    }
+
+    body.theme-gray .tutorial-desc,
+    body.dark-mode .tutorial-desc,
+    body.theme-aurora .tutorial-desc,
+    body.theme-midnight .tutorial-desc {
+      color: var(--muted) !important;
+    }
+
+    body.theme-gray .tutorial-step-btn,
+    body.dark-mode .tutorial-step-btn,
+    body.theme-aurora .tutorial-step-btn,
+    body.theme-midnight .tutorial-step-btn {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: var(--text) !important;
+      border-color: rgba(148, 211, 232, 0.20) !important;
+    }
+
+    body.theme-gray .tutorial-step-btn.primary,
+    body.dark-mode .tutorial-step-btn.primary,
+    body.theme-aurora .tutorial-step-btn.primary,
+    body.theme-midnight .tutorial-step-btn.primary {
+      background: linear-gradient(135deg, #0891b2, #10b981) !important;
+      color: #ffffff !important;
+      border-color: transparent !important;
+    }
+
+    body.theme-gray .tutorial-skip-btn,
+    body.dark-mode .tutorial-skip-btn,
+    body.theme-aurora .tutorial-skip-btn,
+    body.theme-midnight .tutorial-skip-btn {
+      background: rgba(255, 255, 255, 0.10) !important;
+      color: var(--text) !important;
+    }
+
+    @media (max-width: 420px) {
+      .tutorial-card {
+        width: calc(100vw - 24px) !important;
+        padding: 16px !important;
+      }
+
+      .tutorial-card::before {
+        left: 26px;
+      }
+    }
+
   </style>
 </head>
 
