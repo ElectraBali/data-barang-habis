@@ -4857,6 +4857,137 @@
       }
     }
 
+
+    /* =====================================================
+       FINAL REQUEST PATCH - tutorial arrow + qty input catatan
+       ===================================================== */
+    .tutorial-card {
+      --tutorial-arrow-left: 28px;
+    }
+
+    .tutorial-card::before {
+      left: var(--tutorial-arrow-left, 28px) !important;
+    }
+
+    .tutorial-card.arrow-top::before {
+      top: -8px !important;
+      bottom: auto !important;
+      border-left: 1px solid #e2e8f0 !important;
+      border-top: 1px solid #e2e8f0 !important;
+      border-right: 0 !important;
+      border-bottom: 0 !important;
+      transform: rotate(45deg) !important;
+    }
+
+    .tutorial-card.arrow-bottom::before {
+      top: auto !important;
+      bottom: -8px !important;
+      border-left: 0 !important;
+      border-top: 0 !important;
+      border-right: 1px solid #e2e8f0 !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+      transform: rotate(45deg) !important;
+    }
+
+    body.theme-gray .tutorial-card.arrow-top::before,
+    body.dark-mode .tutorial-card.arrow-top::before,
+    body.theme-aurora .tutorial-card.arrow-top::before,
+    body.theme-midnight .tutorial-card.arrow-top::before {
+      border-left-color: rgba(148, 211, 232, 0.25) !important;
+      border-top-color: rgba(148, 211, 232, 0.25) !important;
+    }
+
+    body.theme-gray .tutorial-card.arrow-bottom::before,
+    body.dark-mode .tutorial-card.arrow-bottom::before,
+    body.theme-aurora .tutorial-card.arrow-bottom::before,
+    body.theme-midnight .tutorial-card.arrow-bottom::before {
+      border-right-color: rgba(148, 211, 232, 0.25) !important;
+      border-bottom-color: rgba(148, 211, 232, 0.25) !important;
+    }
+
+    #addedPage #listSection .qty-control {
+      background: var(--primary-soft) !important;
+      border-color: color-mix(in srgb, var(--primary) 62%, transparent) !important;
+      box-shadow: none !important;
+    }
+
+    #addedPage #listSection .qty-btn,
+    #addedPage #listSection .qty-input {
+      background: transparent !important;
+      color: var(--primary-dark) !important;
+      border: 0 !important;
+      outline: none !important;
+      box-shadow: none !important;
+    }
+
+    #addedPage #listSection .qty-control:focus-within,
+    #addedPage #listSection .qty-input:focus,
+    #addedPage #listSection .qty-input:focus-visible {
+      background: var(--primary-soft) !important;
+      border-color: color-mix(in srgb, var(--primary) 62%, transparent) !important;
+      color: var(--primary-dark) !important;
+      outline: none !important;
+      box-shadow: none !important;
+      transform: none !important;
+    }
+
+    body.theme-gray #addedPage #listSection .qty-control,
+    body.dark-mode #addedPage #listSection .qty-control,
+    body.dark-mode.theme-ocean #addedPage #listSection .qty-control,
+    body.dark-mode.theme-emerald #addedPage #listSection .qty-control,
+    body.theme-aurora #addedPage #listSection .qty-control,
+    body.theme-midnight #addedPage #listSection .qty-control {
+      background: rgba(255, 255, 255, 0.09) !important;
+      border-color: rgba(148, 211, 232, 0.20) !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-gray #addedPage #listSection .qty-btn,
+    body.theme-gray #addedPage #listSection .qty-input,
+    body.dark-mode #addedPage #listSection .qty-btn,
+    body.dark-mode #addedPage #listSection .qty-input,
+    body.dark-mode.theme-ocean #addedPage #listSection .qty-btn,
+    body.dark-mode.theme-ocean #addedPage #listSection .qty-input,
+    body.dark-mode.theme-emerald #addedPage #listSection .qty-btn,
+    body.dark-mode.theme-emerald #addedPage #listSection .qty-input,
+    body.theme-aurora #addedPage #listSection .qty-btn,
+    body.theme-aurora #addedPage #listSection .qty-input,
+    body.theme-midnight #addedPage #listSection .qty-btn,
+    body.theme-midnight #addedPage #listSection .qty-input {
+      background: transparent !important;
+      color: var(--text) !important;
+      border: 0 !important;
+      outline: none !important;
+      box-shadow: none !important;
+    }
+
+    body.theme-gray #addedPage #listSection .qty-control:focus-within,
+    body.theme-gray #addedPage #listSection .qty-input:focus,
+    body.theme-gray #addedPage #listSection .qty-input:focus-visible,
+    body.dark-mode #addedPage #listSection .qty-control:focus-within,
+    body.dark-mode #addedPage #listSection .qty-input:focus,
+    body.dark-mode #addedPage #listSection .qty-input:focus-visible,
+    body.dark-mode.theme-ocean #addedPage #listSection .qty-control:focus-within,
+    body.dark-mode.theme-ocean #addedPage #listSection .qty-input:focus,
+    body.dark-mode.theme-ocean #addedPage #listSection .qty-input:focus-visible,
+    body.dark-mode.theme-emerald #addedPage #listSection .qty-control:focus-within,
+    body.dark-mode.theme-emerald #addedPage #listSection .qty-input:focus,
+    body.dark-mode.theme-emerald #addedPage #listSection .qty-input:focus-visible,
+    body.theme-aurora #addedPage #listSection .qty-control:focus-within,
+    body.theme-aurora #addedPage #listSection .qty-input:focus,
+    body.theme-aurora #addedPage #listSection .qty-input:focus-visible,
+    body.theme-midnight #addedPage #listSection .qty-control:focus-within,
+    body.theme-midnight #addedPage #listSection .qty-input:focus,
+    body.theme-midnight #addedPage #listSection .qty-input:focus-visible {
+      background: rgba(255, 255, 255, 0.09) !important;
+      border-color: rgba(148, 211, 232, 0.20) !important;
+      color: var(--text) !important;
+      outline: none !important;
+      box-shadow: none !important;
+      transform: none !important;
+    }
+
+
   </style>
 </head>
 
@@ -31146,19 +31277,40 @@
     function placeTutorialCard(rect) {
       if (!el.tutorialCard) return;
       const margin = 12;
-      const titleSafeShift = 10;
+      const gap = 14;
       const cardRect = el.tutorialCard.getBoundingClientRect();
       const viewportW = window.innerWidth;
       const viewportH = window.innerHeight;
-      let left = rect.left - titleSafeShift;
-      let top = rect.bottom + margin;
 
+      const targetCenterX = rect.left + rect.width / 2;
+      let left = targetCenterX - cardRect.width / 2;
       if (left + cardRect.width > viewportW - margin) left = viewportW - cardRect.width - margin;
       if (left < margin) left = margin;
 
-      if (top + cardRect.height > viewportH - margin) top = rect.top - cardRect.height - margin;
-      if (top < margin) top = margin;
+      const spaceBelow = viewportH - rect.bottom - margin;
+      const spaceAbove = rect.top - margin;
+      const canPlaceBelow = spaceBelow >= cardRect.height + gap;
+      const canPlaceAbove = spaceAbove >= cardRect.height + gap;
 
+      let top;
+      let arrowMode;
+      if (canPlaceBelow || spaceBelow >= spaceAbove) {
+        top = Math.min(rect.bottom + gap, viewportH - cardRect.height - margin);
+        arrowMode = "top";
+      } else if (canPlaceAbove) {
+        top = Math.max(margin, rect.top - cardRect.height - gap);
+        arrowMode = "bottom";
+      } else {
+        top = Math.max(margin, Math.min(rect.bottom + gap, viewportH - cardRect.height - margin));
+        arrowMode = top > rect.top ? "top" : "bottom";
+      }
+
+      const arrowSize = 16;
+      const arrowLeft = Math.max(22, Math.min(cardRect.width - 38, targetCenterX - left - arrowSize / 2));
+
+      el.tutorialCard.classList.toggle("arrow-top", arrowMode === "top");
+      el.tutorialCard.classList.toggle("arrow-bottom", arrowMode === "bottom");
+      el.tutorialCard.style.setProperty("--tutorial-arrow-left", `${arrowLeft}px`);
       el.tutorialCard.style.left = `${left}px`;
       el.tutorialCard.style.top = `${top}px`;
     }
