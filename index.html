@@ -5448,6 +5448,173 @@
       }
     }
 
+
+    /* =====================================================
+       FINAL PATCH - INFO PULL HANYA KLIK PANAH + ANIMASI LEBIH SMOOTH
+       Panah menjadi satu-satunya area klik untuk membuka/menutup panel.
+       Drag/tarik dimatikan agar tidak mengganggu klik menu utama.
+       ===================================================== */
+    :root {
+      --info-pull-ease: cubic-bezier(.16, 1, .3, 1);
+      --info-pull-open-duration: 0.78s;
+      --info-pull-close-duration: 0.62s;
+    }
+
+    .info-pull-sheet {
+      transition:
+        transform var(--info-pull-close-duration) var(--info-pull-ease),
+        border-radius 0.42s ease,
+        box-shadow 0.32s ease,
+        background 0.32s ease,
+        border-color 0.32s ease !important;
+    }
+
+    .info-pull-menu.expanded .info-pull-sheet {
+      transition:
+        transform var(--info-pull-open-duration) var(--info-pull-ease),
+        border-radius 0.46s ease,
+        box-shadow 0.34s ease,
+        background 0.34s ease,
+        border-color 0.34s ease !important;
+    }
+
+    .info-pull-handle {
+      pointer-events: none !important;
+      cursor: default !important;
+      touch-action: auto !important;
+    }
+
+    .info-pull-arrow {
+      pointer-events: auto !important;
+      cursor: pointer !important;
+      width: 50px !important;
+      height: 32px !important;
+      transition:
+        transform 0.42s var(--info-pull-ease),
+        background 0.24s ease,
+        color 0.24s ease,
+        box-shadow 0.24s ease !important;
+    }
+
+    .info-pull-arrow:hover {
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 14%, transparent), inset 0 1px 0 rgba(255,255,255,.24) !important;
+    }
+
+    .info-pull-menu.expanded .info-pull-arrow {
+      transform: rotate(180deg) !important;
+    }
+
+    .info-pull-content {
+      transition:
+        opacity 0.46s ease 0.12s,
+        transform 0.58s var(--info-pull-ease) 0.08s !important;
+    }
+
+    .info-pull-menu:not(.expanded) .info-pull-content {
+      transition:
+        opacity 0.24s ease,
+        transform 0.34s var(--info-pull-ease) !important;
+    }
+
+    body.no-bottom-bar .info-pull-menu:not(.expanded) {
+      pointer-events: none !important;
+    }
+
+    body.no-bottom-bar .info-pull-menu:not(.expanded) .info-pull-arrow,
+    body.no-bottom-bar .info-pull-menu.expanded .info-pull-arrow {
+      pointer-events: auto !important;
+    }
+
+    body.no-bottom-bar .info-pull-menu.expanded .info-pull-handle {
+      pointer-events: none !important;
+    }
+
+    .info-pull-menu.dragging {
+      cursor: default !important;
+    }
+
+
+
+    /* =====================================================
+       PATCH REQUEST USER - INFO PULL MENU GESER ATAS/BAWAH
+       - Buka: slide lembut ke atas.
+       - Tutup: slide lembut ke bawah.
+       - Usap atas/bawah: panel mengikuti gerakan jari.
+       - Background panel tetap kelihatan saat belum ditarik.
+       ===================================================== */
+    :root {
+      --info-pull-ease: cubic-bezier(.18, .88, .22, 1);
+      --info-pull-open-duration: 0.64s;
+      --info-pull-close-duration: 0.56s;
+    }
+
+    .info-pull-sheet {
+      transform: translate3d(0, calc(100% - var(--info-pull-handle-height)), 0) !important;
+      transition:
+        transform var(--info-pull-close-duration) var(--info-pull-ease),
+        border-radius 0.34s ease,
+        box-shadow 0.28s ease,
+        background 0.28s ease,
+        border-color 0.28s ease !important;
+    }
+
+    .info-pull-menu.expanded .info-pull-sheet {
+      transform: translate3d(0, 0, 0) !important;
+      transition:
+        transform var(--info-pull-open-duration) var(--info-pull-ease),
+        border-radius 0.34s ease,
+        box-shadow 0.30s ease,
+        background 0.28s ease,
+        border-color 0.28s ease !important;
+    }
+
+    .info-pull-menu.dragging .info-pull-sheet {
+      transition: none !important;
+    }
+
+    body.no-bottom-bar .info-pull-menu:not(.expanded):not(.dragging) .info-pull-sheet {
+      background: rgba(255, 255, 255, 0.92) !important;
+      border-color: color-mix(in srgb, var(--line) 78%, transparent) !important;
+      box-shadow: 0 -12px 34px rgba(15, 23, 42, 0.10) !important;
+      backdrop-filter: blur(22px) saturate(1.18) !important;
+      -webkit-backdrop-filter: blur(22px) saturate(1.18) !important;
+      pointer-events: none !important;
+    }
+
+    body.theme-gray.no-bottom-bar .info-pull-menu:not(.expanded):not(.dragging) .info-pull-sheet,
+    body.dark-mode.no-bottom-bar .info-pull-menu:not(.expanded):not(.dragging) .info-pull-sheet,
+    body.theme-aurora.no-bottom-bar .info-pull-menu:not(.expanded):not(.dragging) .info-pull-sheet,
+    body.theme-midnight.no-bottom-bar .info-pull-menu:not(.expanded):not(.dragging) .info-pull-sheet {
+      background: rgba(8, 25, 38, 0.88) !important;
+      border-color: rgba(148, 211, 232, 0.18) !important;
+      box-shadow: 0 -12px 34px rgba(0, 0, 0, 0.20) !important;
+    }
+
+    .info-pull-handle,
+    body.no-bottom-bar .info-pull-menu:not(.expanded) .info-pull-handle,
+    body.no-bottom-bar .info-pull-menu.expanded .info-pull-handle {
+      pointer-events: auto !important;
+      cursor: grab !important;
+      touch-action: none !important;
+    }
+
+    .info-pull-menu.dragging .info-pull-handle {
+      cursor: grabbing !important;
+    }
+
+    .info-pull-arrow {
+      pointer-events: none !important;
+      transition:
+        transform 0.34s var(--info-pull-ease),
+        background 0.24s ease,
+        color 0.24s ease,
+        box-shadow 0.24s ease !important;
+    }
+
+    .info-pull-menu.expanded .info-pull-arrow {
+      transform: rotate(180deg) !important;
+    }
+
 </style>
 </head>
 
@@ -5582,7 +5749,7 @@
   <div id="infoPullMenu" class="info-pull-menu" aria-hidden="false">
     <div id="infoPullSheet" class="info-pull-sheet">
       <button id="infoPullHandle" class="info-pull-handle" type="button" aria-expanded="false">
-        <span class="info-pull-arrow">⌃</span>
+        <span id="infoPullArrow" class="info-pull-arrow">⌃</span>
         <span class="info-pull-title">Tarik ke atas untuk info website</span>
       </button>
 
@@ -31048,105 +31215,112 @@
     function initInfoPullMenuDrag() {
       if (!el.infoPullMenu || !el.infoPullSheet || !el.infoPullHandle) return;
 
+      // Panel info sekarang bisa dibuka/tutup dengan animasi geser atas-bawah
+      // dan bisa diusap mengikuti gerakan tangan user.
+      const dragTarget = el.infoPullHandle;
+      const arrow = el.infoPullHandle.querySelector(".info-pull-arrow");
+      let isDraggingInfoPull = false;
       let startY = 0;
-      let currentY = 0;
-      let startTranslate = 0;
-      let lastMoveTime = 0;
-      let lastMoveY = 0;
-      let velocityY = 0;
-      let isDraggingInfoMenu = false;
-      let movedInfoMenu = false;
+      let startTranslateY = 0;
+      let latestTranslateY = 0;
+      let pointerStartTime = 0;
+      let activePointerId = null;
 
-      const getPoint = event => {
-        if (event.touches && event.touches[0]) return event.touches[0];
-        if (event.changedTouches && event.changedTouches[0]) return event.changedTouches[0];
-        return event;
+      const getClientY = event => {
+        if (event.touches && event.touches[0]) return event.touches[0].clientY;
+        if (event.changedTouches && event.changedTouches[0]) return event.changedTouches[0].clientY;
+        return event.clientY || 0;
       };
 
-      const startDrag = event => {
-        const point = getPoint(event);
-        if (!point) return;
+      const prepareInfoPullDrag = event => {
+        if (!document.body.classList.contains("no-bottom-bar")) return;
+        if (event && event.button !== undefined && event.button !== 0) return;
 
-        // Hanya mulai drag dari area pegangan/panah panel bawah.
-        // Ini menjaga isi panel tetap bisa scroll normal saat panel sudah terbuka.
-        const fromHandle = event.target && event.target.closest && event.target.closest("#infoPullHandle");
-        if (!fromHandle) return;
+        startY = getClientY(event);
+        startTranslateY = el.infoPullMenu.classList.contains("expanded") ? 0 : getInfoPullClosedY();
+        latestTranslateY = startTranslateY;
+        pointerStartTime = Date.now();
+        activePointerId = event.pointerId !== undefined ? event.pointerId : null;
+        isDraggingInfoPull = true;
 
-        if (event.cancelable) event.preventDefault();
-
-        startY = point.clientY;
-        currentY = startY;
-        lastMoveY = startY;
-        lastMoveTime = Date.now();
-        velocityY = 0;
-        movedInfoMenu = false;
-        startTranslate = el.infoPullMenu.classList.contains("expanded") ? 0 : getInfoPullClosedY();
-        isDraggingInfoMenu = true;
         el.infoPullMenu.classList.add("dragging");
-        setInfoPullTranslate(startTranslate);
-      };
+        el.infoPullHandle.setAttribute("aria-expanded", el.infoPullMenu.classList.contains("expanded") ? "true" : "false");
+        setInfoPullTranslate(startTranslateY);
 
-      const moveDrag = event => {
-        if (!isDraggingInfoMenu) return;
-        const point = getPoint(event);
-        if (!point) return;
+        if (event.currentTarget && event.currentTarget.setPointerCapture && activePointerId !== null) {
+          try { event.currentTarget.setPointerCapture(activePointerId); } catch (_) {}
+        }
 
         if (event.cancelable) event.preventDefault();
-        currentY = point.clientY;
-
-        const now = Date.now();
-        const timeDelta = Math.max(1, now - lastMoveTime);
-        velocityY = (currentY - lastMoveY) / timeDelta;
-        lastMoveY = currentY;
-        lastMoveTime = now;
-
-        const deltaY = currentY - startY;
-        if (Math.abs(deltaY) > 3) movedInfoMenu = true;
-        setInfoPullTranslate(startTranslate + deltaY);
+        event.stopPropagation();
       };
 
-      const endDrag = event => {
-        if (!isDraggingInfoMenu) return;
-        if (event && event.cancelable && movedInfoMenu) event.preventDefault();
+      const moveInfoPullDrag = event => {
+        if (!isDraggingInfoPull) return;
+        const currentY = getClientY(event);
+        const dy = currentY - startY;
+        latestTranslateY = Math.min(getInfoPullClosedY(), Math.max(0, startTranslateY + dy));
+        setInfoPullTranslate(latestTranslateY);
 
+        if (event.cancelable) event.preventDefault();
+        event.stopPropagation();
+      };
+
+      const finishInfoPullDrag = event => {
+        if (!isDraggingInfoPull) return;
+        const currentY = getClientY(event);
+        const dy = currentY - startY;
+        const elapsed = Math.max(1, Date.now() - pointerStartTime);
+        const velocity = dy / elapsed;
+        const moved = Math.abs(dy);
         const closedY = getInfoPullClosedY();
-        const deltaY = currentY - startY;
-        const currentTranslate = Math.min(closedY, Math.max(0, startTranslate + deltaY));
-        const openedAmount = closedY <= 0 ? 1 : 1 - (currentTranslate / closedY);
-        const flickUp = velocityY < -0.45;
-        const flickDown = velocityY > 0.45;
+        const wasExpanded = startTranslateY === 0;
 
-        isDraggingInfoMenu = false;
-        el.infoPullMenu.classList.remove("dragging");
+        isDraggingInfoPull = false;
+        activePointerId = null;
 
-        if (flickUp) {
-          setInfoPullMenuExpanded(true);
-          return;
+        if (event && event.currentTarget && event.currentTarget.releasePointerCapture && event.pointerId !== undefined) {
+          try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (_) {}
         }
 
-        if (flickDown) {
-          setInfoPullMenuExpanded(false);
-          return;
+        let shouldExpand;
+        if (moved < 8) {
+          shouldExpand = !wasExpanded;
+        } else if (velocity < -0.35) {
+          shouldExpand = true;
+        } else if (velocity > 0.35) {
+          shouldExpand = false;
+        } else {
+          shouldExpand = latestTranslateY < closedY * 0.52;
         }
 
-        setInfoPullMenuExpanded(openedAmount > 0.38);
+        setInfoPullMenuExpanded(shouldExpand);
+
+        if (event && event.cancelable) event.preventDefault();
+        if (event) event.stopPropagation();
       };
 
-      el.infoPullHandle.addEventListener("touchstart", startDrag, { passive: false });
-      window.addEventListener("touchmove", moveDrag, { passive: false });
-      window.addEventListener("touchend", endDrag, { passive: false });
-      window.addEventListener("touchcancel", endDrag, { passive: false });
-      el.infoPullHandle.addEventListener("mousedown", startDrag);
-      window.addEventListener("mousemove", moveDrag);
-      window.addEventListener("mouseup", endDrag);
-      el.infoPullHandle.addEventListener("click", event => {
-        if (movedInfoMenu) {
+      dragTarget.setAttribute("role", "button");
+      dragTarget.setAttribute("tabindex", "0");
+      dragTarget.setAttribute("aria-label", "Usap ke atas untuk buka, usap ke bawah untuk tutup info website");
+      if (arrow) arrow.setAttribute("aria-hidden", "true");
+
+      dragTarget.addEventListener("pointerdown", prepareInfoPullDrag, { passive: false });
+      dragTarget.addEventListener("pointermove", moveInfoPullDrag, { passive: false });
+      dragTarget.addEventListener("pointerup", finishInfoPullDrag, { passive: false });
+      dragTarget.addEventListener("pointercancel", finishInfoPullDrag, { passive: false });
+
+      // Fallback untuk browser lama yang belum stabil memakai pointer events.
+      dragTarget.addEventListener("touchstart", prepareInfoPullDrag, { passive: false });
+      dragTarget.addEventListener("touchmove", moveInfoPullDrag, { passive: false });
+      dragTarget.addEventListener("touchend", finishInfoPullDrag, { passive: false });
+      dragTarget.addEventListener("touchcancel", finishInfoPullDrag, { passive: false });
+
+      dragTarget.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
-          event.stopPropagation();
-          movedInfoMenu = false;
-          return;
+          toggleInfoPullMenu();
         }
-        toggleInfoPullMenu();
       });
 
       window.addEventListener("resize", () => {
