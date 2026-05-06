@@ -5615,7 +5615,146 @@
       transform: rotate(180deg) !important;
     }
 
-</style>
+
+    /* =====================================================
+       FUNNY WELCOME GREETING - muncul saat website dibuka ulang
+       ===================================================== */
+    .welcome-banner {
+      margin: 10px 0 12px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.14);
+      color: white;
+      font-size: 13px;
+      font-weight: 950;
+      line-height: 1.35;
+      letter-spacing: -0.01em;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14), inset 0 1px 0 rgba(255,255,255,.16);
+      backdrop-filter: blur(14px) saturate(1.15);
+      -webkit-backdrop-filter: blur(14px) saturate(1.15);
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      overflow: hidden;
+      position: relative;
+      transform-origin: top center;
+    }
+
+    .welcome-banner.show {
+      display: flex;
+      animation: welcomeFunnyIn .52s cubic-bezier(.16, 1, .3, 1) both;
+    }
+
+    .welcome-banner.hide {
+      animation: welcomeFunnyOut .36s cubic-bezier(.4, 0, .2, 1) both;
+      pointer-events: none;
+    }
+
+    .welcome-banner::before {
+      content: "";
+      position: absolute;
+      inset: -45% auto auto -14%;
+      width: 110px;
+      height: 110px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      pointer-events: none;
+    }
+
+    .welcome-banner-text {
+      position: relative;
+      z-index: 1;
+      min-width: 0;
+    }
+
+    .welcome-banner-close {
+      position: relative;
+      z-index: 1;
+      flex: 0 0 auto;
+      width: 26px;
+      height: 26px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: rgba(255, 255, 255, 0.12);
+      color: inherit;
+      border-radius: 999px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 15px;
+      font-weight: 950;
+      line-height: 1;
+    }
+
+    .welcome-banner-close:hover {
+      background: rgba(255, 255, 255, 0.22);
+      transform: translateY(-1px);
+    }
+
+    @keyframes welcomeFunnyIn {
+      0% {
+        opacity: 0;
+        transform: translateY(-10px) scale(.96);
+        filter: blur(2px);
+      }
+      72% {
+        opacity: 1;
+        transform: translateY(1px) scale(1.01);
+        filter: blur(0);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes welcomeFunnyOut {
+      from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        max-height: 80px;
+        margin-bottom: 12px;
+      }
+      to {
+        opacity: 0;
+        transform: translateY(-8px) scale(.97);
+        max-height: 0;
+        margin-bottom: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+    }
+
+    body.theme-gray .welcome-banner,
+    body.dark-mode .welcome-banner,
+    body.dark-mode.theme-ocean .welcome-banner,
+    body.dark-mode.theme-emerald .welcome-banner,
+    body.theme-aurora .welcome-banner,
+    body.theme-midnight .welcome-banner {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: var(--text) !important;
+      border-color: rgba(148, 211, 232, 0.20) !important;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255,255,255,.06) !important;
+    }
+
+    body.theme-sunset .welcome-banner {
+      background: rgba(255, 255, 255, 0.18) !important;
+      color: #fff7ed !important;
+      border-color: rgba(255, 255, 255, 0.24) !important;
+    }
+
+    body.theme-gray .welcome-banner-close,
+    body.dark-mode .welcome-banner-close,
+    body.theme-aurora .welcome-banner-close,
+    body.theme-midnight .welcome-banner-close {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border-color: rgba(148, 211, 232, 0.20) !important;
+      color: inherit !important;
+    }
+
+  </style>
 </head>
 
 <body class="theme-aurora">
@@ -33012,6 +33151,99 @@
       if (document.visibilityState === "hidden") keepItemsPersistent();
     });
     /* v11: supplier modal only opens from addItem(), never from +/search focus. */
+
+    /* =====================================================
+       FUNNY WELCOME GREETING
+       Random ucapan lucu tiap website dibuka / refresh.
+       ===================================================== */
+    const FUNNY_WELCOME_GREETINGS = [
+      "📦 Barang habis lagi? siapa pelakunya 😭",
+      "🛒 Tenang... stok kosong bukan akhir dunia",
+      "🚨 ALERT: rak mulai kurus",
+      "😎 Siap jadi pahlawan restock hari ini?",
+      "📉 Stok menipis, semangat jangan ikut menipis",
+      "👀 Ada barang ngilang lagi nih kayak mantan",
+      "🔥 Hari yang indah untuk mencatat barang habis",
+      "📦 Barang habis terdeteksi... dompet supplier bergetar",
+      "😵 Jangan panik, kita catat dulu barangnya",
+      "💸 Restock dulu, kaya belakangan",
+      "🧃 Barang habis itu biasa, lupa catat itu bahaya",
+      "🚀 Misi hari ini: selamatkan stok toko",
+      "🐢 Pelan-pelan catat, yang penting tidak lupa",
+      "🫡 Selamat datang pejuang stok minim",
+      "📋 Catat sekarang, nyesel belakangan jangan",
+      "😂 Barang habis terus... laris banget sih",
+      "☕ Sudah ngopi? sekarang cek stok",
+      "📦 Stok kosong detected. Mode panik: OFF",
+      "🧠 Ingat ya... otak bisa lupa, app jangan",
+      "👑 Raja/Ratu pencatat barang telah kembali",
+      "🕵️ Stok hilang misterius? kita catat dulu",
+      "🧯 Jangan panik, cukup tambah ke list",
+      "🎯 Target hari ini: stok rapi, hati happy",
+      "🤝 Supplier menunggu panggilanmu",
+      "🧾 List kosong itu damai, tapi barang habis tetap dicatat"
+    ];
+
+    function getRandomFunnyWelcomeGreeting() {
+      if (!Array.isArray(FUNNY_WELCOME_GREETINGS) || !FUNNY_WELCOME_GREETINGS.length) {
+        return "📦 Semangat catat barang hari ini";
+      }
+
+      const lastGreeting = localStorage.getItem("elektraFunnyWelcomeLast") || "";
+      let greeting = FUNNY_WELCOME_GREETINGS[Math.floor(Math.random() * FUNNY_WELCOME_GREETINGS.length)];
+
+      if (FUNNY_WELCOME_GREETINGS.length > 1) {
+        let guard = 0;
+        while (greeting === lastGreeting && guard < 8) {
+          greeting = FUNNY_WELCOME_GREETINGS[Math.floor(Math.random() * FUNNY_WELCOME_GREETINGS.length)];
+          guard += 1;
+        }
+      }
+
+      localStorage.setItem("elektraFunnyWelcomeLast", greeting);
+      return greeting;
+    }
+
+    function hideFunnyWelcomeBanner() {
+      const banner = document.getElementById("welcomeBanner");
+      if (!banner || banner.classList.contains("hide")) return;
+
+      banner.classList.remove("show");
+      banner.classList.add("hide");
+
+      window.setTimeout(() => {
+        if (banner) banner.style.display = "none";
+      }, 420);
+    }
+
+    function showFunnyWelcomeBanner() {
+      const banner = document.getElementById("welcomeBanner");
+      const textTarget = document.getElementById("welcomeBannerText");
+      const closeBtn = document.getElementById("welcomeBannerClose");
+
+      if (!banner || !textTarget) return;
+
+      textTarget.textContent = getRandomFunnyWelcomeGreeting();
+      banner.style.display = "flex";
+      banner.classList.remove("hide");
+
+      requestAnimationFrame(() => {
+        banner.classList.add("show");
+      });
+
+      if (closeBtn && !closeBtn.dataset.boundWelcomeClose) {
+        closeBtn.dataset.boundWelcomeClose = "true";
+        closeBtn.addEventListener("click", hideFunnyWelcomeBanner);
+      }
+
+      window.clearTimeout(window.elektraFunnyWelcomeTimer);
+      window.elektraFunnyWelcomeTimer = window.setTimeout(hideFunnyWelcomeBanner, 6200);
+    }
+
+    window.addEventListener("load", () => {
+      window.setTimeout(showFunnyWelcomeBanner, 220);
+    });
+
 </script>
 </body>
 </html>
